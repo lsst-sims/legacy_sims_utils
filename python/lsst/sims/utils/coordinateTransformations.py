@@ -1,5 +1,6 @@
 import math
 import numpy
+import palpy
 from collections import OrderedDict
 
 __all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz",
@@ -9,11 +10,19 @@ __all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz"
            "radiansToArcsec","arcsecToRadians"]
 
 def equationOfEquinoxes(d):
-    l = 280.47 + 0.98565*d
-    omega = 125.04 - 0.052954*d
-    deltaPsi = -0.000319*math.sin(omega) - 0.000024*math.sin(2*l)
-    epsilon = 23.4393 - 0.0000004*d
-    return  deltaPsi*math.cos(epsilon)
+    """
+    The equation of equinoxes. See http://aa.usno.navy.mil/faq/docs/GAST.php
+
+    @param [in] d is either a numpy array or a float that is an MJD
+
+    @param [out] the equation of equinoxes in radians.
+    """
+
+    if isinstance(d, numpy.ndarray):
+        return palpy.eqeqxVector(d)
+    else:
+        return palpy.eqeqx(d)
+
 
 def calcGmstGast(mjd):
     #From http://aa.usno.navy.mil/faq/docs/GAST.php Nov. 9 2013
