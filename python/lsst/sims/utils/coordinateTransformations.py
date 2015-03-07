@@ -13,7 +13,8 @@ def equationOfEquinoxes(d):
     """
     The equation of equinoxes. See http://aa.usno.navy.mil/faq/docs/GAST.php
 
-    @param [in] d is either a numpy array or a float that is an MJD
+    @param [in] d is either a numpy array or a float that is Terrestrial Time
+    expressed as an MJD
 
     @param [out] the equation of equinoxes in radians.
     """

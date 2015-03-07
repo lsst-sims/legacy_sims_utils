@@ -8,7 +8,7 @@ def controlEquationOfEquinoxes(mjd):
     """
     Taken from http://aa.usno.navy.mil/faq/docs/GAST.php
 
-    @param [in] mjd is a Modified Julian Date
+    @param [in] mjd is Terrestrial Time as a Modified Julian Date
 
     @param [out] the equation of equinoxes in radians
     """
