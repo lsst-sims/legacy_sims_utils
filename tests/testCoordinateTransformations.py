@@ -74,6 +74,22 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(testGmst - controlGmst) < self.tolerance)
             self.assertTrue(numpy.abs(testGast - controlGast) < self.tolerance)
 
+    def testLmstLast(self):
+
+        gmst, gast = utils.calcGmstGast(self.mjd)
+        ll = [1.2, 2.2]
+        for longitude in ll:
+            hours = numpy.degrees(longitude)/15.0
+            if hours > 24.0:
+                hours -= 24.0
+            controlLmst = gmst + hours
+            controlLast = gast + hours
+            controlLmst %= 24.0
+            controlLast %= 24.0
+            testLmst, testLast = utils.calcLmstLast(self.mjd, longitude)
+            self.assertTrue(numpy.abs(testLmst - controlLmst).max() < self.tolerance)
+            self.assertTrue(numpy.abs(testLast - controlLast).max() < self.tolerance)
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()

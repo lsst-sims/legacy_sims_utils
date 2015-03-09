@@ -56,17 +56,28 @@ def calcGmstGast(mjd):
     return gmst, gast
 
 def calcLmstLast(mjd, longRad):
-    longDeg = math.degrees(longRad)
+    """
+    calculates local mean sidereal time and local apparent sidereal time
+
+    @param [in] mjd is the universal time expressed as an MJD
+
+    @param [in] longRad is the longitude in radians
+
+    @param [out] lmst is the local mean sidereal time in hours
+
+    @param [out] last is hte local apparent sideral time in hours
+    """
+    longDeg = numpy.degrees(longRad)
     longDeg %= 360.
     if longDeg > 180.:
         longDeg -= 360.
     hrs = longDeg/15.
     gmstgast = calcGmstGast(mjd)
-    lmst = gmstgast['GMST']+hrs
-    last = gmstgast['GAST']+hrs
+    lmst = gmstgast[0]+hrs
+    last = gmstgast[1]+hrs
     lmst %= 24.
     last %= 24.
-    return {'LMST':lmst, 'LAST':last}
+    return lmst, last
 
 def raDecToAltAz(raRad, decRad, longRad, latRad, mjd):
     lst = calcLmstLast(mjd, longRad)
