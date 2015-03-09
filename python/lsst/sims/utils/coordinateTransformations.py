@@ -61,7 +61,7 @@ def calcLmstLast(mjd, longRad):
 
     @param [in] mjd is the universal time expressed as an MJD
 
-    @param [in] longRad is the longitude in radians
+    @param [in] longRad is the longitude in radians (positive east of the prime meridian)
 
     @param [out] lmst is the local mean sidereal time in hours
 
@@ -81,12 +81,12 @@ def calcLmstLast(mjd, longRad):
 
 def raDecToAltAz(raRad, decRad, longRad, latRad, mjd):
     lst = calcLmstLast(mjd, longRad)
-    last = lst['LAST']
-    haRad = math.radians(last*15.) - raRad
-    altRad = math.asin(math.sin(decRad)*math.sin(latRad)+math.cos(decRad)*math.cos(latRad)*math.cos(haRad))
-    azRad = math.acos((math.sin(decRad) - math.sin(altRad)*math.sin(latRad))/(math.cos(altRad)*math.cos(latRad)))
-    if math.sin(haRad) >= 0:
-        azRad = 2.*math.pi-azRad
+    last = lst[1]
+    haRad = numpy.radians(last*15.) - raRad
+    altRad = numpy.asin(numpy.sin(decRad)*numpy.sin(latRad)+numpy.cos(decRad)*numpy.cos(latRad)*numpy.cos(haRad))
+    azRad = numpy.acos((numpy.sin(decRad) - numpy.sin(altRad)*numpy.sin(latRad))/(numpy.cos(altRad)*numpy.cos(latRad)))
+    if numpy.sin(haRad) >= 0:
+        azRad = 2.*numpy.pi-azRad
     return altRad, azRad
 
 def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
