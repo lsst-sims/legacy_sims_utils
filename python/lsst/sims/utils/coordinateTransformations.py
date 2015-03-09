@@ -26,21 +26,34 @@ def equationOfEquinoxes(d):
 
 
 def calcGmstGast(mjd):
-    #From http://aa.usno.navy.mil/faq/docs/GAST.php Nov. 9 2013
-    mjdConv = 2400000.5
-    jd2000 = 2451545.0
-    mjd_o = math.floor(mjd)
-    jd = mjd + mjdConv
-    jd_o = mjd_o + mjdConv
-    h = 24.*(jd-jd_o)
-    d = jd - jd2000
-    d_o = jd_o - jd2000
-    t = d/36525.
-    gmst = 6.697374558 + 0.06570982441908*d_o + 1.00273790935*h + 0.000026*t**2
-    gast = gmst + equationOfEquinoxes(d)
-    gmst %= 24.
-    gast %= 24.
-    return {'GMST':gmst, 'GAST':gast}
+    """
+    Compute Greenwich mean sidereal time and Greenwich apparent sidereal time
+    see: From http://aa.usno.navy.mil/faq/docs/GAST.php
+
+    @param [in] mjd is the universal time expressed as an MJD
+
+    @param [out] gmst Greenwich mean sidereal time in hours
+
+    @param [out] gast Greenwich apparent sidereal time in hours
+    """
+
+    date = numpy.floor(mjd)
+    ut1 = mjd-date
+    if isinstance(mjd, numpy.ndarray):
+        gmst = palpy.gmstaVector(date, ut1)
+    else:
+        gmst = palpy.gmsta(date, ut1)
+
+    eqeq = equationOfEquinoxes(mjd)
+    gast = gmst + eqeq
+
+    gmst = gmst*24.0/(2.0*numpy.pi)
+    gmst %= 24.0
+
+    gast = gast*24.0/(2.0*numpy.pi)
+    gast %= 24.0
+
+    return gmst, gast
 
 def calcLmstLast(mjd, longRad):
     longDeg = math.degrees(longRad)

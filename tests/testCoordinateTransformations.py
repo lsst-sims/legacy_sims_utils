@@ -26,7 +26,7 @@ def controlCalcGmstGast(mjd):
     #From http://aa.usno.navy.mil/faq/docs/GAST.php Nov. 9 2013
     mjdConv = 2400000.5
     jd2000 = 2451545.0
-    mjd_o = math.floor(mjd)
+    mjd_o = numpy.floor(mjd)
     jd = mjd + mjdConv
     jd_o = mjd_o + mjdConv
     h = 24.*(jd-jd_o)
@@ -34,10 +34,10 @@ def controlCalcGmstGast(mjd):
     d_o = jd_o - jd2000
     t = d/36525.
     gmst = 6.697374558 + 0.06570982441908*d_o + 1.00273790935*h + 0.000026*t**2
-    gast = gmst + utils.equationOfEquinoxes(mjd)
+    gast = gmst + 24.0*utils.equationOfEquinoxes(mjd)/(2.0*numpy.pi)
     gmst %= 24.
     gast %= 24.
-    return {'GMST':gmst, 'GAST':gast}
+    return gmst, gast
 
 class testCoordinateTransformations(unittest.TestCase):
 
@@ -59,6 +59,13 @@ class testCoordinateTransformations(unittest.TestCase):
             control = controlEquationOfEquinoxes(mm)
             test = utils.equationOfEquinoxes(mm)
             self.assertTrue(numpy.abs(test-control) < self.tolerance)
+
+    def testGmstGast(self):
+
+        controlGmst, controlGast = controlCalcGmstGast(self.mjd)
+        testGmst, testGast = utils.calcGmstGast(self.mjd)
+        self.assertTrue(numpy.abs(testGmst - controlGmst).max() < self.tolerance)
+        self.assertTrue(numpy.abs(testGast - controlGast).max() < self.tolerance)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
