@@ -67,6 +67,13 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertTrue(numpy.abs(testGmst - controlGmst).max() < self.tolerance)
         self.assertTrue(numpy.abs(testGast - controlGast).max() < self.tolerance)
 
+        #test non-vectorized version
+        for mm in self.mjd:
+            controlGmst, controlGast = controlCalcGmstGast(mm)
+            testGmst, testGast = utils.calcGmstGast(mm)
+            self.assertTrue(numpy.abs(testGmst - controlGmst) < self.tolerance)
+            self.assertTrue(numpy.abs(testGast - controlGast) < self.tolerance)
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
