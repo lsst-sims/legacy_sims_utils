@@ -3,7 +3,7 @@ import numpy
 import palpy
 from collections import OrderedDict
 
-__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAz",
+__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
            "altAzToRaDec", "calcPa", "getRotSkyPos", "getRotTelPos", "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
@@ -79,39 +79,44 @@ def calcLmstLast(mjd, longRad):
     last %= 24.
     return lmst, last
 
-def raDecToAltAz(raRad, decRad, longRad, latRad, mjd):
+def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
     """
-    Converts RA and Dec to altitude and azimuth
+    Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
+    and parallactic angle using PALPY
 
-    @param [in] raRad is the RA in radians
+    @param [in] raRad is RA in radians
 
-    @param [in] decRad is the Dec in radians
+    @param [in] decRad is Dec in radians
 
     @param [in] longRad is the longitude of the observer in radians
     (positive east of the prime meridian)
 
-    @param [in[ latRad is the latitude of the observer in radians
+    @param [in] latRad is the latitude of the observer in radians
     (positive north of the equator)
 
-    @param [in] mjd is the universal time expressed as an MJD
+    @param [in] mjd is the Universal Time expressed as an MJD
 
     @param [out] altitude in radians
 
-    @param [out[ azimuth in radians
+    @param [out] azimuth in radians
 
-    see: http://www.stargazing.net/kepler/altaz.html#twig04
+    @param [out] parallactic angle in radians
     """
+
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
-    haRad = numpy.radians(last*15.) - raRad
-    sinDec = numpy.sin(decRad)
-    cosLat = numpy.cos(latRad)
-    sinLat = numpy.sin(latRad)
-    sinAlt = sinDec*sinLat+numpy.cos(decRad)*cosLat*numpy.cos(haRad)
-    altRad = numpy.arcsin(sinAlt)
-    azRad = numpy.arccos((sinDec - sinAlt*sinLat)/(numpy.cos(altRad)*cosLat))
-    azRadOut = numpy.where(numpy.sin(haRad)>=0.0, 2.0*numpy.pi-azRad, azRad)
-    return altRad, azRadOut
+    haRad = numpy.radians(last*15.0) - raRad
+
+    if isinstance(haRad, numpy.ndarray):
+        az, azd, azdd, \
+        alt, altd, altdd, \
+        pa, pad, padd = palpy.altazVector(haRad, decRad, latRad)
+    else:
+        az, azd, azdd, \
+        alt, altd, altdd, \
+        pa, pad, padd = palpy.altAz(haRad, decRad, latRad)
+
+    return alt, az, pa
 
 def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
     """

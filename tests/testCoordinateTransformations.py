@@ -5,6 +5,42 @@ import palpy as palpy
 import lsst.utils.tests as utilsTests
 import lsst.sims.utils as utils
 
+def controlRaDecToAltAz(raRad, decRad, longRad, latRad, mjd):
+    """
+    Converts RA and Dec to altitude and azimuth
+
+    @param [in] raRad is the RA in radians
+
+    @param [in] decRad is the Dec in radians
+
+    @param [in] longRad is the longitude of the observer in radians
+    (positive east of the prime meridian)
+
+    @param [in[ latRad is the latitude of the observer in radians
+    (positive north of the equator)
+
+    @param [in] mjd is the universal time expressed as an MJD
+
+    @param [out] altitude in radians
+
+    @param [out[ azimuth in radians
+
+    see: http://www.stargazing.net/kepler/altaz.html#twig04
+    """
+    lst = utils.calcLmstLast(mjd, longRad)
+    last = lst[1]
+    haRad = numpy.radians(last*15.) - raRad
+    sinDec = numpy.sin(decRad)
+    cosLat = numpy.cos(latRad)
+    sinLat = numpy.sin(latRad)
+    sinAlt = sinDec*sinLat+numpy.cos(decRad)*cosLat*numpy.cos(haRad)
+    altRad = numpy.arcsin(sinAlt)
+    azRad = numpy.arccos((sinDec - sinAlt*sinLat)/(numpy.cos(altRad)*cosLat))
+    azRadOut = numpy.where(numpy.sin(haRad)>=0.0, 2.0*numpy.pi-azRad, azRad)
+    return altRad, azRadOut
+
+
+
 def controlEquationOfEquinoxes(mjd):
     """
     Taken from http://aa.usno.navy.mil/faq/docs/GAST.php
@@ -98,15 +134,13 @@ class testCoordinateTransformations(unittest.TestCase):
         dec = (numpy.random.sample(len(self.mjd))-0.5)*numpy.pi
         longitude = 1.467
         latitude = -0.234
-        lst, last = utils.calcLmstLast(self.mjd, longitude)
-        hourAngle = numpy.radians(last*15.0) - ra
-        controlAz, azd, azdd, \
-        controlAlt, eld, eldd, \
-        pa, pad, padd = palpy.altazVector(hourAngle, dec, latitude)
+        controlAlt, controlAz = controlRaDecToAltAz(ra, dec, \
+                                                    longitude, latitude, \
+                                                    self. mjd)
 
-        testAlt, testAz = utils.raDecToAltAz(ra, dec, \
-                                            longitude, latitude, \
-                                            self.mjd)
+        testAlt, testAz, testPa = utils.raDecToAltAzPa(ra, dec, \
+                                                       longitude, latitude, \
+                                                       self.mjd)
         self.assertTrue(numpy.abs(testAz - controlAz).max() < self.tolerance)
         self.assertTrue(numpy.abs(testAlt - controlAlt).max() < self.tolerance)
 
