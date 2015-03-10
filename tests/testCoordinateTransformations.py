@@ -39,8 +39,6 @@ def controlRaDecToAltAz(raRad, decRad, longRad, latRad, mjd):
     azRadOut = numpy.where(numpy.sin(haRad)>=0.0, 2.0*numpy.pi-azRad, azRad)
     return altRad, azRadOut
 
-
-
 def controlEquationOfEquinoxes(mjd):
     """
     Taken from http://aa.usno.navy.mil/faq/docs/GAST.php
