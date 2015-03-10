@@ -1,6 +1,7 @@
 import os
 import numpy
 import unittest
+import palpy as palpy
 import lsst.utils.tests as utilsTests
 import lsst.sims.utils as utils
 
@@ -89,6 +90,25 @@ class testCoordinateTransformations(unittest.TestCase):
             testLmst, testLast = utils.calcLmstLast(self.mjd, longitude)
             self.assertTrue(numpy.abs(testLmst - controlLmst).max() < self.tolerance)
             self.assertTrue(numpy.abs(testLast - controlLast).max() < self.tolerance)
+
+    def testRaDecToAltAz(self):
+
+        numpy.random.seed(32)
+        ra = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
+        dec = (numpy.random.sample(len(self.mjd))-0.5)*numpy.pi
+        longitude = 1.467
+        latitude = -0.234
+        lst, last = utils.calcLmstLast(self.mjd, longitude)
+        hourAngle = numpy.radians(last*15.0) - ra
+        controlAz, azd, azdd, \
+        controlAlt, eld, eldd, \
+        pa, pad, padd = palpy.altazVector(hourAngle, dec, latitude)
+
+        testAlt, testAz = utils.raDecToAltAz(ra, dec, \
+                                            longitude, latitude, \
+                                            self.mjd)
+        self.assertTrue(numpy.abs(testAz - controlAz).max() < self.tolerance)
+        self.assertTrue(numpy.abs(testAlt - controlAlt).max() < self.tolerance)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

@@ -80,14 +80,38 @@ def calcLmstLast(mjd, longRad):
     return lmst, last
 
 def raDecToAltAz(raRad, decRad, longRad, latRad, mjd):
+    """
+    Converts RA and Dec to altitude and azimuth
+
+    @param [in] raRad is the RA in radians
+
+    @param [in] decRad is the Dec in radians
+
+    @param [in] longRad is the longitude of the observer in radians
+    (positive east of the prime meridian)
+
+    @param [in[ latRad is the latitude of the observer in radians
+    (positive north of the equator)
+
+    @param [in] mjd is the universal time expressed as an MJD
+
+    @param [out] altitude in radians
+
+    @param [out[ azimuth in radians
+
+    see: http://www.stargazing.net/kepler/altaz.html#twig04
+    """
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
     haRad = numpy.radians(last*15.) - raRad
-    altRad = numpy.asin(numpy.sin(decRad)*numpy.sin(latRad)+numpy.cos(decRad)*numpy.cos(latRad)*numpy.cos(haRad))
-    azRad = numpy.acos((numpy.sin(decRad) - numpy.sin(altRad)*numpy.sin(latRad))/(numpy.cos(altRad)*numpy.cos(latRad)))
-    if numpy.sin(haRad) >= 0:
-        azRad = 2.*numpy.pi-azRad
-    return altRad, azRad
+    sinDec = numpy.sin(decRad)
+    cosLat = numpy.cos(latRad)
+    sinLat = numpy.sin(latRad)
+    sinAlt = sinDec*sinLat+numpy.cos(decRad)*cosLat*numpy.cos(haRad)
+    altRad = numpy.arcsin(sinAlt)
+    azRad = numpy.arccos((sinDec - sinAlt*sinLat)/(numpy.cos(altRad)*cosLat))
+    azRadOut = numpy.where(numpy.sin(haRad)>=0.0, 2.0*numpy.pi-azRad, azRad)
+    return altRad, azRadOut
 
 def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
     lst = calcLmstLast(mjd, longRad)
