@@ -193,7 +193,21 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     return (rotSkyRad + paRad - math.pi)%(2.*math.pi)
 
 def haversine(long1, lat1, long2, lat2):
-    #From http://en.wikipedia.org/wiki/Haversine_formula
+    """
+    Return the angular distance between two points in radians
+
+    @param [in] long1 is the longitude of point 1 in radians
+
+    @param [in] lat1 is the latitude of point 1 in radians
+
+    @param [in] long2 is the longitude of point 2 in radians
+
+    @param [in] lat2 is the latitude of point 2 in radians
+
+    @param [out] the angular separation between points 1 and 2 in radians
+
+    From http://en.wikipedia.org/wiki/Haversine_formula
+    """
     t1 = numpy.sin(lat2/2.-lat1/2.)**2
     t2 = numpy.cos(lat1)*numpy.cos(lat2)*numpy.sin(long2/2. - long1/2.)**2
     return 2*numpy.arcsin(numpy.sqrt(t1 + t2))
