@@ -213,11 +213,43 @@ def haversine(long1, lat1, long2, lat2):
     return 2*numpy.arcsin(numpy.sqrt(t1 + t2))
 
 def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad):
+    """
+    Fromats input data into a dict of metadata that PhoSim expect.
+
+    Users should probably not be calling this by hand, as it makes no effort to ensure that
+    the input values are self-consistent.  This method is called by
+    makeObsParamsAzAltTel
+    makeObsParamsAzAltSky
+    makeObsPeramsRaDecTel
+    makeObsParamsRaDecSky
+    which do ensure self-consistency of values.
+
+    @param [in] raRad is RA in radians
+
+    @param [in] decRad is Dec in radians
+
+    @param [in] altRad is altitude in radians
+
+    @param [in] azRad is azimuth in radians
+
+    @param [in] rotTelRad is rotTelPos in radians
+
+    @param [in] mjd is the Universal Time expressed as an MJD
+
+    @param [in] band is 'u', 'g', 'r', 'i', 'z', or 'y'
+    (i.e. the bandpass of the observation)
+
+    @param [in] longRad is the observer's longitude in radians
+    (positive east of the prime meridan)
+
+    @param [in] latRad is the observer's latitude in radians
+    (positive north of the equator)
+    """
     obsMd = {}
     #Defaults
-    moonra, moondec = altAzToRaDec(-math.pi/2., 0., longRad, latRad, mjd)
-    sunalt = -math.pi/2.
-    moonalt = -math.pi/2.
+    moonra, moondec = altAzToRaDec(-numpy.pi/2., 0., longRad, latRad, mjd)
+    sunalt = -numpy.pi/2.
+    moonalt = -numpy.pi/2.
     dist2moon = haversine(moonra, moondec, raRad, decRad)
     obsMd['Opsim_moonra'] = moonra
     obsMd['Opsim_moondec'] = moondec
