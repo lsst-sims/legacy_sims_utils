@@ -244,6 +244,9 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
 
     @param [in] latRad is the observer's latitude in radians
     (positive north of the equator)
+
+    @param [out] a dict of meta data which PhoSim expects in the
+    headers of its input InstanceCatalogs
     """
     obsMd = {}
     #Defaults
