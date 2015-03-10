@@ -125,6 +125,24 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(testLmst - controlLmst).max() < self.tolerance)
             self.assertTrue(numpy.abs(testLast - controlLast).max() < self.tolerance)
 
+        #test non-vectorized version
+        for longitude in ll:
+            for mm in self.mjd:
+                gmst, gast = utils.calcGmstGast(mm)
+                hours = numpy.degrees(longitude)/15.0
+                if hours > 24.0:
+                    hours -= 24.0
+                controlLmst = gmst + hours
+                controlLast = gast + hours
+                controlLmst %= 24.0
+                controlLast %= 24.0
+                testLmst, testLast = utils.calcLmstLast(mm, longitude)
+                self.assertTrue(numpy.abs(testLmst - controlLmst) < self.tolerance)
+                self.assertTrue(numpy.abs(testLast - controlLast) < self.tolerance)
+
+
+
+
     def testRaDecToAltAz(self):
 
         numpy.random.seed(32)
