@@ -83,6 +83,9 @@ class testCoordinateTransformations(unittest.TestCase):
         self.tolerance = 1.0e-5
 
     def testExceptions(self):
+        """
+        Test to make sure that methods complain when incorrect data types are passed.
+        """
         mjdFloat = 52000.0
         mjd2 = numpy.array([52000.0, 53000.0])
         mjd3 = numpy.array([53000.0, 53000.0, 54000.0])
