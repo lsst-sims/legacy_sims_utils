@@ -141,8 +141,6 @@ class testCoordinateTransformations(unittest.TestCase):
                 self.assertTrue(numpy.abs(testLast - controlLast) < self.tolerance)
 
 
-
-
     def testRaDecToAltAz(self):
 
         numpy.random.seed(32)
