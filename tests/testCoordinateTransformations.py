@@ -158,6 +158,13 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertTrue(numpy.abs(testAz - controlAz).max() < self.tolerance)
         self.assertTrue(numpy.abs(testAlt - controlAlt).max() < self.tolerance)
 
+        #test non-vectorized version
+        for r,d in zip(ra, dec):
+            controlAlt, controlAz = controlRaDecToAltAz(r, d, longitude, latitude, self.mjd[0])
+            testAlt, testAz, testPa = utils.raDecToAltAzPa(r, d, longitude, latitude, self.mjd[0])
+            self.assertTrue(numpy.abs(testAz - controlAz) < self.tolerance)
+            self.assertTrue(numpy.abs(testAlt - controlAlt) < self.tolerance)
+
     def testAltAzToRaDec(self):
         numpy.random.seed(32)
         raIn = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
