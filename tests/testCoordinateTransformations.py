@@ -110,6 +110,27 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertTrue(numpy.abs(testAz - controlAz).max() < self.tolerance)
         self.assertTrue(numpy.abs(testAlt - controlAlt).max() < self.tolerance)
 
+    def testAltAzToRaDec(self):
+        numpy.random.seed(32)
+        raIn = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
+        decIn = (numpy.random.sample(len(self.mjd))-0.5)*numpy.pi
+        longitude = 1.467
+        latitude = -0.234
+        lst, last = utils.calcLmstLast(self.mjd, longitude)
+        hourAngle = numpy.radians(last*15.0) - raIn
+        controlAz, azd, azdd, \
+        controlAlt, eld, eldd, \
+        pa, pad, padd = palpy.altazVector(hourAngle, decIn, latitude)
+
+        raOut, decOut, = utils.altAzToRaDec(controlAlt, controlAz,
+                                           longitude, latitude, self.mjd)
+
+        self.assertTrue(numpy.abs(numpy.cos(raOut) - numpy.cos(raIn)).max() < self.tolerance)
+        self.assertTrue(numpy.abs(numpy.sin(raOut) - numpy.sin(raIn)).max() < self.tolerance)
+        self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(decIn)).max() < self.tolerance)
+        self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(decIn)).max() < self.tolerance)
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()

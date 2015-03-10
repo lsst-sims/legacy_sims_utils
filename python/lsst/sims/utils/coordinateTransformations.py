@@ -114,11 +114,34 @@ def raDecToAltAz(raRad, decRad, longRad, latRad, mjd):
     return altRad, azRadOut
 
 def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
+    """
+    Convert altitude and azimuth to RA and Dec
+
+    @param [in] altRad is the altitude in radians
+
+    @param [in] azRad is the azimuth in radians
+
+    @param [in] longRad is the observatory longitude in radians
+    (positive east of the prime meridian)
+
+    @param [in] latRad is the latitude in radians
+    (positive north of the equator)
+
+    @param [in] mjd is the Universal Time expressed as an MD
+
+    @param [out] RA in radians
+
+    @param [out] Dec in radians
+    """
     lst = calcLmstLast(mjd, longRad)
-    last = lst['LAST']
-    decRad = math.asin(math.sin(latRad)*math.sin(altRad)+ math.cos(latRad)*math.cos(altRad)*math.cos(azRad))
-    haRad = math.acos((math.sin(altRad) - math.sin(decRad)*math.sin(latRad))/(math.cos(decRad)*math.cos(latRad)))
-    raRad = math.radians(last*15.) - haRad
+    last = lst[1]
+    sinAlt = numpy.sin(altRad)
+    cosLat = numpy.cos(latRad)
+    sinLat = numpy.sin(latRad)
+    decRad = numpy.arcsin(sinLat*sinAlt+ cosLat*numpy.cos(altRad)*numpy.cos(azRad))
+    haRad0 = numpy.arccos((sinAlt - numpy.sin(decRad)*sinLat)/(numpy.cos(decRad)*cosLat))
+    haRad = numpy.where(numpy.sin(azRad)>=0.0, -1.0*haRad0, haRad0)
+    raRad = numpy.radians(last*15.) - haRad
     return raRad, decRad
 
 def calcPa(azRad, decRad, latRad):
