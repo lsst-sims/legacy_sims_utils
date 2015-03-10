@@ -58,18 +58,43 @@ def calcLmstLast(mjd, longRad):
     """
     calculates local mean sidereal time and local apparent sidereal time
 
-    @param [in] mjd is the universal time expressed as an MJD
+    @param [in] mjd is the universal time expressed as an MJD.
+    This can be a numpy array or a single value.
 
     @param [in] longRad is the longitude in radians (positive east of the prime meridian)
+    This can be numpy array or a single value.  If a numpy array, should have the same length as mjd.  In that
+    case, each longRad will be applied only to the corresponding mjd.
 
     @param [out] lmst is the local mean sidereal time in hours
 
     @param [out] last is hte local apparent sideral time in hours
     """
-    longDeg = numpy.degrees(longRad)
-    longDeg %= 360.
-    if longDeg > 180.:
-        longDeg -= 360.
+    mjdIsArray = False
+    longRadIsArray = False
+    if isinstance(mjd, numpy.ndarray):
+        mjdIsArray = True
+
+    if isinstance(longRad, numpy.ndarray):
+        longRadIsArray = True
+
+    if longRadIsArray and mjdIsArray:
+        if len(longRad) != len(mjd):
+            raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
+
+    if longRadIsArray and not mjdIsArray:
+        raise RuntimeError("in calcLmstLast longRad is numpy array but mjd is not")
+
+    longDeg0 = numpy.degrees(longRad)
+    longDeg0 %= 360.0
+
+    if longRadIsArray:
+        longDeg = numpy.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
+    else:
+        if longDeg0 > 180.:
+            longDeg = longDeg0-360.
+        else:
+            longDeg = longDeg0
+
     hrs = longDeg/15.
     gmstgast = calcGmstGast(mjd)
     lmst = gmstgast[0]+hrs
@@ -83,17 +108,20 @@ def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
 
-    @param [in] raRad is RA in radians
+    @param [in] raRad is RA in radians.  Can be a numpy array or a single value.
 
-    @param [in] decRad is Dec in radians
+    @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
 
     @param [in] longRad is the longitude of the observer in radians
-    (positive east of the prime meridian)
+    (positive east of the prime meridian).  Must be a single value.
 
     @param [in] latRad is the latitude of the observer in radians
-    (positive north of the equator)
+    (positive north of the equator).  Must be a single value.
 
-    @param [in] mjd is the Universal Time expressed as an MJD
+    @param [in] mjd is the Universal Time expressed as an MJD.
+    Can be a numpy array or a single value.  If a numpy array, should have the
+    same number of entries as raRad and decRad.  In this case,
+    each mjd will be applied to its corresponding raRad, decRad pair.
 
     @param [out] altitude in radians
 
@@ -101,6 +129,39 @@ def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
 
     @param [out] parallactic angle in radians
     """
+
+    if isinstance(longRad, numpy.ndarray):
+        raise RuntimeError('cannot pass numpy array of longitudes to raDecToAltAzPa')
+
+    if isinstance(latRad, numpy.ndarray):
+        raise RuntimeError('cannot pass numpy array of latitudes to raDecToAltAzPa')
+
+    raIsArray = False
+    decIsArray = False
+    mjdIsArray = False
+    if isinstance(raRad, numpy.ndarray):
+        raIsArray = True
+
+    if isinstance(decRad, numpy.ndarray):
+        decIsArray = True
+
+    if isinstance(mjd, numpy.ndarray):
+        mjdIsArray = True
+
+    if raIsArray and not decIsArray:
+        raise RuntimeError('passed numpy array of RA to raDecToAltAzPa; but only one Dec')
+
+    if decIsArray and not raIsArray:
+        raise RuntimeError('passed numpy array of Dec to raDecToAltAzPa; but only one RA')
+
+    if raIsArray and decIsArray and len(raRad) != len(decRad):
+        raise RuntimeError('in raDecToAltAzPa length of RA numpy array does not match length of Dec numpy array')
+
+    if mjdIsArray and not raIsArray:
+        raise RuntimeError('passed numpy array of mjd to raDecToAltAzPa; but only one RA, Dec')
+
+    if mjdIsArray and len(mjd) != len(raRad):
+        raise RuntimeError('in raDecToAltAzPa length of mjd numpy array is not the same as length of RA numpy array')
 
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
@@ -121,22 +182,58 @@ def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
     """
     Convert altitude and azimuth to RA and Dec
 
-    @param [in] altRad is the altitude in radians
+    @param [in] altRad is the altitude in radians.  Can be a numpy array or a single value.
 
-    @param [in] azRad is the azimuth in radians
+    @param [in] azRad is the azimuth in radians.  Cant be a numpy array or a single value.
 
     @param [in] longRad is the observatory longitude in radians
-    (positive east of the prime meridian)
+    (positive east of the prime meridian).  Must be a single value.
 
     @param [in] latRad is the latitude in radians
-    (positive north of the equator)
+    (positive north of the equator).  Must be a single value.
 
-    @param [in] mjd is the Universal Time expressed as an MD
+    @param [in] mjd is the Universal Time expressed as an MD.
+    Can be a numpy array or a single value.  If a single value, must have the same length as
+    the numpy array of alt and az.  In this case, each MJD will be associated with the corresponding
+    alt, az pair.
 
     @param [out] RA in radians
 
     @param [out] Dec in radians
     """
+    if isinstance(longRad, numpy.ndarray):
+        raise RuntimeError('cannot pass a numpy array of longitudes to altAzToRaDec')
+
+    if isinstance(latRad, numpy.ndarray):
+        raise RuntimeError('cannot pass a numpy array of latitudes to altAzToRaDec')
+
+    mjdIsArray = False
+    altIsArray = False
+    azIsArray = False
+    if isinstance(mjd, numpy.ndarray):
+        mjdIsArray = True
+
+    if isinstance(altRad, numpy.ndarray):
+        altIsArray = True
+
+    if isinstance(azRad, numpy.ndarray):
+        azIsArray = True
+
+    if altIsArray and not azIsArray:
+        raise RuntimeError('passed a numpy array of alt to altAzToRaDec, but only one az')
+
+    if azIsArray and not altIsArray:
+        raise RuntimeError('passed a numpy array of az to altAzToRaDec, but only one alt')
+
+    if azIsArray and altIsArray and len(altRad)!=len(azRad):
+        raise RuntimeError('in altAzToRaDec, length of alt numpy array does not match length of az numpy array')
+
+    if mjdIsArray and not azIsArray:
+        raise RuntimeError('passed a numpy array of mjd to altAzToRaDec, but only one alt, az pair')
+
+    if mjdIsArray and len(mjd) != len(azRad):
+        raise RuntimeError('in altAzToRaDec length of mjd numpy array does not match length of az numpy array')
+
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
     sinAlt = numpy.sin(altRad)
@@ -150,20 +247,25 @@ def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
 
 def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     """
-    @param [in] raRad is the RA in radians
+    @param [in] raRad is the RA in radians.  Can be a numpy array or a single value.
 
-    @param [in] decRad is Dec in radians
+    @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
 
     @param [in] longRad is the observer's longitude in radians
-    (positive east of the prime meridian)
+    (positive east of the prime meridian).  Must be a single value.
 
     @param [in] latRad is the observer's latitude in radians
-    (positive north of the equator)
+    (positive north of the equator).  Must be a singel value.
 
-    @param [in] mjd is the Universal Time expressed as an JD
+    @param [in] mjd is the Universal Time expressed as an MJD.
+    Can be a numpy array or a single value.  If a numpy array, must have the same length
+    as the numpy arrays of raRad and decRad.  In this case, each mjd will be associated
+    with the corresponding raRad, decRad pair.
 
     @param [in] rotTelRad is rotTelPos in radians
-    (the angle of the camera rotator)
+    (the angle of the camera rotator).  Can be a numpy array or a single value.
+    If a numpy array, should have the same length as raRad and decRad.  In this case,
+    each rotTelRad will be associated with the corresponding raRad, decRad pair.
 
     @param [out] rotSkyPos in radians
     """
@@ -172,21 +274,28 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
 
 def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     """
-    @param [in] raRad is RA in radians
+    @param [in] raRad is RA in radians.  Can be a numpy array or a single value.
 
-    @param [in] decRad is Dec in radians
+    @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
 
     @param [in] longRad is the observer's longitude in radians
-    (positive east of the prime meridian)
+    (positive east of the prime meridian).  Must be a single value.
 
     @param [in] latRad is the observer's latitude in radians
-    (positive north of the equator)
+    (positive north of the equator).  Must be a single value.
 
-    @param [in] mjd is the Universal Time expressed as an MJD
+    @param [in] mjd is the Universal Time expressed as an MJD.
+    Can be a numpy array or a single value.  If a numpy array, must have the same length
+    as raRad and decRad.  In this case, each MJD will be associated with the
+    corresponding raRad, decRad pair.
 
-    @parma [in] rotSkyRad is rotSkyPos in radians
+    @param [in] rotSkyRad is rotSkyPos in radians
     (the angle of the field of view relative to the South pole given a
-    rotator angle)
+    rotator angle).  Can be a numpy array or a single value.  If a numpy array, should
+    have the same length as raRad and decRad.  In this case, each rotSkyPos
+    will be associated with the corresponding raRad, decRad pair.
+
+    @param [out] rotSkyPos in radians.
     """
     altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
     return (rotSkyRad + paRad - numpy.pi)%(2.*numpy.pi)

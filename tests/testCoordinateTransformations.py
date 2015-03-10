@@ -82,6 +82,48 @@ class testCoordinateTransformations(unittest.TestCase):
         self.mjd = 57087.0 - 1000.0*(numpy.random.sample(ntests)-0.5)
         self.tolerance = 1.0e-5
 
+    def testExceptions(self):
+        mjdFloat = 52000.0
+        mjd2 = numpy.array([52000.0, 53000.0])
+        mjd3 = numpy.array([53000.0, 53000.0, 54000.0])
+
+        longFloat = 1.2
+        longList = numpy.array([1.2, 1.4])
+        latFloat = 0.5
+        latList = numpy.array([0.5, 0.6])
+
+        raFloat = 1.1
+        raList = numpy.array([0.2, 0.3])
+
+        decFloat = 1.1
+        decList = numpy.array([0.2, 0.3])
+
+        self.assertRaises(RuntimeError, utils.calcLmstLast, mjdFloat, longList)
+        self.assertRaises(RuntimeError, utils.calcLmstLast, mjd3, longList)
+        ans = utils.calcLmstLast(mjdFloat, longFloat)
+        ans = utils.calcLmstLast(mjd2, longList)
+
+        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decList, longList, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decList, longFloat, latList, mjd2)
+        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decFloat, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raFloat, decList, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raFloat, decFloat, longFloat, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decList, longFloat, latFloat, mjd3)
+        ans = utils.raDecToAltAzPa(raFloat, decFloat, longFloat, latFloat, mjdFloat)
+        ans = utils.raDecToAltAzPa(raList, decList, longFloat, latFloat, mjdFloat)
+        ans = utils.raDecToAltAzPa(raList, decList, longFloat, latFloat, mjd2)
+
+        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decList, longList, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decList, longFloat, latList, mjd2)
+        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decFloat, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.altAzToRaDec, raFloat, decList, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.altAzToRaDec, raFloat, decFloat, longFloat, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decList, longFloat, latFloat, mjd3)
+        ans = utils.altAzToRaDec(raFloat, decFloat, longFloat, latFloat, mjdFloat)
+        ans = utils.altAzToRaDec(raList, decList, longFloat, latFloat, mjdFloat)
+        ans = utils.altAzToRaDec(raList, decList, longFloat, latFloat, mjd2)
+
+
     def testEquationOfEquinoxes(self):
 
         #test vectorized version
