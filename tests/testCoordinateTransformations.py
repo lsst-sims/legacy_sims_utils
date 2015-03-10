@@ -185,6 +185,14 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(decIn)).max() < self.tolerance)
         self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(decIn)).max() < self.tolerance)
 
+        #test non-vectorized version
+        for alt, az, r, d, m in zip(controlAlt, controlAz, raIn, decIn, self.mjd):
+            raOut, decOut = utils.altAzToRaDec(alt, az, longitude, latitude, m)
+            self.assertTrue(numpy.abs(numpy.cos(raOut) - numpy.cos(r)) < self.tolerance)
+            self.assertTrue(numpy.abs(numpy.sin(raOut) - numpy.sin(r)) < self.tolerance)
+            self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(d)) < self.tolerance)
+            self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(d)) < self.tolerance)
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
