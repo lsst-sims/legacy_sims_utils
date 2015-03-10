@@ -4,7 +4,7 @@ import palpy
 from collections import OrderedDict
 
 __all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
-           "altAzToRaDec", "calcPa", "getRotSkyPos", "getRotTelPos", "haversine",
+           "altAzToRaDec", "getRotSkyPos", "getRotTelPos", "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
            "radiansToArcsec","arcsecToRadians"]
@@ -149,42 +149,47 @@ def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
     raRad = numpy.radians(last*15.) - haRad
     return raRad, decRad
 
-def calcPa(azRad, decRad, latRad):
+def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     """
-    Calculate the Parallactic angle
-    azRad is the azimuth of the object assuming OpSim conventions (radians)
-    latRad is the latitude of the observatory (radians)
-    decRad is the declination of the object (radians)
-    """
-    try:
-        paRad = math.asin(math.sin(azRad)*math.cos(latRad)/math.cos(decRad))
-    except ValueError, e:
-        if not math.fabs(decRad) > math.fabs(latRad):
-            raise ValueError("The point is circumpolar but the Azimuth is not valid: Az=%.2f"%(math.degrees(azRad)))
-        else:
-            raise e
-    return paRad
+    @param [in] raRad is the RA in radians
 
-def getRotSkyPos(azRad, decRad, latRad, rotTelRad):
+    @param [in] decRad is Dec in radians
+
+    @param [in] longRad is the observer's longitude in radians
+    (positive east of the prime meridian)
+
+    @param [in] latRad is the observer's latitude in radians
+    (positive north of the equator)
+
+    @param [in] mjd is the Universal Time expressed as an JD
+
+    @param [in] rotTelRad is rotTelPos in radians
+    (the angle of the camera rotator)
+
+    @param [out] rotSkyPos in radians
     """
-    azRad is the azimuth of the object assuming opSim conventions (radians)
-    decRad is the declination of the object (radians)
-    latRad is the latitude of the observatory (radians)
-    rotTelRad is the angle of the camera rotator assuming OpSim
-    conventions (radians)
-    """
-    paRad = calcPa(azRad, decRad, latRad)
+    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
     return (rotTelRad - paRad + math.pi)%(2.*math.pi)
 
-def getRotTelPos(azRad, decRad, latRad, rotSkyRad):
+def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     """
-    azRad is the azimuth of the object assuming opSim conventions (radians)
-    decRad is the declination of the object (radians)
-    latRad is the latitude of the observatory (radians)
-    rotSkyRad is the angle of the field of view relative to the South pole given
-    a rotator angle in OpSim conventions (radians)
+    @param [in] raRad is RA in radians
+
+    @param [in] decRad is Dec in radians
+
+    @param [in] longRad is the observer's longitude in radians
+    (positive east of the prime meridian)
+
+    @param [in] latRad is the observer's latitude in radians
+    (positive north of the equator)
+
+    @param [in] mjd is the Universal Time expressed as an MJD
+
+    @parma [in] rotSkyRad is rotSkyPos in radians
+    (the angle of the field of view relative to the South pole given a
+    rotator angle)
     """
-    paRad = calcPa(azRad, decRad, latRad)
+    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
     return (rotSkyRad + paRad - math.pi)%(2.*math.pi)
 
 def haversine(long1, lat1, long2, lat2):
