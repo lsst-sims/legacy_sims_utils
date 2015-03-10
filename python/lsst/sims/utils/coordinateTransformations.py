@@ -113,7 +113,7 @@ def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
     else:
         az, azd, azdd, \
         alt, altd, altdd, \
-        pa, pad, padd = palpy.altAz(haRad, decRad, latRad)
+        pa, pad, padd = palpy.altaz(haRad, decRad, latRad)
 
     return alt, az, pa
 
@@ -259,7 +259,7 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
     obsMd['Opsim_moonalt'] = moonalt
     obsMd['Opsim_dist2moon'] = dist2moon
 
-    rotSkyPos = getRotSkyPos(azRad, decRad, latRad, rotTelRad)
+    rotSkyPos = getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad)
     obsMd['Opsim_filter'] = band
     obsMd['Unrefracted_RA'] = raRad
     obsMd['Unrefracted_Dec'] = decRad
@@ -304,7 +304,7 @@ def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=numpy.pi, longRad=
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
     raRad, decRad = altAzToRaDec(altRad, azRad, longRad, latRad, mjd)
-    rotTelRad = getRotTelPos(azRad, decRad, latRad, rotSkyRad)
+    rotTelRad = getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 
 
@@ -337,8 +337,7 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=numpy.pi, longRad=
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    altRad, azRad = raDecToAltAz(raRad, decRad, longRad, latRad, mjd)
-    rotTelRad = getRotTelPos(azRad, decRad, latRad, rotSkyRad)
+    rotTelRad = getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 
 def radiansToArcsec(value):
