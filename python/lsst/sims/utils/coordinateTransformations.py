@@ -1,4 +1,3 @@
-import math
 import numpy
 import palpy
 from collections import OrderedDict
@@ -169,7 +168,7 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     @param [out] rotSkyPos in radians
     """
     altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
-    return (rotTelRad - paRad + math.pi)%(2.*math.pi)
+    return (rotTelRad - paRad + numpy.pi)%(2.*numpy.pi)
 
 def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     """
@@ -190,7 +189,7 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     rotator angle)
     """
     altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
-    return (rotSkyRad + paRad - math.pi)%(2.*math.pi)
+    return (rotSkyRad + paRad - numpy.pi)%(2.*numpy.pi)
 
 def haversine(long1, lat1, long2, lat2):
     """
@@ -292,7 +291,7 @@ def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.232
     obsMd.update(kwargs)
     return makeObservationMetadata(obsMd)
 
-def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=math.pi, longRad=-1.2320792, latRad=-0.517781017, **kwargs):
+def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=numpy.pi, longRad=-1.2320792, latRad=-0.517781017, **kwargs):
     '''
     Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
     altRad -- Altitude of the boresite of the observation in radians
@@ -326,7 +325,7 @@ def makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=0., longRad=-1.232
     obsMd.update(kwargs)
     return makeObservationMetadata(obsMd)
 
-def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=math.pi, longRad=-1.2320792, latRad=-0.517781017, **kwargs):
+def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=numpy.pi, longRad=-1.2320792, latRad=-0.517781017, **kwargs):
     '''
     Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
     raRad -- RA of the boresite of the observation in radians
