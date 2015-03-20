@@ -270,6 +270,10 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     @param [out] rotSkyPos in radians
     """
     altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+
+    #20 March 2015
+    #I do not know where this expression comes from; we should validate it against
+    #the definitions of rotTelPos and rotSkyPos
     return (rotTelRad - paRad + numpy.pi)%(2.*numpy.pi)
 
 def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
@@ -298,6 +302,10 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     @param [out] rotSkyPos in radians.
     """
     altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+
+    #20 March 2015
+    #I do not know where this expression comes from; we should validate it against
+    #the definitions of rotTelPos and rotSkyPos
     return (rotSkyRad + paRad - numpy.pi)%(2.*numpy.pi)
 
 def haversine(long1, lat1, long2, lat2):
