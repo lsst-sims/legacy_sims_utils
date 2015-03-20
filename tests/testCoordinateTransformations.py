@@ -128,6 +128,9 @@ class testCoordinateTransformations(unittest.TestCase):
 
 
     def testEquationOfEquinoxes(self):
+        """
+        Test equation of equninoxes calculation
+        """
 
         #test vectorized version
         control = controlEquationOfEquinoxes(self.mjd)
@@ -141,6 +144,9 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(test-control) < self.tolerance)
 
     def testGmstGast(self):
+        """
+        Test calculation of Greenwich mean and apparent sidereal times
+        """
 
         controlGmst, controlGast = controlCalcGmstGast(self.mjd)
         testGmst, testGast = utils.calcGmstGast(self.mjd)
@@ -155,6 +161,9 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(testGast - controlGast) < self.tolerance)
 
     def testLmstLast(self):
+        """
+        Test calculation of local mean and apparent sidereal time
+        """
 
         gmst, gast = utils.calcGmstGast(self.mjd)
         ll = [1.2, 2.2]
@@ -187,6 +196,9 @@ class testCoordinateTransformations(unittest.TestCase):
 
 
     def testRaDecToAltAz(self):
+        """
+        Test conversion from RA, Dec to Alt, Az
+        """
 
         numpy.random.seed(32)
         ra = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
@@ -211,6 +223,9 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(testAlt - controlAlt) < self.tolerance)
 
     def testAltAzToRaDec(self):
+        """
+        Test conversion of Alt, Az t Ra, Dec
+        """
         numpy.random.seed(32)
         raIn = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
         decIn = (numpy.random.sample(len(self.mjd))-0.5)*numpy.pi
