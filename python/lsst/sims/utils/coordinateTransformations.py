@@ -437,7 +437,7 @@ def makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=0., longRad=-1.232
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    altRad, azRad = raDecToAltAz(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
     obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
     obsMd.update(kwargs)
     return makeObservationMetadata(obsMd)

@@ -209,18 +209,31 @@ class testCoordinateTransformations(unittest.TestCase):
                                                     longitude, latitude, \
                                                     self. mjd)
 
+        #verify parallactic angle against an expression from
+        #http://www.astro.washington.edu/groups/APO/Mirror.Motions/Feb.2000.Image.Jumps/report.html#Image%20motion%20directions
+        #
+        lmst, last = utils.calcLmstLast(self.mjd, longitude)
+        hourAngle = numpy.radians(last*15.0) - ra
+        controlSinPa = numpy.sin(hourAngle)*numpy.cos(latitude)/numpy.cos(controlAlt)
+
         testAlt, testAz, testPa = utils.raDecToAltAzPa(ra, dec, \
                                                        longitude, latitude, \
                                                        self.mjd)
+
         self.assertTrue(numpy.abs(testAz - controlAz).max() < self.tolerance)
         self.assertTrue(numpy.abs(testAlt - controlAlt).max() < self.tolerance)
+        self.assertTrue(numpy.abs(numpy.sin(testPa) - controlSinPa).max() < self.tolerance)
 
         #test non-vectorized version
-        for r,d in zip(ra, dec):
-            controlAlt, controlAz = controlRaDecToAltAz(r, d, longitude, latitude, self.mjd[0])
-            testAlt, testAz, testPa = utils.raDecToAltAzPa(r, d, longitude, latitude, self.mjd[0])
+        for r,d,m in zip(ra, dec, self.mjd):
+            controlAlt, controlAz = controlRaDecToAltAz(r, d, longitude, latitude, m)
+            testAlt, testAz, testPa = utils.raDecToAltAzPa(r, d, longitude, latitude, m)
+            lmst, last = utils.calcLmstLast(m, longitude)
+            hourAngle = numpy.radians(last*15.0) - r
+            controlSinPa = numpy.sin(hourAngle)*numpy.cos(latitude)/numpy.cos(controlAlt)
             self.assertTrue(numpy.abs(testAz - controlAz) < self.tolerance)
             self.assertTrue(numpy.abs(testAlt - controlAlt) < self.tolerance)
+            self.assertTrue(numpy.abs(numpy.sin(testPa) - controlSinPa) < self.tolerance)
 
     def testAltAzToRaDec(self):
         """
