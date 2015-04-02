@@ -306,7 +306,7 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
     #the definitions of rotTelPos and rotSkyPos
-    return (rotSkyRad + paRad - numpy.pi)%(2.*numpy.pi)
+    return (rotSkyRad + paRad)%(2.*numpy.pi)
 
 def haversine(long1, lat1, long2, lat2):
     """
