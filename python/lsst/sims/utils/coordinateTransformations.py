@@ -268,6 +268,9 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     each rotTelRad will be associated with the corresponding raRad, decRad pair.
 
     @param [out] rotSkyPos in radians
+
+    WARNING: As of 13 April 2015, this method does not agree with OpSim on
+    the relationship between rotSkyPos and rotTelPos
     """
     altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
 
@@ -300,6 +303,9 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     will be associated with the corresponding raRad, decRad pair.
 
     @param [out] rotSkyPos in radians.
+
+    WARNING: as of 13 April 2015, this method does not agree with OpSim on
+    the relationship between rotSkyPos and rotTelPos
     """
     altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
 
