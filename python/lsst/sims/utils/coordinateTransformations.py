@@ -274,7 +274,7 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
     #the definitions of rotTelPos and rotSkyPos
-    return (rotTelRad - paRad + numpy.pi)%(2.*numpy.pi)
+    return (rotTelRad - paRad)%(2.*numpy.pi)
 
 def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     """
