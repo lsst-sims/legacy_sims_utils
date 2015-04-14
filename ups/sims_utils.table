@@ -1,4 +1,5 @@
 setupRequired(utils)
 setupRequired(python)
+setupRequired(palpy)
 
 envPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
