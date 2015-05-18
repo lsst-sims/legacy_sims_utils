@@ -309,6 +309,55 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertAlmostEqual(output[1][2],2.758053025017753179e-01,6)
 
 
+    def testSphericalToCartesian(self):
+        arg1=2.19911485751
+        arg2=5.96902604182
+        output=utils.sphericalToCartesian(arg1,arg2)
+
+        vv=numpy.zeros((3),dtype=float)
+        vv[0]=numpy.cos(arg2)*numpy.cos(arg1)
+        vv[1]=numpy.cos(arg2)*numpy.sin(arg1)
+        vv[2]=numpy.sin(arg2)
+
+        self.assertAlmostEqual(output[0],vv[0],7)
+        self.assertAlmostEqual(output[1],vv[1],7)
+        self.assertAlmostEqual(output[2],vv[2],7)
+
+
+    def testCartesianToSpherical(self):
+        """
+        Note that xyz[i][j] is the ith component of the jth vector
+
+        Each column of xyz is a vector
+        """
+        xyz=numpy.zeros((3,3),dtype=float)
+
+        xyz[0][0]=-1.528397655830016078e-03
+        xyz[0][1]=-1.220314328441649110e+00
+        xyz[0][2]=-1.209496845057127512e+00
+        xyz[1][0]=-2.015391452804179195e+00
+        xyz[1][1]=3.209255728096233051e-01
+        xyz[1][2]=-2.420049632697228503e+00
+        xyz[2][0]=-1.737023855580406284e+00
+        xyz[2][1]=-9.876134719050078115e-02
+        xyz[2][2]=-2.000636201137401038e+00
+
+        output=utils.cartesianToSpherical(xyz)
+
+        vv=numpy.zeros((3),dtype=float)
+
+        for i in range(3):
+
+            rr=numpy.sqrt(xyz[0][i]*xyz[0][i]+xyz[1][i]*xyz[1][i]+xyz[2][i]*xyz[2][i])
+
+            vv[0]=rr*numpy.cos(output[1][i])*numpy.cos(output[0][i])
+            vv[1]=rr*numpy.cos(output[1][i])*numpy.sin(output[0][i])
+            vv[2]=rr*numpy.sin(output[1][i])
+
+            for j in range(3):
+                self.assertAlmostEqual(vv[j],xyz[j][i],7)
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()

@@ -3,6 +3,7 @@ import palpy
 from collections import OrderedDict
 
 __all__ = ["equatorialToGalactic", "galacticToEquatorial",
+           "cartesianToSpherical", "sphericalToCartesian",
            "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
            "altAzToRaDec", "getRotSkyPos", "getRotTelPos", "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
@@ -52,6 +53,43 @@ def galacticToEquatorial(gLong, gLat):
 
     return ra, dec
 
+
+def sphericalToCartesian(longitude, latitude):
+    """
+    Transforms between spherical and Cartesian coordinates.
+
+    @param [in] longitude is the input longitudinal coordinate
+
+    @param [in] latitude is the input latitudinal coordinate
+
+    @param [out] a list of the (three-dimensional) cartesian coordinates on a unit sphere
+
+    All angles are in radians
+    """
+
+    cosDec = numpy.cos(latitude)
+    return numpy.array([numpy.cos(longitude)*cosDec,
+                      numpy.sin(longitude)*cosDec,
+                      numpy.sin(latitude)])
+
+
+def cartesianToSpherical(xyz):
+    """
+    Transforms between Cartesian and spherical coordinates
+
+    @param [in] xyz is a list of the three-dimensional Cartesian coordinates
+
+    @param [out] returns longitude and latitude
+
+    All angles are in radians
+    """
+
+    rad = numpy.sqrt(xyz[:][0]*xyz[:][0] + xyz[:][1]*xyz[:][1] + xyz[:][2]*xyz[:][2])
+
+    longitude = numpy.arctan2( xyz[:][1], xyz[:][0])
+    latitude = numpy.arcsin( xyz[:][2] / rad)
+
+    return longitude, latitude
 
 
 def equationOfEquinoxes(d):
