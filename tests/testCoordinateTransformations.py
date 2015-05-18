@@ -266,6 +266,48 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(d)) < self.tolerance)
             self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(d)) < self.tolerance)
 
+    def testEquatorialToGalactic(self):
+
+        ra=numpy.zeros((3),dtype=float)
+        dec=numpy.zeros((3),dtype=float)
+
+        ra[0]=2.549091039839124218e+00
+        dec[0]=5.198752733024248895e-01
+        ra[1]=8.693375673649429425e-01
+        dec[1]=1.038086165642298164e+00
+        ra[2]=7.740864769302191473e-01
+        dec[2]=2.758053025017753179e-01
+
+        output=utils.equatorialToGalactic(ra,dec)
+
+        self.assertAlmostEqual(output[0][0],3.452036693523627964e+00,6)
+        self.assertAlmostEqual(output[1][0],8.559512505657201897e-01,6)
+        self.assertAlmostEqual(output[0][1],2.455968474619387720e+00,6)
+        self.assertAlmostEqual(output[1][1],3.158563770667878468e-02,6)
+        self.assertAlmostEqual(output[0][2],2.829585540991265358e+00,6)
+        self.assertAlmostEqual(output[1][2],-6.510790587552289788e-01,6)
+
+    def testGalacticToEquatorial(self):
+
+        lon=numpy.zeros((3),dtype=float)
+        lat=numpy.zeros((3),dtype=float)
+
+        lon[0]=3.452036693523627964e+00
+        lat[0]=8.559512505657201897e-01
+        lon[1]=2.455968474619387720e+00
+        lat[1]=3.158563770667878468e-02
+        lon[2]=2.829585540991265358e+00
+        lat[2]=-6.510790587552289788e-01
+
+        output=utils.galacticToEquatorial(lon,lat)
+
+        self.assertAlmostEqual(output[0][0],2.549091039839124218e+00,6)
+        self.assertAlmostEqual(output[1][0],5.198752733024248895e-01,6)
+        self.assertAlmostEqual(output[0][1],8.693375673649429425e-01,6)
+        self.assertAlmostEqual(output[1][1],1.038086165642298164e+00,6)
+        self.assertAlmostEqual(output[0][2],7.740864769302191473e-01,6)
+        self.assertAlmostEqual(output[1][2],2.758053025017753179e-01,6)
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

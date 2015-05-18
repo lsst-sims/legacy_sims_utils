@@ -2,11 +2,57 @@ import numpy
 import palpy
 from collections import OrderedDict
 
-__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
+__all__ = ["equatorialToGalactic", "galacticToEquatorial",
+           "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
            "altAzToRaDec", "getRotSkyPos", "getRotTelPos", "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
            "radiansToArcsec","arcsecToRadians"]
+
+
+
+def equatorialToGalactic(ra, dec):
+    '''Convert RA,Dec (J2000) to Galactic Coordinates
+
+    All angles are in radians
+
+    @param [in] ra is right ascension in radians, either a float or a numpy array
+
+    @param [in] dec is declination in radians, either a float or a numpy array
+
+    @param [out] gLong is galactic longitude in radians
+
+    @param [out] gLat is galactic latitude in radians
+    '''
+
+    if isinstance(ra, numpy.ndarray):
+        gLong, gLat = palpy.eqgalVector(ra, dec)
+    else:
+        gLong, gLat = palpy.eqgal(ra, dec)
+
+    return gLong, gLat
+
+
+def galacticToEquatorial(gLong, gLat):
+    '''Convert Galactic Coordinates to RA, dec (J2000)
+
+    @param [in] gLong is galactic longitude in radians, either a float or a numpy array
+
+    @param [in] gLat is galactic latitude in radians, either a float or a numpy array
+
+    @param [out] ra is right ascension in radians
+
+    @param [out] dec is declination in radians
+    '''
+
+    if isinstance(gLong, numpy.ndarray):
+        ra, dec = palpy.galeqVector(gLong, gLat)
+    else:
+        ra, dec = palpy.galeq(gLong, gLat)
+
+    return ra, dec
+
+
 
 def equationOfEquinoxes(d):
     """
