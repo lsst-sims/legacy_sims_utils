@@ -358,6 +358,16 @@ class testCoordinateTransformations(unittest.TestCase):
                 self.assertAlmostEqual(vv[j],xyz[j][i],7)
 
 
+    def testHaversine(self):
+        arg1 = 7.853981633974482790e-01
+        arg2 = 3.769911184307751517e-01
+        arg3 = 5.026548245743668986e+00
+        arg4 = -6.283185307179586232e-01
+
+        output=utils.haversine(arg1,arg2,arg3,arg4)
+
+        self.assertAlmostEqual(output,2.162615946398791955e+00,10)
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
