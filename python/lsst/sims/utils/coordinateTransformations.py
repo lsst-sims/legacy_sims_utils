@@ -2,7 +2,8 @@ import numpy
 import palpy
 from collections import OrderedDict
 
-__all__ = ["equatorialToGalactic", "galacticToEquatorial",
+__all__ = ["equatorialToHorizontal",
+           "equatorialToGalactic", "galacticToEquatorial",
            "cartesianToSpherical", "sphericalToCartesian",
            "rotationMatrixFromVectors",
            "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
@@ -11,6 +12,82 @@ __all__ = ["equatorialToGalactic", "galacticToEquatorial",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
            "radiansToArcsec","arcsecToRadians"]
 
+
+def calcLmstLast(mjd, longRad):
+    """
+    calculates local mean sidereal time and local apparent sidereal time
+
+    @param [in] mjd is the universal time expressed as an MJD.
+    This can be a numpy array or a single value.
+
+    @param [in] longRad is the longitude in radians (positive east of the prime meridian)
+    This can be numpy array or a single value.  If a numpy array, should have the same length as mjd.  In that
+    case, each longRad will be applied only to the corresponding mjd.
+
+    @param [out] lmst is the local mean sidereal time in hours
+
+    @param [out] last is the local apparent sideral time in hours
+    """
+    mjdIsArray = False
+    longRadIsArray = False
+    if isinstance(mjd, numpy.ndarray):
+        mjdIsArray = True
+
+    if isinstance(longRad, numpy.ndarray):
+        longRadIsArray = True
+
+    if longRadIsArray and mjdIsArray:
+        if len(longRad) != len(mjd):
+            raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
+
+    if longRadIsArray and not mjdIsArray:
+        raise RuntimeError("in calcLmstLast longRad is numpy array but mjd is not")
+
+    longDeg0 = numpy.degrees(longRad)
+    longDeg0 %= 360.0
+
+    if longRadIsArray:
+        longDeg = numpy.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
+    else:
+        if longDeg0 > 180.:
+            longDeg = longDeg0-360.
+        else:
+            longDeg = longDeg0
+
+    hrs = longDeg/15.
+    gmstgast = calcGmstGast(mjd)
+    lmst = gmstgast[0]+hrs
+    last = gmstgast[1]+hrs
+    lmst %= 24.
+    last %= 24.
+    return lmst, last
+
+
+def equatorialToHorizontal(ra, dec, mjd, longitude, latitude):
+    """
+    Converts from equatorial to horizon coordinates
+
+    @param [in] ra is in radians
+
+    @param [in] dec is declination in radians
+
+    @param [in] mjd is the date
+
+    @param [in] longitude is the site longitude in radians
+    (positive to the east of the prime meridian)
+
+    @param [in] latitude is the site latitude in radians
+
+    @param [out] returns elevation angle and azimuth in that order (radians)
+
+    """
+
+    hourAngle = calcLmstLast(mjd, longitude)[1]*(2.0*numpy.pi/24.0) - ra
+
+    _de2hOutput=palpy.de2h(hourAngle, dec,  latitude)
+
+    #return (altitude, azimuth)
+    return _de2hOutput[1], _de2hOutput[0]
 
 
 def equatorialToGalactic(ra, dec):
@@ -171,54 +248,6 @@ def calcGmstGast(mjd):
 
     return gmst, gast
 
-def calcLmstLast(mjd, longRad):
-    """
-    calculates local mean sidereal time and local apparent sidereal time
-
-    @param [in] mjd is the universal time expressed as an MJD.
-    This can be a numpy array or a single value.
-
-    @param [in] longRad is the longitude in radians (positive east of the prime meridian)
-    This can be numpy array or a single value.  If a numpy array, should have the same length as mjd.  In that
-    case, each longRad will be applied only to the corresponding mjd.
-
-    @param [out] lmst is the local mean sidereal time in hours
-
-    @param [out] last is hte local apparent sideral time in hours
-    """
-    mjdIsArray = False
-    longRadIsArray = False
-    if isinstance(mjd, numpy.ndarray):
-        mjdIsArray = True
-
-    if isinstance(longRad, numpy.ndarray):
-        longRadIsArray = True
-
-    if longRadIsArray and mjdIsArray:
-        if len(longRad) != len(mjd):
-            raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
-
-    if longRadIsArray and not mjdIsArray:
-        raise RuntimeError("in calcLmstLast longRad is numpy array but mjd is not")
-
-    longDeg0 = numpy.degrees(longRad)
-    longDeg0 %= 360.0
-
-    if longRadIsArray:
-        longDeg = numpy.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
-    else:
-        if longDeg0 > 180.:
-            longDeg = longDeg0-360.
-        else:
-            longDeg = longDeg0
-
-    hrs = longDeg/15.
-    gmstgast = calcGmstGast(mjd)
-    lmst = gmstgast[0]+hrs
-    last = gmstgast[1]+hrs
-    lmst %= 24.
-    last %= 24.
-    return lmst, last
 
 def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
     """

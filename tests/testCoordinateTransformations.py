@@ -4,6 +4,7 @@ import unittest
 import palpy as palpy
 import lsst.utils.tests as utilsTests
 import lsst.sims.utils as utils
+from lsst.sims.utils import Site
 
 def controlRaDecToAltAz(raRad, decRad, longRad, latRad, mjd):
     """
@@ -390,6 +391,17 @@ class testCoordinateTransformations(unittest.TestCase):
 
         for i in range(3):
             self.assertAlmostEqual(v3[i],v2[i],7)
+
+
+    def testEquatorialToHorizontal(self):
+        arg1=2.549091039839124218e+00
+        arg2=5.198752733024248895e-01
+        arg3=2.004031374869656474e+03
+        output=utils.equatorialToHorizontal(arg1,arg2,arg3,
+        longitude=Site().longitude,latitude=Site().latitude)
+
+        self.assertAlmostEqual(output[0],4.486633480937949336e-01,4)
+        self.assertAlmostEqual(output[1],5.852620488358430961e+00,4)
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
