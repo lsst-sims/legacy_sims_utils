@@ -368,6 +368,29 @@ class testCoordinateTransformations(unittest.TestCase):
 
         self.assertAlmostEqual(output,2.162615946398791955e+00,10)
 
+
+
+    def testRotationMatrixFromVectors(self):
+        v1=numpy.zeros((3),dtype=float)
+        v2=numpy.zeros((3),dtype=float)
+        v3=numpy.zeros((3),dtype=float)
+
+        v1[0]=-3.044619987218469825e-01
+        v2[0]=5.982190522311925385e-01
+        v1[1]=-5.473550908956383854e-01
+        v2[1]=-5.573565912346714057e-01
+        v1[2]=7.795545496018386755e-01
+        v2[2]=-5.757495946632366079e-01
+
+        output=utils.rotationMatrixFromVectors(v1,v2)
+
+        for i in range(3):
+            for j in range(3):
+                v3[i]+=output[i][j]*v1[j]
+
+        for i in range(3):
+            self.assertAlmostEqual(v3[i],v2[i],7)
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
