@@ -277,10 +277,10 @@ def altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
     """
 
     if isinstance(longRad, numpy.ndarray):
-        raise RuntimeError('cannot pass numpy array of longitudes to raDecToAltAzPa')
+        raise RuntimeError('cannot pass numpy array of longitudes to altAzPaFromRaDec')
 
     if isinstance(latRad, numpy.ndarray):
-        raise RuntimeError('cannot pass numpy array of latitudes to raDecToAltAzPa')
+        raise RuntimeError('cannot pass numpy array of latitudes to altAzPaFromRaDec')
 
     raIsArray = False
     decIsArray = False
@@ -295,19 +295,19 @@ def altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
         mjdIsArray = True
 
     if raIsArray and not decIsArray:
-        raise RuntimeError('passed numpy array of RA to raDecToAltAzPa; but only one Dec')
+        raise RuntimeError('passed numpy array of RA to altAzPaFromRaDec; but only one Dec')
 
     if decIsArray and not raIsArray:
-        raise RuntimeError('passed numpy array of Dec to raDecToAltAzPa; but only one RA')
+        raise RuntimeError('passed numpy array of Dec to altAzPaFromRaDec; but only one RA')
 
     if raIsArray and decIsArray and len(raRad) != len(decRad):
-        raise RuntimeError('in raDecToAltAzPa length of RA numpy array does not match length of Dec numpy array')
+        raise RuntimeError('in altAzPaFromRaDec length of RA numpy array does not match length of Dec numpy array')
 
     if mjdIsArray and not raIsArray:
-        raise RuntimeError('passed numpy array of mjd to raDecToAltAzPa; but only one RA, Dec')
+        raise RuntimeError('passed numpy array of mjd to altAzPaFromRaDec; but only one RA, Dec')
 
     if mjdIsArray and len(mjd) != len(raRad):
-        raise RuntimeError('in raDecToAltAzPa length of mjd numpy array is not the same as length of RA numpy array')
+        raise RuntimeError('in altAzPaFromRaDec length of mjd numpy array is not the same as length of RA numpy array')
 
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
@@ -348,10 +348,10 @@ def raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     @param [out] Dec in radians
     """
     if isinstance(longRad, numpy.ndarray):
-        raise RuntimeError('cannot pass a numpy array of longitudes to altAzToRaDec')
+        raise RuntimeError('cannot pass a numpy array of longitudes to raDecFromAltAz')
 
     if isinstance(latRad, numpy.ndarray):
-        raise RuntimeError('cannot pass a numpy array of latitudes to altAzToRaDec')
+        raise RuntimeError('cannot pass a numpy array of latitudes to raDecFromAltAz')
 
     mjdIsArray = False
     altIsArray = False
@@ -366,19 +366,19 @@ def raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
         azIsArray = True
 
     if altIsArray and not azIsArray:
-        raise RuntimeError('passed a numpy array of alt to altAzToRaDec, but only one az')
+        raise RuntimeError('passed a numpy array of alt to raDecFromAltAz, but only one az')
 
     if azIsArray and not altIsArray:
-        raise RuntimeError('passed a numpy array of az to altAzToRaDec, but only one alt')
+        raise RuntimeError('passed a numpy array of az to raDecFromAltAz, but only one alt')
 
     if azIsArray and altIsArray and len(altRad)!=len(azRad):
-        raise RuntimeError('in altAzToRaDec, length of alt numpy array does not match length of az numpy array')
+        raise RuntimeError('in raDecFromAltAz, length of alt numpy array does not match length of az numpy array')
 
     if mjdIsArray and not azIsArray:
-        raise RuntimeError('passed a numpy array of mjd to altAzToRaDec, but only one alt, az pair')
+        raise RuntimeError('passed a numpy array of mjd to raDecFromAltAz, but only one alt, az pair')
 
     if mjdIsArray and len(mjd) != len(azRad):
-        raise RuntimeError('in altAzToRaDec length of mjd numpy array does not match length of az numpy array')
+        raise RuntimeError('in raDecFromAltAz length of mjd numpy array does not match length of az numpy array')
 
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
@@ -418,7 +418,7 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     WARNING: As of 13 April 2015, this method does not agree with OpSim on
     the relationship between rotSkyPos and rotTelPos
     """
-    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
@@ -453,7 +453,7 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     WARNING: as of 13 April 2015, this method does not agree with OpSim on
     the relationship between rotSkyPos and rotTelPos
     """
-    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
@@ -518,7 +518,7 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
     """
     obsMd = {}
     #Defaults
-    moonra, moondec = altAzToRaDec(-numpy.pi/2., 0., longRad, latRad, mjd)
+    moonra, moondec = raDecFromAltAz(-numpy.pi/2., 0., longRad, latRad, mjd)
     sunalt = -numpy.pi/2.
     moonalt = -numpy.pi/2.
     dist2moon = haversine(moonra, moondec, raRad, decRad)
@@ -555,7 +555,7 @@ def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.232
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
 
-    raRad, decRad = altAzToRaDec(altRad, azRad, longRad, latRad, mjd)
+    raRad, decRad = raDecFromAltAz(altRad, azRad, longRad, latRad, mjd)
     obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
     obsMd.update(kwargs)
     return makeObservationMetadata(obsMd)
@@ -572,7 +572,7 @@ def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=numpy.pi, longRad=
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    raRad, decRad = altAzToRaDec(altRad, azRad, longRad, latRad, mjd)
+    raRad, decRad = raDecFromAltAz(altRad, azRad, longRad, latRad, mjd)
     rotTelRad = getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 
@@ -589,7 +589,7 @@ def makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=0., longRad=-1.232
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
     obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
     obsMd.update(kwargs)
     return makeObservationMetadata(obsMd)
