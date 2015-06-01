@@ -6,7 +6,7 @@ import lsst.utils.tests as utilsTests
 import lsst.sims.utils as utils
 from lsst.sims.utils import Site
 
-def controlRaDecToAltAz(raRad, decRad, longRad, latRad, mjd):
+def controlAltAzFromRaDec(raRad, decRad, longRad, latRad, mjd):
     """
     Converts RA and Dec to altitude and azimuth
 
@@ -107,25 +107,25 @@ class testCoordinateTransformations(unittest.TestCase):
         ans = utils.calcLmstLast(mjdFloat, longFloat)
         ans = utils.calcLmstLast(mjd2, longList)
 
-        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decList, longList, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decList, longFloat, latList, mjd2)
-        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decFloat, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raFloat, decList, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raFloat, decFloat, longFloat, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils.raDecToAltAzPa, raList, decList, longFloat, latFloat, mjd3)
-        ans = utils.raDecToAltAzPa(raFloat, decFloat, longFloat, latFloat, mjdFloat)
-        ans = utils.raDecToAltAzPa(raList, decList, longFloat, latFloat, mjdFloat)
-        ans = utils.raDecToAltAzPa(raList, decList, longFloat, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.altAzPaFromRaDec, raList, decList, longList, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.altAzPaFromRaDec, raList, decList, longFloat, latList, mjd2)
+        self.assertRaises(RuntimeError, utils.altAzPaFromRaDec, raList, decFloat, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.altAzPaFromRaDec, raFloat, decList, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.altAzPaFromRaDec, raFloat, decFloat, longFloat, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.altAzPaFromRaDec, raList, decList, longFloat, latFloat, mjd3)
+        ans = utils.altAzPaFromRaDec(raFloat, decFloat, longFloat, latFloat, mjdFloat)
+        ans = utils.altAzPaFromRaDec(raList, decList, longFloat, latFloat, mjdFloat)
+        ans = utils.altAzPaFromRaDec(raList, decList, longFloat, latFloat, mjd2)
 
-        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decList, longList, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decList, longFloat, latList, mjd2)
-        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decFloat, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils.altAzToRaDec, raFloat, decList, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils.altAzToRaDec, raFloat, decFloat, longFloat, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils.altAzToRaDec, raList, decList, longFloat, latFloat, mjd3)
-        ans = utils.altAzToRaDec(raFloat, decFloat, longFloat, latFloat, mjdFloat)
-        ans = utils.altAzToRaDec(raList, decList, longFloat, latFloat, mjdFloat)
-        ans = utils.altAzToRaDec(raList, decList, longFloat, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.raDecFromAltAz, raList, decList, longList, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.raDecFromAltAz, raList, decList, longFloat, latList, mjd2)
+        self.assertRaises(RuntimeError, utils.raDecFromAltAz, raList, decFloat, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.raDecFromAltAz, raFloat, decList, longFloat, latFloat, mjdFloat)
+        self.assertRaises(RuntimeError, utils.raDecFromAltAz, raFloat, decFloat, longFloat, latFloat, mjd2)
+        self.assertRaises(RuntimeError, utils.raDecFromAltAz, raList, decList, longFloat, latFloat, mjd3)
+        ans = utils.raDecFromAltAz(raFloat, decFloat, longFloat, latFloat, mjdFloat)
+        ans = utils.raDecFromAltAz(raList, decList, longFloat, latFloat, mjdFloat)
+        ans = utils.raDecFromAltAz(raList, decList, longFloat, latFloat, mjd2)
 
 
     def testEquationOfEquinoxes(self):
@@ -196,7 +196,7 @@ class testCoordinateTransformations(unittest.TestCase):
                 self.assertTrue(numpy.abs(testLast - controlLast) < self.tolerance)
 
 
-    def testRaDecToAltAz(self):
+    def testAltAzFromRaDec(self):
         """
         Test conversion from RA, Dec to Alt, Az
         """
@@ -206,7 +206,7 @@ class testCoordinateTransformations(unittest.TestCase):
         dec = (numpy.random.sample(len(self.mjd))-0.5)*numpy.pi
         longitude = 1.467
         latitude = -0.234
-        controlAlt, controlAz = controlRaDecToAltAz(ra, dec, \
+        controlAlt, controlAz = controlAltAzFromRaDec(ra, dec, \
                                                     longitude, latitude, \
                                                     self. mjd)
 
@@ -217,7 +217,7 @@ class testCoordinateTransformations(unittest.TestCase):
         hourAngle = numpy.radians(last*15.0) - ra
         controlSinPa = numpy.sin(hourAngle)*numpy.cos(latitude)/numpy.cos(controlAlt)
 
-        testAlt, testAz, testPa = utils.raDecToAltAzPa(ra, dec, \
+        testAlt, testAz, testPa = utils.altAzPaFromRaDec(ra, dec, \
                                                        longitude, latitude, \
                                                        self.mjd)
 
@@ -227,8 +227,8 @@ class testCoordinateTransformations(unittest.TestCase):
 
         #test non-vectorized version
         for r,d,m in zip(ra, dec, self.mjd):
-            controlAlt, controlAz = controlRaDecToAltAz(r, d, longitude, latitude, m)
-            testAlt, testAz, testPa = utils.raDecToAltAzPa(r, d, longitude, latitude, m)
+            controlAlt, controlAz = controlAltAzFromRaDec(r, d, longitude, latitude, m)
+            testAlt, testAz, testPa = utils.altAzPaFromRaDec(r, d, longitude, latitude, m)
             lmst, last = utils.calcLmstLast(m, longitude)
             hourAngle = numpy.radians(last*15.0) - r
             controlSinPa = numpy.sin(hourAngle)*numpy.cos(latitude)/numpy.cos(controlAlt)
@@ -236,7 +236,7 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(testAlt - controlAlt) < self.tolerance)
             self.assertTrue(numpy.abs(numpy.sin(testPa) - controlSinPa) < self.tolerance)
 
-    def testAltAzToRaDec(self):
+    def testRaDecFromAltAz(self):
         """
         Test conversion of Alt, Az t Ra, Dec
         """
@@ -251,7 +251,7 @@ class testCoordinateTransformations(unittest.TestCase):
         controlAlt, eld, eldd, \
         pa, pad, padd = palpy.altazVector(hourAngle, decIn, latitude)
 
-        raOut, decOut, = utils.altAzToRaDec(controlAlt, controlAz,
+        raOut, decOut, = utils.raDecFromAltAz(controlAlt, controlAz,
                                            longitude, latitude, self.mjd)
 
         self.assertTrue(numpy.abs(numpy.cos(raOut) - numpy.cos(raIn)).max() < self.tolerance)
@@ -261,13 +261,13 @@ class testCoordinateTransformations(unittest.TestCase):
 
         #test non-vectorized version
         for alt, az, r, d, m in zip(controlAlt, controlAz, raIn, decIn, self.mjd):
-            raOut, decOut = utils.altAzToRaDec(alt, az, longitude, latitude, m)
+            raOut, decOut = utils.raDecFromAltAz(alt, az, longitude, latitude, m)
             self.assertTrue(numpy.abs(numpy.cos(raOut) - numpy.cos(r)) < self.tolerance)
             self.assertTrue(numpy.abs(numpy.sin(raOut) - numpy.sin(r)) < self.tolerance)
             self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(d)) < self.tolerance)
             self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(d)) < self.tolerance)
 
-    def testEquatorialToGalactic(self):
+    def testGalacticFromEquatorial(self):
 
         ra=numpy.zeros((3),dtype=float)
         dec=numpy.zeros((3),dtype=float)
@@ -279,7 +279,7 @@ class testCoordinateTransformations(unittest.TestCase):
         ra[2]=7.740864769302191473e-01
         dec[2]=2.758053025017753179e-01
 
-        output=utils.equatorialToGalactic(ra,dec)
+        output=utils.galacticFromEquatorial(ra,dec)
 
         self.assertAlmostEqual(output[0][0],3.452036693523627964e+00,6)
         self.assertAlmostEqual(output[1][0],8.559512505657201897e-01,6)
@@ -288,7 +288,7 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertAlmostEqual(output[0][2],2.829585540991265358e+00,6)
         self.assertAlmostEqual(output[1][2],-6.510790587552289788e-01,6)
 
-    def testGalacticToEquatorial(self):
+    def testEquatorialFromGalactic(self):
 
         lon=numpy.zeros((3),dtype=float)
         lat=numpy.zeros((3),dtype=float)
@@ -300,7 +300,7 @@ class testCoordinateTransformations(unittest.TestCase):
         lon[2]=2.829585540991265358e+00
         lat[2]=-6.510790587552289788e-01
 
-        output=utils.galacticToEquatorial(lon,lat)
+        output=utils.equatorialFromGalactic(lon,lat)
 
         self.assertAlmostEqual(output[0][0],2.549091039839124218e+00,6)
         self.assertAlmostEqual(output[1][0],5.198752733024248895e-01,6)
@@ -310,10 +310,10 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertAlmostEqual(output[1][2],2.758053025017753179e-01,6)
 
 
-    def testSphericalToCartesian(self):
+    def testCartesianFromSpherical(self):
         arg1=2.19911485751
         arg2=5.96902604182
-        output=utils.sphericalToCartesian(arg1,arg2)
+        output=utils.cartesianFromSpherical(arg1,arg2)
 
         vv=numpy.zeros((3),dtype=float)
         vv[0]=numpy.cos(arg2)*numpy.cos(arg1)
@@ -325,7 +325,7 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertAlmostEqual(output[2],vv[2],7)
 
 
-    def testCartesianToSpherical(self):
+    def testSphericalFromCartesian(self):
         """
         Note that xyz[i][j] is the ith component of the jth vector
 
@@ -343,7 +343,7 @@ class testCoordinateTransformations(unittest.TestCase):
         xyz[2][1]=-9.876134719050078115e-02
         xyz[2][2]=-2.000636201137401038e+00
 
-        output=utils.cartesianToSpherical(xyz)
+        output=utils.sphericalFromCartesian(xyz)
 
         vv=numpy.zeros((3),dtype=float)
 
@@ -393,11 +393,11 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertAlmostEqual(v3[i],v2[i],7)
 
 
-    def testEquatorialToHorizontal(self):
+    def testHorizontalFromEquatorial(self):
         arg1=2.549091039839124218e+00
         arg2=5.198752733024248895e-01
         arg3=2.004031374869656474e+03
-        output=utils.equatorialToHorizontal(arg1,arg2,arg3,
+        output=utils.horizontalFromEquatorial(arg1,arg2,arg3,
         longitude=Site().longitude,latitude=Site().latitude)
 
         self.assertAlmostEqual(output[0],4.486633480937949336e-01,4)

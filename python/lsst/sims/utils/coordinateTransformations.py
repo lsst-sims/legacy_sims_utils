@@ -2,15 +2,15 @@ import numpy
 import palpy
 from collections import OrderedDict
 
-__all__ = ["equatorialToHorizontal",
-           "equatorialToGalactic", "galacticToEquatorial",
-           "cartesianToSpherical", "sphericalToCartesian",
+__all__ = ["horizontalFromEquatorial",
+           "galacticFromEquatorial", "equatorialFromGalactic",
+           "sphericalFromCartesian", "cartesianFromSpherical",
            "rotationMatrixFromVectors",
-           "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
-           "altAzToRaDec", "getRotSkyPos", "getRotTelPos", "haversine",
+           "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "altAzPaFromRaDec",
+           "raDecFromAltAz", "getRotSkyPos", "getRotTelPos", "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
-           "radiansToArcsec","arcsecToRadians"]
+           "arcsecFromRadians","radiansFromArcsec"]
 
 
 def calcLmstLast(mjd, longRad):
@@ -63,7 +63,7 @@ def calcLmstLast(mjd, longRad):
     return lmst, last
 
 
-def equatorialToHorizontal(ra, dec, mjd, longitude, latitude):
+def horizontalFromEquatorial(ra, dec, mjd, longitude, latitude):
     """
     Converts from equatorial to horizon coordinates
 
@@ -90,7 +90,7 @@ def equatorialToHorizontal(ra, dec, mjd, longitude, latitude):
     return _de2hOutput[1], _de2hOutput[0]
 
 
-def equatorialToGalactic(ra, dec):
+def galacticFromEquatorial(ra, dec):
     '''Convert RA,Dec (J2000) to Galactic Coordinates
 
     All angles are in radians
@@ -112,7 +112,7 @@ def equatorialToGalactic(ra, dec):
     return gLong, gLat
 
 
-def galacticToEquatorial(gLong, gLat):
+def equatorialFromGalactic(gLong, gLat):
     '''Convert Galactic Coordinates to RA, dec (J2000)
 
     @param [in] gLong is galactic longitude in radians, either a float or a numpy array
@@ -132,7 +132,7 @@ def galacticToEquatorial(gLong, gLat):
     return ra, dec
 
 
-def sphericalToCartesian(longitude, latitude):
+def cartesianFromSpherical(longitude, latitude):
     """
     Transforms between spherical and Cartesian coordinates.
 
@@ -151,7 +151,7 @@ def sphericalToCartesian(longitude, latitude):
                       numpy.sin(latitude)])
 
 
-def cartesianToSpherical(xyz):
+def sphericalFromCartesian(xyz):
     """
     Transforms between Cartesian and spherical coordinates
 
@@ -249,7 +249,7 @@ def calcGmstGast(mjd):
     return gmst, gast
 
 
-def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
+def altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
@@ -324,7 +324,7 @@ def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
 
     return alt, az, pa
 
-def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
+def raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     """
     Convert altitude and azimuth to RA and Dec
 
@@ -609,14 +609,14 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=numpy.pi, longRad=
     rotTelRad = getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 
-def radiansToArcsec(value):
+def arcsecFromRadians(value):
     """
     Convert an angle in radians to arcseconds
     """
 
     return 3600.0*numpy.degrees(value)
 
-def arcsecToRadians(value):
+def radiansFromArcsec(value):
     """
     Convert an angle in arcseconds to radians
     """
