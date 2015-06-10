@@ -2,8 +2,7 @@ import numpy
 import palpy
 from collections import OrderedDict
 
-__all__ = ["horizontalFromEquatorial",
-           "galacticFromEquatorial", "equatorialFromGalactic",
+__all__ = ["galacticFromEquatorial", "equatorialFromGalactic",
            "sphericalFromCartesian", "cartesianFromSpherical",
            "rotationMatrixFromVectors",
            "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "altAzPaFromRaDec",
@@ -61,33 +60,6 @@ def calcLmstLast(mjd, longRad):
     lmst %= 24.
     last %= 24.
     return lmst, last
-
-
-def horizontalFromEquatorial(ra, dec, mjd, longitude, latitude):
-    """
-    Converts from equatorial to horizon coordinates
-
-    @param [in] ra is in radians
-
-    @param [in] dec is declination in radians
-
-    @param [in] mjd is the date
-
-    @param [in] longitude is the site longitude in radians
-    (positive to the east of the prime meridian)
-
-    @param [in] latitude is the site latitude in radians
-
-    @param [out] returns elevation angle and azimuth in that order (radians)
-
-    """
-
-    hourAngle = calcLmstLast(mjd, longitude)[1]*(2.0*numpy.pi/24.0) - ra
-
-    _de2hOutput=palpy.de2h(hourAngle, dec,  latitude)
-
-    #return (altitude, azimuth)
-    return _de2hOutput[1], _de2hOutput[0]
 
 
 def galacticFromEquatorial(ra, dec):
