@@ -116,8 +116,10 @@ def equatorialFromGalactic(gLong, gLat):
     '''Convert Galactic Coordinates to RA, dec (J2000)
 
     @param [in] gLong is galactic longitude in radians, either a float or a numpy array
+    (0 <= gLong <= 2*pi)
 
     @param [in] gLat is galactic latitude in radians, either a float or a numpy array
+    (-pi/2 <= gLat <= pi/2)
 
     @param [out] ra is right ascension in radians
 
