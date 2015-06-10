@@ -392,6 +392,10 @@ class testCoordinateTransformations(unittest.TestCase):
         for i in range(3):
             self.assertAlmostEqual(v3[i],v2[i],7)
 
+        v1 = numpy.array([1.0, 1.0, 1.0])
+        self.assertRaises(RuntimeError, utils.rotationMatrixFromVectors, v1, v2)
+        self.assertRaises(RuntimeError, utils.rotationMatrixFromVectors, v2, v1)
+
 
     def testHorizontalFromEquatorial(self):
         arg1=2.549091039839124218e+00

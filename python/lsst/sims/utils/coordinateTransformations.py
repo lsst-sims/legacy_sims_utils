@@ -176,11 +176,17 @@ def rotationMatrixFromVectors(v1, v2):
     '''
     Given two vectors v1,v2 calculate the rotation matrix for v1->v2 using the axis-angle approach
 
-    @param [in] v1, v2 are two Cartesian vectors (in three dimensions)
+    @param [in] v1, v2 are two Cartesian unit vectors (in three dimensions)
 
     @param [out] rot is the rotation matrix that rotates from one to the other
 
     '''
+
+    if numpy.abs(numpy.sqrt(numpy.dot(v1,v1))-1.0) > 0.01:
+        raise RuntimeError("v1 in rotationMatrixFromVectors is not a unit vector")
+
+    if numpy.abs(numpy.sqrt(numpy.dot(v2,v2))-1.0) > 0.01:
+        raise RuntimeError("v2 in rotationMatrixFromVectors is not a unit vector")
 
     # Calculate the axis of rotation by the cross product of v1 and v2
     cross = numpy.cross(v1,v2)
