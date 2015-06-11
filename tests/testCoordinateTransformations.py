@@ -331,32 +331,34 @@ class testCoordinateTransformations(unittest.TestCase):
 
         Each column of xyz is a vector
         """
-        xyz=numpy.zeros((3,3),dtype=float)
+        numpy.random.seed(42)
+        nsamples = 10
+        radius = numpy.random.random_sample(nsamples)*10.0
+        theta = numpy.random.random_sample(nsamples)*numpy.pi-0.5*numpy.pi
+        phi = numpy.random.random_sample(nsamples)*2.0*numpy.pi
 
-        xyz[0][0]=-1.528397655830016078e-03
-        xyz[0][1]=-1.220314328441649110e+00
-        xyz[0][2]=-1.209496845057127512e+00
-        xyz[1][0]=-2.015391452804179195e+00
-        xyz[1][1]=3.209255728096233051e-01
-        xyz[1][2]=-2.420049632697228503e+00
-        xyz[2][0]=-1.737023855580406284e+00
-        xyz[2][1]=-9.876134719050078115e-02
-        xyz[2][2]=-2.000636201137401038e+00
+        points = []
+        for ix in range(nsamples):
+            vv = [radius[ix]*numpy.cos(theta[ix])*numpy.cos(phi[ix]),
+                  radius[ix]*numpy.cos(theta[ix])*numpy.sin(phi[ix]),
+                  radius[ix]*numpy.sin(theta[ix])]
 
-        output=utils.sphericalFromCartesian(xyz)
+            points.append(vv)
 
-        vv=numpy.zeros((3),dtype=float)
+        points = numpy.array(points)
+        lon, lat = utils.sphericalFromCartesian(points)
+        for ix in range(nsamples):
+            self.assertAlmostEqual(numpy.cos(lon[ix]), numpy.cos(phi[ix]), 5)
+            self.assertAlmostEqual(numpy.sin(lon[ix]), numpy.sin(phi[ix]), 5)
+            self.assertAlmostEqual(numpy.cos(lat[ix]), numpy.cos(theta[ix]), 5)
+            self.assertAlmostEqual(numpy.sin(lat[ix]), numpy.sin(theta[ix]), 5)
 
-        for i in range(3):
-
-            rr=numpy.sqrt(xyz[0][i]*xyz[0][i]+xyz[1][i]*xyz[1][i]+xyz[2][i]*xyz[2][i])
-
-            vv[0]=rr*numpy.cos(output[1][i])*numpy.cos(output[0][i])
-            vv[1]=rr*numpy.cos(output[1][i])*numpy.sin(output[0][i])
-            vv[2]=rr*numpy.sin(output[1][i])
-
-            for j in range(3):
-                self.assertAlmostEqual(vv[j],xyz[j][i],7)
+        for pp, th, ph in zip(points, theta, phi):
+            lon, lat = utils.sphericalFromCartesian(list(pp))
+            self.assertAlmostEqual(numpy.cos(lon), numpy.cos(ph), 5)
+            self.assertAlmostEqual(numpy.sin(lon), numpy.sin(ph), 5)
+            self.assertAlmostEqual(numpy.cos(lat), numpy.cos(th), 5)
+            self.assertAlmostEqual(numpy.sin(lat), numpy.sin(th), 5)
 
 
     def testHaversine(self):

@@ -129,17 +129,22 @@ def sphericalFromCartesian(xyz):
     """
     Transforms between Cartesian and spherical coordinates
 
-    @param [in] xyz is a list of the three-dimensional Cartesian coordinates
+    @param [in] xyz is a numpy array of points in 3-D space.
+    Each row is a different point.
 
     @param [out] returns longitude and latitude
 
     All angles are in radians
     """
 
-    rad = numpy.sqrt(xyz[:][0]*xyz[:][0] + xyz[:][1]*xyz[:][1] + xyz[:][2]*xyz[:][2])
-
-    longitude = numpy.arctan2( xyz[:][1], xyz[:][0])
-    latitude = numpy.arcsin( xyz[:][2] / rad)
+    if isinstance(xyz, numpy.ndarray) and len(xyz.shape)>1:
+        rad = numpy.sqrt(xyz[:,0]*xyz[:,0] + xyz[:,1]*xyz[:,1] + xyz[:,2]*xyz[:,2])
+        longitude = numpy.arctan2( xyz[:,1], xyz[:,0])
+        latitude = numpy.arcsin( xyz[:,2] / rad)
+    else:
+        rad = numpy.sqrt(numpy.dot(xyz,xyz))
+        longitude = numpy.arctan2(xyz[1], xyz[0])
+        latitude = numpy.arcsin(xyz[2]/rad)
 
     return longitude, latitude
 
