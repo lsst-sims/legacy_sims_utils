@@ -138,7 +138,7 @@ def sphericalFromCartesian(xyz):
     """
 
     if isinstance(xyz, numpy.ndarray) and len(xyz.shape)>1:
-        rad = numpy.sqrt(xyz[:,0]*xyz[:,0] + xyz[:,1]*xyz[:,1] + xyz[:,2]*xyz[:,2])
+        rad = numpy.sqrt(numpy.power(xyz,2).sum(axis=1))
         longitude = numpy.arctan2( xyz[:,1], xyz[:,0])
         latitude = numpy.arcsin( xyz[:,2] / rad)
     else:
