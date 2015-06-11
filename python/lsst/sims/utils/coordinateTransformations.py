@@ -110,11 +110,11 @@ def cartesianFromSpherical(longitude, latitude):
     """
     Transforms between spherical and Cartesian coordinates.
 
-    @param [in] longitude is the input longitudinal coordinate
+    @param [in] longitude is a numpy array of longitudes
 
-    @param [in] latitude is the input latitudinal coordinate
+    @param [in] latitude is a numpy array of latitudes
 
-    @param [out] a list of the (three-dimensional) cartesian coordinates on a unit sphere
+    @param [out] a numpy array of the (three-dimensional) cartesian coordinates on a unit sphere
 
     All angles are in radians
     """
@@ -122,7 +122,7 @@ def cartesianFromSpherical(longitude, latitude):
     cosDec = numpy.cos(latitude)
     return numpy.array([numpy.cos(longitude)*cosDec,
                       numpy.sin(longitude)*cosDec,
-                      numpy.sin(latitude)])
+                      numpy.sin(latitude)]).transpose()
 
 
 def sphericalFromCartesian(xyz):

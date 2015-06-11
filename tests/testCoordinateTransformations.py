@@ -354,12 +354,34 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertAlmostEqual(numpy.sin(lat[ix]), numpy.sin(theta[ix]), 5)
 
         for pp, th, ph in zip(points, theta, phi):
-            lon, lat = utils.sphericalFromCartesian(list(pp))
+            lon, lat = utils.sphericalFromCartesian(pp)
             self.assertAlmostEqual(numpy.cos(lon), numpy.cos(ph), 5)
             self.assertAlmostEqual(numpy.sin(lon), numpy.sin(ph), 5)
             self.assertAlmostEqual(numpy.cos(lat), numpy.cos(th), 5)
             self.assertAlmostEqual(numpy.sin(lat), numpy.sin(th), 5)
 
+
+    def testCartesianFromSpherical(self):
+        numpy.random.seed(42)
+        nsamples = 10
+        theta = numpy.random.random_sample(nsamples)*numpy.pi-0.5*numpy.pi
+        phi = numpy.random.random_sample(nsamples)*2.0*numpy.pi
+
+        points = []
+        for ix in range(nsamples):
+            vv = [numpy.cos(theta[ix])*numpy.cos(phi[ix]),
+                  numpy.cos(theta[ix])*numpy.sin(phi[ix]),
+                  numpy.sin(theta[ix])]
+
+            points.append(vv)
+
+
+        points = numpy.array(points)
+        lon, lat = utils.sphericalFromCartesian(points)
+        outPoints = utils.cartesianFromSpherical(numpy.array(lon), numpy.array(lat))
+
+        for pp, oo in zip(points, outPoints):
+            numpy.testing.assert_array_almost_equal(pp, oo, decimal=6)
 
     def testHaversine(self):
         arg1 = 7.853981633974482790e-01
