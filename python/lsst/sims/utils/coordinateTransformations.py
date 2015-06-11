@@ -2,11 +2,196 @@ import numpy
 import palpy
 from collections import OrderedDict
 
-__all__ = ["equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "raDecToAltAzPa",
-           "altAzToRaDec", "getRotSkyPos", "getRotTelPos", "haversine",
+__all__ = ["galacticFromEquatorial", "equatorialFromGalactic",
+           "sphericalFromCartesian", "cartesianFromSpherical",
+           "rotationMatrixFromVectors",
+           "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "altAzPaFromRaDec",
+           "raDecFromAltAz", "getRotSkyPos", "getRotTelPos", "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
-           "radiansToArcsec","arcsecToRadians"]
+           "arcsecFromRadians","radiansFromArcsec"]
+
+
+def calcLmstLast(mjd, longRad):
+    """
+    calculates local mean sidereal time and local apparent sidereal time
+
+    @param [in] mjd is the universal time expressed as an MJD.
+    This can be a numpy array or a single value.
+
+    @param [in] longRad is the longitude in radians (positive east of the prime meridian)
+    This can be numpy array or a single value.  If a numpy array, should have the same length as mjd.  In that
+    case, each longRad will be applied only to the corresponding mjd.
+
+    @param [out] lmst is the local mean sidereal time in hours
+
+    @param [out] last is the local apparent sideral time in hours
+    """
+    mjdIsArray = False
+    longRadIsArray = False
+    if isinstance(mjd, numpy.ndarray):
+        mjdIsArray = True
+
+    if isinstance(longRad, numpy.ndarray):
+        longRadIsArray = True
+
+    if longRadIsArray and mjdIsArray:
+        if len(longRad) != len(mjd):
+            raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
+
+    if longRadIsArray and not mjdIsArray:
+        raise RuntimeError("in calcLmstLast longRad is numpy array but mjd is not")
+
+    longDeg0 = numpy.degrees(longRad)
+    longDeg0 %= 360.0
+
+    if longRadIsArray:
+        longDeg = numpy.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
+    else:
+        if longDeg0 > 180.:
+            longDeg = longDeg0-360.
+        else:
+            longDeg = longDeg0
+
+    hrs = longDeg/15.
+    gmstgast = calcGmstGast(mjd)
+    lmst = gmstgast[0]+hrs
+    last = gmstgast[1]+hrs
+    lmst %= 24.
+    last %= 24.
+    return lmst, last
+
+
+def galacticFromEquatorial(ra, dec):
+    '''Convert RA,Dec (J2000) to Galactic Coordinates
+
+    All angles are in radians
+
+    @param [in] ra is right ascension in radians, either a float or a numpy array
+
+    @param [in] dec is declination in radians, either a float or a numpy array
+
+    @param [out] gLong is galactic longitude in radians
+
+    @param [out] gLat is galactic latitude in radians
+    '''
+
+    if isinstance(ra, numpy.ndarray):
+        gLong, gLat = palpy.eqgalVector(ra, dec)
+    else:
+        gLong, gLat = palpy.eqgal(ra, dec)
+
+    return gLong, gLat
+
+
+def equatorialFromGalactic(gLong, gLat):
+    '''Convert Galactic Coordinates to RA, dec (J2000)
+
+    @param [in] gLong is galactic longitude in radians, either a float or a numpy array
+    (0 <= gLong <= 2*pi)
+
+    @param [in] gLat is galactic latitude in radians, either a float or a numpy array
+    (-pi/2 <= gLat <= pi/2)
+
+    @param [out] ra is right ascension in radians
+
+    @param [out] dec is declination in radians
+    '''
+
+    if isinstance(gLong, numpy.ndarray):
+        ra, dec = palpy.galeqVector(gLong, gLat)
+    else:
+        ra, dec = palpy.galeq(gLong, gLat)
+
+    return ra, dec
+
+
+def cartesianFromSpherical(longitude, latitude):
+    """
+    Transforms between spherical and Cartesian coordinates.
+
+    @param [in] longitude is a numpy array of longitudes
+
+    @param [in] latitude is a numpy array of latitudes
+
+    @param [out] a numpy array of the (three-dimensional) cartesian coordinates on a unit sphere
+
+    All angles are in radians
+    """
+
+    if not isinstance(longitude, numpy.ndarray) or not isinstance(latitude, numpy.ndarray):
+        raise RuntimeError("you need to pass numpy arrays to cartesianFromSpherical")
+
+    cosDec = numpy.cos(latitude)
+    return numpy.array([numpy.cos(longitude)*cosDec,
+                      numpy.sin(longitude)*cosDec,
+                      numpy.sin(latitude)]).transpose()
+
+
+def sphericalFromCartesian(xyz):
+    """
+    Transforms between Cartesian and spherical coordinates
+
+    @param [in] xyz is a numpy array of points in 3-D space.
+    Each row is a different point.
+
+    @param [out] returns longitude and latitude
+
+    All angles are in radians
+    """
+
+    if not isinstance(xyz, numpy.ndarray):
+        raise RuntimeError("you need to pass a numpy array to sphericalFromCartesian")
+
+    if len(xyz.shape)>1:
+        rad = numpy.sqrt(numpy.power(xyz,2).sum(axis=1))
+        longitude = numpy.arctan2( xyz[:,1], xyz[:,0])
+        latitude = numpy.arcsin( xyz[:,2] / rad)
+    else:
+        rad = numpy.sqrt(numpy.dot(xyz,xyz))
+        longitude = numpy.arctan2(xyz[1], xyz[0])
+        latitude = numpy.arcsin(xyz[2]/rad)
+
+    return longitude, latitude
+
+
+def rotationMatrixFromVectors(v1, v2):
+    '''
+    Given two vectors v1,v2 calculate the rotation matrix for v1->v2 using the axis-angle approach
+
+    @param [in] v1, v2 are two Cartesian unit vectors (in three dimensions)
+
+    @param [out] rot is the rotation matrix that rotates from one to the other
+
+    '''
+
+    if numpy.abs(numpy.sqrt(numpy.dot(v1,v1))-1.0) > 0.01:
+        raise RuntimeError("v1 in rotationMatrixFromVectors is not a unit vector")
+
+    if numpy.abs(numpy.sqrt(numpy.dot(v2,v2))-1.0) > 0.01:
+        raise RuntimeError("v2 in rotationMatrixFromVectors is not a unit vector")
+
+    # Calculate the axis of rotation by the cross product of v1 and v2
+    cross = numpy.cross(v1,v2)
+    cross = cross / numpy.sqrt(numpy.dot(cross,cross))
+
+    # calculate the angle of rotation via dot product
+    angle  = numpy.arccos(numpy.dot(v1,v2))
+    sinDot = numpy.sin(angle)
+    cosDot = numpy.cos(angle)
+
+    # calculate the corresponding rotation matrix
+    # http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+    rot = [[cosDot + cross[0]*cross[0]*(1-cosDot), -cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1], \
+            cross[1]*sinDot + (1-cosDot)*cross[0]*cross[2]],\
+            [cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1], cosDot + (1-cosDot)*cross[1]*cross[1], \
+            -cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2]], \
+            [-cross[1]*sinDot+(1-cosDot)*cross[0]*cross[2], \
+            cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2], \
+            cosDot + (1-cosDot)*(cross[2]*cross[2])]]
+
+    return rot
+
 
 def equationOfEquinoxes(d):
     """
@@ -54,56 +239,8 @@ def calcGmstGast(mjd):
 
     return gmst, gast
 
-def calcLmstLast(mjd, longRad):
-    """
-    calculates local mean sidereal time and local apparent sidereal time
 
-    @param [in] mjd is the universal time expressed as an MJD.
-    This can be a numpy array or a single value.
-
-    @param [in] longRad is the longitude in radians (positive east of the prime meridian)
-    This can be numpy array or a single value.  If a numpy array, should have the same length as mjd.  In that
-    case, each longRad will be applied only to the corresponding mjd.
-
-    @param [out] lmst is the local mean sidereal time in hours
-
-    @param [out] last is hte local apparent sideral time in hours
-    """
-    mjdIsArray = False
-    longRadIsArray = False
-    if isinstance(mjd, numpy.ndarray):
-        mjdIsArray = True
-
-    if isinstance(longRad, numpy.ndarray):
-        longRadIsArray = True
-
-    if longRadIsArray and mjdIsArray:
-        if len(longRad) != len(mjd):
-            raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
-
-    if longRadIsArray and not mjdIsArray:
-        raise RuntimeError("in calcLmstLast longRad is numpy array but mjd is not")
-
-    longDeg0 = numpy.degrees(longRad)
-    longDeg0 %= 360.0
-
-    if longRadIsArray:
-        longDeg = numpy.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
-    else:
-        if longDeg0 > 180.:
-            longDeg = longDeg0-360.
-        else:
-            longDeg = longDeg0
-
-    hrs = longDeg/15.
-    gmstgast = calcGmstGast(mjd)
-    lmst = gmstgast[0]+hrs
-    last = gmstgast[1]+hrs
-    lmst %= 24.
-    last %= 24.
-    return lmst, last
-
-def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
+def altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
@@ -131,10 +268,10 @@ def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
     """
 
     if isinstance(longRad, numpy.ndarray):
-        raise RuntimeError('cannot pass numpy array of longitudes to raDecToAltAzPa')
+        raise RuntimeError('cannot pass numpy array of longitudes to altAzPaFromRaDec')
 
     if isinstance(latRad, numpy.ndarray):
-        raise RuntimeError('cannot pass numpy array of latitudes to raDecToAltAzPa')
+        raise RuntimeError('cannot pass numpy array of latitudes to altAzPaFromRaDec')
 
     raIsArray = False
     decIsArray = False
@@ -149,19 +286,19 @@ def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
         mjdIsArray = True
 
     if raIsArray and not decIsArray:
-        raise RuntimeError('passed numpy array of RA to raDecToAltAzPa; but only one Dec')
+        raise RuntimeError('passed numpy array of RA to altAzPaFromRaDec; but only one Dec')
 
     if decIsArray and not raIsArray:
-        raise RuntimeError('passed numpy array of Dec to raDecToAltAzPa; but only one RA')
+        raise RuntimeError('passed numpy array of Dec to altAzPaFromRaDec; but only one RA')
 
     if raIsArray and decIsArray and len(raRad) != len(decRad):
-        raise RuntimeError('in raDecToAltAzPa length of RA numpy array does not match length of Dec numpy array')
+        raise RuntimeError('in altAzPaFromRaDec length of RA numpy array does not match length of Dec numpy array')
 
     if mjdIsArray and not raIsArray:
-        raise RuntimeError('passed numpy array of mjd to raDecToAltAzPa; but only one RA, Dec')
+        raise RuntimeError('passed numpy array of mjd to altAzPaFromRaDec; but only one RA, Dec')
 
     if mjdIsArray and len(mjd) != len(raRad):
-        raise RuntimeError('in raDecToAltAzPa length of mjd numpy array is not the same as length of RA numpy array')
+        raise RuntimeError('in altAzPaFromRaDec length of mjd numpy array is not the same as length of RA numpy array')
 
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
@@ -178,7 +315,7 @@ def raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd):
 
     return alt, az, pa
 
-def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
+def raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     """
     Convert altitude and azimuth to RA and Dec
 
@@ -202,10 +339,10 @@ def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
     @param [out] Dec in radians
     """
     if isinstance(longRad, numpy.ndarray):
-        raise RuntimeError('cannot pass a numpy array of longitudes to altAzToRaDec')
+        raise RuntimeError('cannot pass a numpy array of longitudes to raDecFromAltAz')
 
     if isinstance(latRad, numpy.ndarray):
-        raise RuntimeError('cannot pass a numpy array of latitudes to altAzToRaDec')
+        raise RuntimeError('cannot pass a numpy array of latitudes to raDecFromAltAz')
 
     mjdIsArray = False
     altIsArray = False
@@ -220,19 +357,19 @@ def altAzToRaDec(altRad, azRad, longRad, latRad, mjd):
         azIsArray = True
 
     if altIsArray and not azIsArray:
-        raise RuntimeError('passed a numpy array of alt to altAzToRaDec, but only one az')
+        raise RuntimeError('passed a numpy array of alt to raDecFromAltAz, but only one az')
 
     if azIsArray and not altIsArray:
-        raise RuntimeError('passed a numpy array of az to altAzToRaDec, but only one alt')
+        raise RuntimeError('passed a numpy array of az to raDecFromAltAz, but only one alt')
 
     if azIsArray and altIsArray and len(altRad)!=len(azRad):
-        raise RuntimeError('in altAzToRaDec, length of alt numpy array does not match length of az numpy array')
+        raise RuntimeError('in raDecFromAltAz, length of alt numpy array does not match length of az numpy array')
 
     if mjdIsArray and not azIsArray:
-        raise RuntimeError('passed a numpy array of mjd to altAzToRaDec, but only one alt, az pair')
+        raise RuntimeError('passed a numpy array of mjd to raDecFromAltAz, but only one alt, az pair')
 
     if mjdIsArray and len(mjd) != len(azRad):
-        raise RuntimeError('in altAzToRaDec length of mjd numpy array does not match length of az numpy array')
+        raise RuntimeError('in raDecFromAltAz length of mjd numpy array does not match length of az numpy array')
 
     lst = calcLmstLast(mjd, longRad)
     last = lst[1]
@@ -272,7 +409,7 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     WARNING: As of 13 April 2015, this method does not agree with OpSim on
     the relationship between rotSkyPos and rotTelPos
     """
-    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
@@ -307,7 +444,7 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     WARNING: as of 13 April 2015, this method does not agree with OpSim on
     the relationship between rotSkyPos and rotTelPos
     """
-    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
@@ -372,7 +509,7 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
     """
     obsMd = {}
     #Defaults
-    moonra, moondec = altAzToRaDec(-numpy.pi/2., 0., longRad, latRad, mjd)
+    moonra, moondec = raDecFromAltAz(-numpy.pi/2., 0., longRad, latRad, mjd)
     sunalt = -numpy.pi/2.
     moonalt = -numpy.pi/2.
     dist2moon = haversine(moonra, moondec, raRad, decRad)
@@ -409,7 +546,7 @@ def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.232
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
 
-    raRad, decRad = altAzToRaDec(altRad, azRad, longRad, latRad, mjd)
+    raRad, decRad = raDecFromAltAz(altRad, azRad, longRad, latRad, mjd)
     obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
     obsMd.update(kwargs)
     return makeObservationMetadata(obsMd)
@@ -426,7 +563,7 @@ def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=numpy.pi, longRad=
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    raRad, decRad = altAzToRaDec(altRad, azRad, longRad, latRad, mjd)
+    raRad, decRad = raDecFromAltAz(altRad, azRad, longRad, latRad, mjd)
     rotTelRad = getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 
@@ -443,7 +580,7 @@ def makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=0., longRad=-1.232
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    altRad, azRad, paRad = raDecToAltAzPa(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
     obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
     obsMd.update(kwargs)
     return makeObservationMetadata(obsMd)
@@ -463,14 +600,14 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=numpy.pi, longRad=
     rotTelRad = getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 
-def radiansToArcsec(value):
+def arcsecFromRadians(value):
     """
     Convert an angle in radians to arcseconds
     """
 
     return 3600.0*numpy.degrees(value)
 
-def arcsecToRadians(value):
+def radiansFromArcsec(value):
     """
     Convert an angle in arcseconds to radians
     """
