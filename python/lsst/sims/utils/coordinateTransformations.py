@@ -119,6 +119,9 @@ def cartesianFromSpherical(longitude, latitude):
     All angles are in radians
     """
 
+    if not isinstance(longitude, numpy.ndarray) or not isinstance(latitude, numpy.ndarray):
+        raise RuntimeError("you need to pass numpy arrays to cartesianFromSpherical")
+
     cosDec = numpy.cos(latitude)
     return numpy.array([numpy.cos(longitude)*cosDec,
                       numpy.sin(longitude)*cosDec,
@@ -137,7 +140,10 @@ def sphericalFromCartesian(xyz):
     All angles are in radians
     """
 
-    if isinstance(xyz, numpy.ndarray) and len(xyz.shape)>1:
+    if not isinstance(xyz, numpy.ndarray):
+        raise RuntimeError("you need to pass a numpy array to sphericalFromCartesian")
+
+    if len(xyz.shape)>1:
         rad = numpy.sqrt(numpy.power(xyz,2).sum(axis=1))
         longitude = numpy.arctan2( xyz[:,1], xyz[:,0])
         latitude = numpy.arcsin( xyz[:,2] / rad)
