@@ -439,7 +439,7 @@ def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     have the same length as raRad and decRad.  In this case, each rotSkyPos
     will be associated with the corresponding raRad, decRad pair.
 
-    @param [out] rotSkyPos in radians.
+    @param [out] rotTelPos in radians.
 
     WARNING: as of 13 April 2015, this method does not agree with OpSim on
     the relationship between rotSkyPos and rotTelPos
