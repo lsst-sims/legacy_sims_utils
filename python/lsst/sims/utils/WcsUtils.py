@@ -10,10 +10,11 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
     Native longitude and latitude are defined as what RA and Dec would be
     if the celestial pole were at the location where the telescope is pointing.
     The coordinate basis axes for this system is achieved by taking the true
-    coordinate basis axes and rotating them once about the z axis and once about
-    the x axis (or, by rotating the vector pointing to the RA and Dec being
-    transformed once about the x axis and once about the z axis).  These
-    are the Euler rotations referred to in Section 2.3 of
+    coordinate basis axes and rotating them once about the z axis, once about
+    the x axis, and then once again about the z axis (or, by rotating the
+    vector pointing to the RA and Dec being transformed once about the x
+    axis and once about the z axis).  These are the Euler rotations referred
+    to in Section 2.3 of
 
     Calabretta and Greisen (2002), A&A 395, p. 1077
 
