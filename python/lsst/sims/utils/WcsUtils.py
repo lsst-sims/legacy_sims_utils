@@ -38,7 +38,7 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
     z = numpy.sin(dec)
 
     alpha = decPointing - 0.5*numpy.pi
-    beta = -1.0*raPointing
+    beta = raPointing
 
     ca=numpy.cos(alpha)
     sa=numpy.sin(alpha)
@@ -50,8 +50,8 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
                                 [0.0, ca, sa],
                                 [0.0, -1.0*sa, ca]
                                 ]),
-                   numpy.dot(numpy.array([[cb, -1.0*sb, 0.0],
-                                          [sb, cb, 0.0],
+                   numpy.dot(numpy.array([[cb, sb, 0.0],
+                                          [-sb, cb, 0.0],
                                           [0.0, 0.0, 1.0]
                                           ]), numpy.array([x,y,z])))
 
