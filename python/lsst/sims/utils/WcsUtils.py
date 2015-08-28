@@ -9,11 +9,9 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
 
     Native longitude and latitude are defined as what RA and Dec would be
     if the celestial pole were at the location where the telescope is pointing.
-    The coordinate basis axes for this system is achieved by taking the true
-    coordinate basis axes and rotating them once about the z axis and once about
-    the x axis (or, by rotating the vector pointing to the RA and Dec being
-    transformed once about the x axis and once about the z axis).  These
-    are the Euler rotations referred to in Section 2.3 of
+    The transformation is achieved by rotating the vector pointing to the RA
+    and Dec being transformed once about the x axis and once about the z axis.
+    These are the Euler rotations referred to in Section 2.3 of
 
     Calabretta and Greisen (2002), A&A 395, p. 1077
 
@@ -40,7 +38,7 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
     z = numpy.sin(dec)
 
     alpha = decPointing - 0.5*numpy.pi
-    beta = -1.0*raPointing
+    beta = raPointing
 
     ca=numpy.cos(alpha)
     sa=numpy.sin(alpha)
@@ -52,8 +50,8 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
                                 [0.0, ca, sa],
                                 [0.0, -1.0*sa, ca]
                                 ]),
-                   numpy.dot(numpy.array([[cb, -1.0*sb, 0.0],
-                                          [sb, cb, 0.0],
+                   numpy.dot(numpy.array([[cb, sb, 0.0],
+                                          [-sb, cb, 0.0],
                                           [0.0, 0.0, 1.0]
                                           ]), numpy.array([x,y,z])))
 
@@ -61,7 +59,23 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
     latOut = numpy.arctan2(v2[2], cc)
 
     _y = v2[1]/numpy.cos(latOut)
-    _ra = numpy.arccos(_y)
+    _ra_raw = numpy.arccos(_y)
+
+    # control for _y=1.0, -1.0 but actually being stored as just outside
+    # the bounds of -1.0<=_y<=1.0 because of floating point error
+    if hasattr(_ra_raw, '__len__'):
+        _ra = numpy.array([rr if not numpy.isnan(rr) \
+                           else 0.5*numpy.pi*(1.0-numpy.sign(yy)) \
+                           for rr, yy in zip(_ra_raw, _y)])
+    else:
+        if numpy.isnan(_ra_raw):
+            if numpy.sign(_y)<0.0:
+                _ra = numpy.pi
+            else:
+                _ra = 0.0
+        else:
+            _ra = _ra_raw
+
     _x = -numpy.sin(_ra)
 
     if type(_ra) is numpy.float64:

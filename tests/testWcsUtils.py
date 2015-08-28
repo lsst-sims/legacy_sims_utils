@@ -28,6 +28,76 @@ class NativeLonLatTest(unittest.TestCase):
             self.assertAlmostEqual(lat, latc, 10)
 
 
+    def testNativeLongLatComplicated(self):
+        """
+        Test that nativeLongLatFromRaDec works by considering stars and pointings
+        at non-intuitive locations.
+        """
+
+        numpy.random.seed(42)
+        nPointings = 10
+        raPointingList = numpy.random.random_sample(nPointings)*360.0
+        decPointingList = numpy.random.random_sample(nPointings)*180.0 - 90.0
+
+        nStars = 10
+        for raPointing, decPointing in zip(raPointingList, decPointingList):
+            raList = numpy.random.random_sample(nStars)*360.0
+            decList = numpy.random.random_sample(nStars)*180.0 - 90.0
+            for ra, dec in zip(raList, decList):
+
+                raRad = numpy.radians(ra)
+                decRad = numpy.radians(dec)
+                sinRa = numpy.sin(raRad)
+                cosRa = numpy.cos(raRad)
+                sinDec = numpy.sin(decRad)
+                cosDec = numpy.cos(decRad)
+
+                # the three dimensional position of the star
+                controlPosition = numpy.array([-cosDec*sinRa, cosDec*cosRa, sinDec])
+
+                # calculate the rotation matrices needed to transform the
+                # x, y, and z axes into the local x, y, and z axes
+                # (i.e. the axes with z lined up with raPointing, decPointing)
+                alpha = 0.5*numpy.pi - numpy.radians(decPointing)
+                ca = numpy.cos(alpha)
+                sa = numpy.sin(alpha)
+                rotX = numpy.array([[1.0, 0.0, 0.0],
+                                    [0.0, ca, sa],
+                                    [0.0, -sa, ca]])
+
+                cb = numpy.cos(numpy.radians(raPointing))
+                sb = numpy.sin(numpy.radians(raPointing))
+                rotZ = numpy.array([[cb, -sb, 0.0],
+                                    [sb, cb, 0.0],
+                                    [0.0, 0.0, 1.0]])
+
+                # rotate the coordinate axes into the local basis
+                xAxis = numpy.dot(rotZ, numpy.dot(rotX, numpy.array([1.0, 0.0, 0.0])))
+                yAxis = numpy.dot(rotZ, numpy.dot(rotX, numpy.array([0.0, 1.0, 0.0])))
+                zAxis = numpy.dot(rotZ, numpy.dot(rotX, numpy.array([0.0, 0.0, 1.0])))
+
+                # calculate the local longitude and latitude of the star
+                lon, lat = nativeLonLatFromRaDec(ra, dec, raPointing, decPointing)
+                cosLon = numpy.cos(numpy.radians(lon))
+                sinLon = numpy.sin(numpy.radians(lon))
+                cosLat = numpy.cos(numpy.radians(lat))
+                sinLat = numpy.sin(numpy.radians(lat))
+
+                # the x, y, z position of the star in the local coordinate basis
+                transformedPosition = numpy.array([-cosLat*sinLon,
+                                                   cosLat*cosLon,
+                                                   sinLat])
+
+                # convert that position back into the un-rotated bases
+                testPosition = transformedPosition[0]*xAxis + \
+                               transformedPosition[1]*yAxis + \
+                               transformedPosition[2]*zAxis
+
+                # assert that testPosition and controlPosition should be equal
+                numpy.testing.assert_array_almost_equal(controlPosition, testPosition, decimal=10)
+
+
+
     def testNativeLonLatVector(self):
         """
         Test that nativeLonLatFromRaDec works by considering stars and pointings
