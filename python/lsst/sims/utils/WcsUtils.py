@@ -61,7 +61,23 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
     latOut = numpy.arctan2(v2[2], cc)
 
     _y = v2[1]/numpy.cos(latOut)
-    _ra = numpy.arccos(_y)
+    _ra_raw = numpy.arccos(_y)
+
+    # control for _y=1.0, -1.0 but actually being stored as just outside
+    # the bounds of -1.0<=_y<=1.0 because of floating point error
+    if hasattr(_ra_raw, '__len__'):
+        _ra = numpy.array([rr if not numpy.isnan(rr) \
+                           else 0.5*numpy.pi*(1.0-numpy.sign(yy)) \
+                           for rr, yy in zip(_ra_raw, _y)])
+    else:
+        if numpy.isnan(_ra_raw):
+            if numpy.sign(_y)<0.0:
+                _ra = numpy.pi
+            else:
+                _ra = 0.0
+        else:
+            _ra = _ra_raw
+
     _x = -numpy.sin(_ra)
 
     if type(_ra) is numpy.float64:
