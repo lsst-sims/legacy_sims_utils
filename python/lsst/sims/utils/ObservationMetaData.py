@@ -50,13 +50,26 @@ class ObservationMetaData(object):
         * skyBrightness: float (optional) the magnitude of the sky in the
           filter specified by bandpassName
 
-        * rotSkyPos float (optional)
-          The orientation of the telescope (see PhoSim documentation) in degrees.
-          This is used by the Astrometry mixins in sims_coordUtils
-
         * seeing float or list (optional)
           Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
           bandpassName
+
+
+        * rotSkyPos float (optional)
+          The orientation of the telescope in degrees.
+          This is used by the Astrometry mixins in sims_coordUtils.
+
+        The convention for rotSkyPos is as follows:
+
+        rotSkyPos = 0 means north is in the +y direction on the camera and east is -x
+
+        rotSkyPos = 90 means north is -x and east is -y
+
+        rotSkyPos = -90 means north is +x and east is +y
+
+        rotSkyPos = 180 means north is -y and east is +x
+
+        This should be consistent with PhoSim conventions.
 
     **Examples**::
         >>> data = ObservationMetaData(boundType='box', unrefractedRA=5.0, unrefractedDec=15.0,
