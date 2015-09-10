@@ -506,7 +506,7 @@ def getRotSkyPos(ra, dec, lon, lat, mjd, rotTel):
     as the numpy arrays of ra and dec.  In this case, each mjd will be associated
     with the corresponding ra, dec pair.
 
-    @param [in] rotTe is rotTelPos in degrees
+    @param [in] rotTel is rotTelPos in degrees
     (the angle of the camera rotator).  Can be a numpy array or a single value.
     If a numpy array, should have the same length as ra and dec.  In this case,
     each rotTel will be associated with the corresponding ra, dec pair.

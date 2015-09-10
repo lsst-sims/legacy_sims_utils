@@ -13,6 +13,8 @@ class testDegrees(unittest.TestCase):
         numpy.random.seed(87334)
         self.raList = numpy.random.random_sample(100)*2.0*numpy.pi
         self.decList = (numpy.random.random_sample(100)-0.5)*numpy.pi
+        self.lon = numpy.random.random_sample(1)[0]*2.0*numpy.pi
+        self.lat = (numpy.random.random_sample(1)[0]-0.5)*numpy.pi
 
 
     def testUnitConversion(self):
@@ -74,16 +76,15 @@ class testDegrees(unittest.TestCase):
 
 
     def testAltAzPaFromRaDec(self):
-        lon = numpy.random.random_sample(1)[0]*2.0*numpy.pi
-        lat = (numpy.random.random_sample(1)[0]-0.5)*0.5*numpy.pi
         mjdList = numpy.random.random_sample(len(self.raList))*5000.0 + 52000.0
 
         altRad, azRad, paRad = utils._altAzPaFromRaDec(self.raList, self.decList,
-                                                       lon, lat, mjdList)
+                                                       self.lon, self.lat, mjdList)
 
         altDeg, azDeg, paDeg = utils.altAzPaFromRaDec(numpy.degrees(self.raList),
                                                       numpy.degrees(self.decList),
-                                                      numpy.degrees(lon), numpy.degrees(lat),
+                                                      numpy.degrees(self.lon),
+                                                      numpy.degrees(self.lat),
                                                       mjdList)
 
 
@@ -93,11 +94,12 @@ class testDegrees(unittest.TestCase):
 
 
         altRad, azRad, paRad = utils._altAzPaFromRaDec(self.raList, self.decList,
-                                                       lon, lat, mjdList[0])
+                                                       self.lon, self.lat, mjdList[0])
 
         altDeg, azDeg, paDeg = utils.altAzPaFromRaDec(numpy.degrees(self.raList),
                                                       numpy.degrees(self.decList),
-                                                      numpy.degrees(lon), numpy.degrees(lat),
+                                                      numpy.degrees(self.lon),
+                                                      numpy.degrees(self.lat),
                                                       mjdList[0])
 
 
@@ -107,11 +109,11 @@ class testDegrees(unittest.TestCase):
 
 
         for ra, dec, mjd in zip(self.raList, self.decList, mjdList):
-            altRad, azRad, paRad = utils._altAzPaFromRaDec(ra, dec, lon, lat, mjd)
+            altRad, azRad, paRad = utils._altAzPaFromRaDec(ra, dec, self.lon, self.lat, mjd)
             altDeg, azDeg, paDeg = utils.altAzPaFromRaDec(numpy.degrees(ra),
                                                           numpy.degrees(dec),
-                                                          numpy.degrees(lon),
-                                                          numpy.degrees(lat),
+                                                          numpy.degrees(self.lon),
+                                                          numpy.degrees(self.lat),
                                                           mjd)
 
             self.assertAlmostEqual(altRad, numpy.radians(altDeg), 10)
@@ -122,16 +124,15 @@ class testDegrees(unittest.TestCase):
     def raDecFromAltAz(self):
         azList = self.raList
         altList = self.decList
-        lon = numpy.random.random_sample(1)[0]*2.0*numpy.pi
-        lat = (numpy.random.random_sample(1)[0]-0.5)*0.5*numpy.pi
         mjdList = numpy.random.random_sample(len(self.raList))*5000.0 + 52000.0
 
         raRad, decRad = utils._raDecFromAltAz(altList, azList,
-                                              lon, lat, mjdList)
+                                              self.lon, self.lat, mjdList)
 
         raDeg, decDeg = utils.raDecFromAltAz(numpy.degrees(altList),
                                              numpy.degrees(azList),
-                                             numpy.degrees(lon), numpy.degrees(lat),
+                                             numpy.degrees(self.lon),
+                                             numpy.degrees(self.lat),
                                              mjdList)
 
 
@@ -143,7 +144,8 @@ class testDegrees(unittest.TestCase):
 
         raDeg, decDeg = utils.raDecFromAltAz(numpy.degrees(altList),
                                              numpy.degrees(azList),
-                                             numpy.degrees(lon), numpy.degrees(lat),
+                                             numpy.degrees(self.lon),
+                                             numpy.degrees(self.lat),
                                              mjdList[0])
 
 
@@ -155,15 +157,53 @@ class testDegrees(unittest.TestCase):
             raRad, decRad = utils._raDecFromAltAz(alt, az, lon, lat, mjd)
             raDeg, decDeg = utils.raDecFromAltAz(numpy.degrees(alt),
                                                  numpy.degrees(az),
-                                                 numpy.degrees(lon),
-                                                 numpy.degrees(lat),
+                                                 numpy.degrees(self.lon),
+                                                 numpy.degrees(self.lat),
                                                  mjd)
 
             self.assertAlmostEqual(raRad, numpy.radians(raDeg), 10)
             self.assertAlmostEqual(decRad, numpy.radians(decDeg), 10)
 
 
+    def testGetRotSkyPos(self):
+        rotTelList = numpy.random.random_sample(len(self.raList))*2.0*numpy.pi
+        mjdList = numpy.random.random_sample(len(self.raList))*5000.0+52000.0
 
+        rotSkyRad = utils._getRotSkyPos(self.raList, self.decList,
+                                        self.lon, self.lat,
+                                        mjdList, rotTelList)
+
+        rotSkyDeg = utils.getRotSkyPos(numpy.degrees(self.raList),
+                                       numpy.degrees(self.decList),
+                                       numpy.degrees(self.lon),
+                                       numpy.degrees(self.lat),
+                                       mjdList, numpy.degrees(rotTelList))
+
+        numpy.testing.assert_array_almost_equal(rotSkyRad, numpy.radians(rotSkyDeg), 10)
+
+        rotSkyRad = utils._getRotSkyPos(self.raList, self.decList,
+                                        self.lon, self.lat,
+                                        mjdList[0], rotTelList[0])
+
+        rotSkyDeg = utils.getRotSkyPos(numpy.degrees(self.raList),
+                                       numpy.degrees(self.decList),
+                                       numpy.degrees(self.lon),
+                                       numpy.degrees(self.lat),
+                                       mjdList[0], numpy.degrees(rotTelList[0]))
+
+        numpy.testing.assert_array_almost_equal(rotSkyRad, numpy.radians(rotSkyDeg), 10)
+
+
+        for ra, dec, mjd, rotTel in \
+        zip(self.raList, self.decList, mjdList, rotTelList):
+
+            rotSkyRad = utils._getRotSkyPos(ra, dec, self.lon, self.lat, mjd, rotTel)
+
+            rotSkyDeg = utils.getRotSkyPos(numpy.degrees(ra), numpy.degrees(dec),
+                                           numpy.degrees(self.lon), numpy.degrees(self.lat),
+                                           mjd, numpy.degrees(rotTel))
+
+            self.assertAlmostEqual(rotSkyRad, numpy.radians(rotSkyDeg), 10)
 
 
 def suite():
