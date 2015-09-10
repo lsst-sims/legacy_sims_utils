@@ -2,11 +2,11 @@ import numpy
 import palpy
 from collections import OrderedDict
 
-__all__ = ["galacticFromEquatorial", "equatorialFromGalactic",
+__all__ = ["_galacticFromEquatorial", "_equatorialFromGalactic",
            "sphericalFromCartesian", "cartesianFromSpherical",
            "rotationMatrixFromVectors",
-           "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "altAzPaFromRaDec",
-           "raDecFromAltAz", "getRotSkyPos", "getRotTelPos", "haversine",
+           "equationOfEquinoxes", "calcGmstGast", "calcLmstLast", "_altAzPaFromRaDec",
+           "_raDecFromAltAz", "_getRotSkyPos", "_getRotTelPos", "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
            "arcsecFromRadians","radiansFromArcsec"]
@@ -62,7 +62,7 @@ def calcLmstLast(mjd, longRad):
     return lmst, last
 
 
-def galacticFromEquatorial(ra, dec):
+def _galacticFromEquatorial(ra, dec):
     '''Convert RA,Dec (J2000) to Galactic Coordinates
 
     All angles are in radians
@@ -84,7 +84,7 @@ def galacticFromEquatorial(ra, dec):
     return gLong, gLat
 
 
-def equatorialFromGalactic(gLong, gLat):
+def _equatorialFromGalactic(gLong, gLat):
     '''Convert Galactic Coordinates to RA, dec (J2000)
 
     @param [in] gLong is galactic longitude in radians, either a float or a numpy array
@@ -240,7 +240,7 @@ def calcGmstGast(mjd):
     return gmst, gast
 
 
-def altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
+def _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
@@ -315,7 +315,7 @@ def altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
 
     return alt, az, pa
 
-def raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
+def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     """
     Convert altitude and azimuth to RA and Dec
 
@@ -382,7 +382,7 @@ def raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     raRad = numpy.radians(last*15.) - haRad
     return raRad, decRad
 
-def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
+def _getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     """
     @param [in] raRad is the RA in radians.  Can be a numpy array or a single value.
 
@@ -409,14 +409,14 @@ def getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     WARNING: As of 13 April 2015, this method does not agree with OpSim on
     the relationship between rotSkyPos and rotTelPos
     """
-    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
     #the definitions of rotTelPos and rotSkyPos
     return (rotTelRad - paRad)%(2.*numpy.pi)
 
-def getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
+def _getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     """
     @param [in] raRad is RA in radians.  Can be a numpy array or a single value.
 
