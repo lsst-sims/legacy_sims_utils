@@ -444,7 +444,7 @@ def _getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     WARNING: as of 13 April 2015, this method does not agree with OpSim on
     the relationship between rotSkyPos and rotTelPos
     """
-    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
+    altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
     #20 March 2015
     #I do not know where this expression comes from; we should validate it against
