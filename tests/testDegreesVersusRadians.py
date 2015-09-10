@@ -206,6 +206,49 @@ class testDegrees(unittest.TestCase):
             self.assertAlmostEqual(rotSkyRad, numpy.radians(rotSkyDeg), 10)
 
 
+    def testGetRotTelPos(self):
+        rotSkyList = numpy.random.random_sample(len(self.raList))*2.0*numpy.pi
+        mjdList = numpy.random.random_sample(len(self.raList))*5000.0+52000.0
+
+        rotTelRad = utils._getRotTelPos(self.raList, self.decList,
+                                        self.lon, self.lat,
+                                        mjdList, rotSkyList)
+
+        rotTelDeg = utils.getRotTelPos(numpy.degrees(self.raList),
+                                       numpy.degrees(self.decList),
+                                       numpy.degrees(self.lon),
+                                       numpy.degrees(self.lat),
+                                       mjdList, numpy.degrees(rotSkyList))
+
+        numpy.testing.assert_array_almost_equal(rotTelRad, numpy.radians(rotTelDeg), 10)
+
+        rotTelRad = utils._getRotTelPos(self.raList, self.decList,
+                                        self.lon, self.lat,
+                                        mjdList[0], rotSkyList[0])
+
+        rotTelDeg = utils.getRotTelPos(numpy.degrees(self.raList),
+                                       numpy.degrees(self.decList),
+                                       numpy.degrees(self.lon),
+                                       numpy.degrees(self.lat),
+                                       mjdList[0], numpy.degrees(rotSkyList[0]))
+
+        numpy.testing.assert_array_almost_equal(rotTelRad, numpy.radians(rotTelDeg), 10)
+
+
+        for ra, dec, mjd, rotSky in \
+        zip(self.raList, self.decList, mjdList, rotSkyList):
+
+            rotTelRad = utils._getRotTelPos(ra, dec, self.lon, self.lat, mjd, rotSky)
+
+            rotTelDeg = utils.getRotTelPos(numpy.degrees(ra), numpy.degrees(dec),
+                                           numpy.degrees(self.lon), numpy.degrees(self.lat),
+                                           mjd, numpy.degrees(rotSky))
+
+            self.assertAlmostEqual(rotTelRad, numpy.radians(rotTelDeg), 10)
+
+
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()

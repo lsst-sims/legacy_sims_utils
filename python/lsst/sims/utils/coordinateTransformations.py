@@ -603,7 +603,7 @@ def getRotTelPos(ra, dec, lon, lat, mjd, rotSky):
 
     rotTel = _getRotTelPos(numpy.radians(ra), numpy.radians(dec),
                            numpy.radians(lon), numpy.radians(lat),
-                           mjd, numpy.radians(rotsky))
+                           mjd, numpy.radians(rotSky))
 
     return numpy.degrees(rotTel)
 
