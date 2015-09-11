@@ -806,7 +806,11 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=numpy.pi, longRad=
 def arcsecFromRadians(value):
     """
     Convert an angle in radians to arcseconds
+
+    Note: if you input None, you will get None back
     """
+    if value is None:
+        return None
 
     return 3600.0*numpy.degrees(value)
 
@@ -814,7 +818,11 @@ def arcsecFromRadians(value):
 def radiansFromArcsec(value):
     """
     Convert an angle in arcseconds to radians
+
+    Note: if you input None, you will get None back
     """
+    if value is None:
+        return None
 
     return numpy.radians(value/3600.0)
 
@@ -822,12 +830,22 @@ def radiansFromArcsec(value):
 def arcsecFromDegrees(value):
     """
     Convert an angle in degrees to arcseconds
+
+    Note: if you input None, you will get None back
     """
+    if value is None:
+        return None
+
     return 3600.0*value
 
 
 def degreesFromArcsec(value):
     """
     Convert an angle in arcseconds to degrees
+
+    Note: if you input None, you will get None back
     """
+    if value is None:
+        return None
+
     return value/3600.0
