@@ -517,8 +517,8 @@ def getRotSkyPos(ra, dec, lon, lat, mjd, rotTel):
     the relationship between rotSkyPos and rotTelPos.  This is due to a
     discrepancy between the time that OpSim uses as the MJD when calculating
     rotTelPos and the time that OpSim reports as being the actual expmjd
-    of the exposure (one is the beginning of the exposure; the
-    other is the middle of the exposure).
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
     """
 
     rotSky = _getRotSkyPos(numpy.radians(ra), numpy.radians(dec),
@@ -557,8 +557,8 @@ def _getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad):
     the relationship between rotSkyPos and rotTelPos.  This is due to a
     discrepancy between the time that OpSim uses as the MJD when calculating
     rotTelPos and the time that OpSim reports as being the actual expmjd
-    of the exposure (one is the beginning of the exposure; the
-    other is the middle of the exposure).
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
     """
     altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
@@ -597,8 +597,8 @@ def getRotTelPos(ra, dec, lon, lat, mjd, rotSky):
     the relationship between rotSkyPos and rotTelPos.  This is due to a
     discrepancy between the time that OpSim uses as the MJD when calculating
     rotTelPos and the time that OpSim reports as being the actual expmjd
-    of the exposure (one is the beginning of the exposure; the
-    other is the middle of the exposure).
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
     """
 
     rotTel = _getRotTelPos(numpy.radians(ra), numpy.radians(dec),
@@ -637,8 +637,8 @@ def _getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad):
     the relationship between rotSkyPos and rotTelPos.  This is due to a
     discrepancy between the time that OpSim uses as the MJD when calculating
     rotTelPos and the time that OpSim reports as being the actual expmjd
-    of the exposure (one is the beginning of the exposure; the
-    other is the middle of the exposure).
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
     """
     altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd)
 
