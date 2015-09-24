@@ -585,7 +585,7 @@ def getRotTelPos(ra, dec, lon, lat, mjd, rotSky):
     as ra and dec.  In this case, each MJD will be associated with the
     corresponding ra, dec pair.
 
-    @param [in] rotSkyRad is rotSkyPos in degrees
+    @param [in] rotSky is rotSkyPos in degrees
     (the angle of the field of view relative to the South pole given a
     rotator angle).  Can be a numpy array or a single value.  If a numpy array, should
     have the same length as ra and dec.  In this case, each rotSkyPos
