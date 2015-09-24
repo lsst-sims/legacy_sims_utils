@@ -280,8 +280,8 @@ class ObservationMetaData(object):
 
             self._bandpass = self._phoSimMetaData['Opsim_filter'][0]
 
-        if self._phoSimMetaData is not None and 'Opsim_raseeing' in self._phoSimMetaData:
-            if self._seeing is not None:
+        if self._phoSimMetaData is not None and 'Opsim_rawseeing' in self._phoSimMetaData:
+            if hasattr(self, '_seeing') and self._seeing is not None:
                 raise RuntimeError('WARNING in ObservationMetaDAta trying to overwrite seeing ' +
                                    'with phoSimMetaData')
 
