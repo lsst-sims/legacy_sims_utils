@@ -267,6 +267,48 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(d)) < self.tolerance)
             self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(d)) < self.tolerance)
 
+
+    def testAltAzRADecRoundTrip(self):
+        """
+        Test that altAzPaFromRaDec and raDecFromAltAz really invert each other
+        """
+
+        numpy.random.seed(42)
+        nSamples = 1000
+        mjd = 58350.0
+
+        alt_in = []
+        az_in = []
+        for alt in numpy.arange(0.0, 90.0, 10.0):
+            for az in numpy.arange(0.0, 360.0, 10.0):
+                alt_in.append(alt)
+                az_in.append(az)
+
+        alt_in = numpy.array(alt_in)
+        az_in = numpy.array(az_in)
+
+        for lon in (0.0, 90.0, 135.0):
+            for lat in (60.0, 30.0, -60.0, -30.0):
+
+                ra_in, dec_in = utils.raDecFromAltAz(alt_in, az_in, lon, lat, mjd)
+
+                self.assertFalse(numpy.isnan(ra_in).any())
+                self.assertFalse(numpy.isnan(dec_in).any())
+
+                alt_out, az_out, pa_out = utils.altAzPaFromRaDec(ra_in, dec_in, lon, lat, mjd)
+
+                self.assertFalse(numpy.isnan(pa_out).any())
+
+                for alt_c, az_c, alt_t, az_t in \
+                    zip(numpy.radians(alt_in), numpy.radians(az_in), numpy.radians(alt_out), numpy.radians(az_out)):
+
+                    distance = utils.arcsecFromRadians(utils.haversine(az_c, alt_c, az_t, alt_t))
+                    if az_c<0.01 or az_c>3.14159:
+                        self.assertAlmostEqual(distance, 0.0, 2)
+                    else:
+                        self.assertAlmostEqual(distance, 0.0, 8)
+
+
     def test_galacticFromEquatorial(self):
 
         ra=numpy.zeros((3),dtype=float)
