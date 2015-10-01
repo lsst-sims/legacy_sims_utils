@@ -238,7 +238,7 @@ class testCoordinateTransformations(unittest.TestCase):
 
     def test_raDecFromAltAz(self):
         """
-        Test conversion of Alt, Az t Ra, Dec
+        Test conversion of Alt, Az to Ra, Dec
         """
         numpy.random.seed(32)
         raIn = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
