@@ -489,8 +489,11 @@ def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     decRad = numpy.arcsin(sinLat*sinAlt+ cosLat*numpy.cos(altRad)*numpy.cos(azRad))
     costheta = (sinAlt - numpy.sin(decRad)*sinLat)/(numpy.cos(decRad)*cosLat)
     if altIsArray:
-        haRad0 = numpy.array([arcth if not numpy.isnan(arcth) else 0.5*numpy.pi*(1.0-numpy.sign(th))
-                              for th, arcth in zip(costheta, numpy.arccos(costheta))])
+        haRad0 =  numpy.arccos(costheta)
+        # Make sure there were no NaNs
+        nanSpots = numpy.where(numpy.isnan(haRad0))[0]
+        if numpy.size(nanSpots) > 0:
+            haRad0[nanSpots] = 0.5*numpy.pi*(1.0-numpy.sign(costheta[nanSpots]))
     else:
         haRad0 = numpy.arccos(costheta)
         if numpy.isnan(haRad0):
