@@ -413,6 +413,8 @@ def raDecFromAltAz(alt, az, lon, lat, mjd):
     @param [out] RA in degrees
 
     @param [out] Dec in degrees
+
+    Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
 
     ra, dec = _raDecFromAltAz(numpy.radians(alt), numpy.radians(az),
@@ -443,6 +445,8 @@ def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     @param [out] RA in radians
 
     @param [out] Dec in radians
+
+    Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
     if isinstance(longRad, numpy.ndarray):
         raise RuntimeError('cannot pass a numpy array of longitudes to raDecFromAltAz')
@@ -483,7 +487,21 @@ def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     cosLat = numpy.cos(latRad)
     sinLat = numpy.sin(latRad)
     decRad = numpy.arcsin(sinLat*sinAlt+ cosLat*numpy.cos(altRad)*numpy.cos(azRad))
-    haRad0 = numpy.arccos((sinAlt - numpy.sin(decRad)*sinLat)/(numpy.cos(decRad)*cosLat))
+    costheta = (sinAlt - numpy.sin(decRad)*sinLat)/(numpy.cos(decRad)*cosLat)
+    if altIsArray:
+        haRad0 =  numpy.arccos(costheta)
+        # Make sure there were no NaNs
+        nanSpots = numpy.where(numpy.isnan(haRad0))[0]
+        if numpy.size(nanSpots) > 0:
+            haRad0[nanSpots] = 0.5*numpy.pi*(1.0-numpy.sign(costheta[nanSpots]))
+    else:
+        haRad0 = numpy.arccos(costheta)
+        if numpy.isnan(haRad0):
+            if numpy.sign(costheta)>0.0:
+                haRad0 = 0.0
+            else:
+                haRad0 = numpy.pi
+
     haRad = numpy.where(numpy.sin(azRad)>=0.0, -1.0*haRad0, haRad0)
     raRad = numpy.radians(last*15.) - haRad
     return raRad, decRad
