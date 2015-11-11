@@ -1,7 +1,7 @@
 import numpy
 import inspect
 from .SpatialBounds import SpatialBounds
-from lsst.sims.utils import haversine, Site
+from lsst.sims.utils import haversine, Site, _icrsFromObserved, _observedFromICRS
 
 __all__ = ["ObservationMetaData"]
 
@@ -14,7 +14,7 @@ class ObservationMetaData(object):
 
     **Parameters**
 
-        * unrefracted[RA,Dec] float
+        * pointing[RA,Dec] float
           The coordinates of the pointing (in degrees)
 
         * boundType characterizes the shape of the field of view.  Current options
@@ -27,7 +27,12 @@ class ObservationMetaData(object):
           half the width of the RA side of the box and the second argument is half the
           Dec side of the box.
           If boundType is 'circle,' this will be the radius of the circle.
-          The bound will be centered on the point (unrefractedRA, unrefractedDec)
+          The bound will be centered on the point (pointingRA, pointingDec),
+          however, because objects are stored at their mean RA, Dec in the LSST databases
+          (i.e. they are stored at values of RA, Dec which neglect precession, nutation,
+          aberration, and refraction), the bounds applied to database queries will be made
+          slightly larger so that queries can be reasonably expected to return all of the
+          objects within the desired field of view once those corrections have been applied.
 
         * mjd : float (optional)
           The MJD of the observation
@@ -54,6 +59,11 @@ class ObservationMetaData(object):
           Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
           bandpassName
 
+        * epoch (optional) is the epoch used for converting from pointingRA, Dec to
+          meanRA, Dec when constructing query bounds on a database.  This defaults
+          to 2000.0 and should only be changed if you plan to use this
+          ObservationMetaData to query a database with meanRA, Dec stored in a
+          system that is not measured against the equinox at Julian epoch 2000.0
 
         * rotSkyPos float (optional)
           The orientation of the telescope in degrees.
@@ -72,14 +82,14 @@ class ObservationMetaData(object):
         This should be consistent with PhoSim conventions.
 
     **Examples**::
-        >>> data = ObservationMetaData(boundType='box', unrefractedRA=5.0, unrefractedDec=15.0,
+        >>> data = ObservationMetaData(boundType='box', pointingRA=5.0, pointingDec=15.0,
                     boundLength=5.0)
 
     """
     def __init__(self, boundType=None, boundLength=None,
-                 mjd=None, unrefractedRA=None, unrefractedDec=None, rotSkyPos=None,
+                 mjd=None, pointingRA=None, pointingDec=None, rotSkyPos=None,
                  bandpassName=None, phoSimMetaData=None, site=Site(), m5=None, skyBrightness=None,
-                 seeing=None):
+                 seeing=None, epoch=2000.0):
 
         self._bounds = None
         self._boundType = boundType
@@ -87,21 +97,22 @@ class ObservationMetaData(object):
         self._bandpass = bandpassName
         self._skyBrightness = skyBrightness
         self._site = site
+        self._epoch = epoch
 
         if rotSkyPos is not None:
             self._rotSkyPos = numpy.radians(rotSkyPos)
         else:
             self._rotSkyPos = None
 
-        if unrefractedRA is not None:
-            self._unrefractedRA = numpy.radians(unrefractedRA)
+        if pointingRA is not None:
+            self._pointingRA = numpy.radians(pointingRA)
         else:
-            self._unrefractedRA = None
+            self._pointingRA = None
 
-        if unrefractedDec is not None:
-            self._unrefractedDec = numpy.radians(unrefractedDec)
+        if pointingDec is not None:
+            self._pointingDec = numpy.radians(pointingDec)
         else:
-            self._unrefractedDec = None
+            self._pointingDec = None
 
         if boundLength is not None:
             self._boundLength = numpy.radians(boundLength)
@@ -125,7 +136,7 @@ class ObservationMetaData(object):
         self._seeing = self._assignDictKeyedToBandpass(seeing, 'seeing')
 
         #this should be done after phoSimMetaData is assigned, just in case
-        #self._assignPhoSimMetadata overwrites unrefractedRA/Dec
+        #self._assignPhoSimMetadata overwrites pointingRA/Dec
         if self._bounds is None:
             self._buildBounds()
 
@@ -137,8 +148,8 @@ class ObservationMetaData(object):
 
         mydict['boundType'] = self.boundType
         mydict['boundLength'] = self.boundLength
-        mydict['unrefractedRA'] = self.unrefractedRA
-        mydict['unrefractedDec'] = self.unrefractedDec
+        mydict['pointingRA'] = self.pointingRA
+        mydict['pointingDec'] = self.pointingDec
         mydict['rotSkyPos'] = self.rotSkyPos
 
         mydict['mjd'] = self.mjd
@@ -217,8 +228,8 @@ class ObservationMetaData(object):
         """
         Set up the member variable self._bounds.
 
-        If self._boundType, self._boundLength, self._unrefractedRA, or
-        self._unrefractedDec are None, nothing will happen.
+        If self._boundType, self._boundLength, self._pointingRA, or
+        self._pointingDec are None, nothing will happen.
         """
 
         if self._boundType is None:
@@ -227,17 +238,32 @@ class ObservationMetaData(object):
         if self._boundLength is None:
             return
 
-        if self._unrefractedRA is None or self._unrefractedDec is None:
+        if self._pointingRA is None or self._pointingDec is None:
             return
 
-        self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._unrefractedRA, self._unrefractedDec,
-                                                     self._boundLength)
+        if self._mjd is None:
+            raise RuntimeError("You cannot build spatial bounds with an ObservationMetaData that "
+                               "does not have an MJD")
+
+        if self._epoch is None:
+            raise RuntimeError("You cannot build spatial bounds with an ObservationMetaData that "
+                               "does not have an epoch")
+
+        raICRS, decICRS = _icrsFromObserved(numpy.array([self._pointingRA]), numpy.array([self._pointingDec]),
+                                            obs_metadata=self, epoch=self._epoch)
+
+        # we will adjust the boundLength by half this much to make sure that we get all of the
+        # objects in our field of view
+        fudge_factor = haversine(raICRS[0], decICRS[0], self._pointingRA, self._pointingDec)
+
+        self._bounds = SpatialBounds.getSpatialBounds(self._boundType, raICRS[0], decICRS[0],
+                                                     self._boundLength + 0.5*fudge_factor)
 
     def _assignPhoSimMetaData(self, metaData):
         """
         Assign the dict metaData to be the associated phoSimMetaData dict of this object.
 
-        In doing so, this method will copy unrefractedRA, unrefractedDec, rotSkyPos,
+        In doing so, this method will copy pointingRA, pointingDec, rotSkyPos,
         MJD, and bandpass from the metaData (if present) to the corresponding
         member variables.  If by doing so you try to overwrite a parameter that you
         have already set by hand, this method will raise an exception.
@@ -245,86 +271,95 @@ class ObservationMetaData(object):
 
         self._phoSimMetaData = metaData
 
-        #overwrite member variables with values from the phoSimMetaData
-        if self._phoSimMetaData is not None and 'Opsim_expmjd' in self._phoSimMetaData:
-            if self._mjd is not None:
-                raise RuntimeError('WARNING in ObservationMetaData trying to overwrite mjd with phoSimMetaData')
+        if self._phoSimMetaData is not None:
+            #overwrite member variables with values from the phoSimMetaData
+            if 'Opsim_expmjd' in self._phoSimMetaData:
+                if self._mjd is not None:
+                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite mjd with phoSimMetaData')
 
-            self._mjd = self._phoSimMetaData['Opsim_expmjd'][0]
+                self._mjd = self._phoSimMetaData['Opsim_expmjd'][0]
 
-        if self._phoSimMetaData is not None and 'Unrefracted_RA' in self._phoSimMetaData:
-            if self._unrefractedRA is not None:
-                raise RuntimeError('WARNING in ObservationMetaData trying to overwrite unrefractedRA ' +
-                                   'with phoSimMetaData')
+            if 'Opsim_rotskypos' in self._phoSimMetaData:
+                if self._rotSkyPos is not None:
+                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite rotSkyPos ' +
+                                       'with phoSimMetaData')
 
-            self._unrefractedRA = self._phoSimMetaData['Unrefracted_RA'][0]
+                self._rotSkyPos = self._phoSimMetaData['Opsim_rotskypos'][0]
 
-        if self._phoSimMetaData is not None and 'Opsim_rotskypos' in self._phoSimMetaData:
-            if self._rotSkyPos is not None:
-                raise RuntimeError('WARNING in ObservationMetaData trying to overwrite rotSkyPos ' +
-                                   'with phoSimMetaData')
 
-            self._rotSkyPos = self._phoSimMetaData['Opsim_rotskypos'][0]
+            if 'Opsim_filter' in self._phoSimMetaData:
+                if self._bandpass is not None:
+                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite bandpass ' +
+                                       'with phoSimMetaData')
 
-        if self._phoSimMetaData is not None and 'Unrefracted_Dec' in self._phoSimMetaData:
-            if self._unrefractedDec is not None:
-                raise RuntimeError('WARNING in ObservationMetaData trying to overwrite unrefractedDec ' +
-                                   'with phoSimMetaData')
+                self._bandpass = self._phoSimMetaData['Opsim_filter'][0]
 
-            self._unrefractedDec = self._phoSimMetaData['Unrefracted_Dec'][0]
+            if 'Opsim_rawseeing' in self._phoSimMetaData:
+                if hasattr(self, '_seeing') and self._seeing is not None:
+                    raise RuntimeError('WARNING in ObservationMetaDAta trying to overwrite seeing ' +
+                                       'with phoSimMetaData')
 
-        if self._phoSimMetaData is not None and 'Opsim_filter' in self._phoSimMetaData:
-            if self._bandpass is not None:
-                raise RuntimeError('WARNING in ObservationMetaData trying to overwrite bandpass ' +
-                                   'with phoSimMetaData')
+            if 'pointingDec' in self._phoSimMetaData and 'pointingRA' not in self._phoSimMetaData:
+                raise RuntimeError("In ObservationMetaData, your phoSimMetaData specifies pointingDec, "
+                                   "but not pointingRA")
 
-            self._bandpass = self._phoSimMetaData['Opsim_filter'][0]
+            if 'pointingRA' in self._phoSimMetaData and 'pointingDec' not in self._phoSimMetaData:
+                raise RuntimeError("In ObservationMetaData, your phoSimMetaData specifies pointingRA, "
+                                   "but not pointingDec")
 
-        if self._phoSimMetaData is not None and 'Opsim_rawseeing' in self._phoSimMetaData:
-            if hasattr(self, '_seeing') and self._seeing is not None:
-                raise RuntimeError('WARNING in ObservationMetaDAta trying to overwrite seeing ' +
-                                   'with phoSimMetaData')
+            if 'pointingRA' in self._phoSimMetaData and 'pointingDec' in self._phoSimMetaData:
+                if self._pointingRA is not None:
+                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite pointingRA ' +
+                                       'with phoSimMetaData')
+
+                if self._pointingDec is not None:
+                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite pointingDec ' +
+                                       'with phoSimMetaData')
+
+                self._pointingRA = self._phoSimMetaData['pointingRA'][0]
+
+                self._pointingDec = self._phoSimMetaData['pointingDec'][0]
 
         self._buildBounds()
 
     @property
-    def unrefractedRA(self):
+    def pointingRA(self):
         """
-        The above-the-atmospher RA of the telescope pointing in degrees.
+        The RA of the telescope pointing in degrees.
         """
-        if self._unrefractedRA is not None:
-            return numpy.degrees(self._unrefractedRA)
+        if self._pointingRA is not None:
+            return numpy.degrees(self._pointingRA)
         else:
             return None
 
-    @unrefractedRA.setter
-    def unrefractedRA(self, value):
+    @pointingRA.setter
+    def pointingRA(self, value):
         if self._phoSimMetaData is not None:
-            if 'Unrefracted_RA' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting Unrefracted_RA ' +
+            if 'pointingRA' in self._phoSimMetaData:
+                raise RuntimeError('WARNING overwriting pointingRA ' +
                                    'which was set by phoSimMetaData')
 
-        self._unrefractedRA = numpy.radians(value)
+        self._pointingRA = numpy.radians(value)
         self._buildBounds()
 
     @property
-    def unrefractedDec(self):
+    def pointingDec(self):
         """
-        The above-the-atmosphere Dec of the telescope pointing in degrees.
+        The Dec of the telescope pointing in degrees.
         """
-        if self._unrefractedDec is not None:
-            return numpy.degrees(self._unrefractedDec)
+        if self._pointingDec is not None:
+            return numpy.degrees(self._pointingDec)
         else:
             return None
 
-    @unrefractedDec.setter
-    def unrefractedDec(self, value):
+    @pointingDec.setter
+    def pointingDec(self, value):
         if self._phoSimMetaData is not None:
-            if 'Unrefracted_Dec' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting Unrefracted_Dec ' +
+            if 'pointingDec' in self._phoSimMetaData:
+                raise RuntimeError('WARNING overwriting pointingDec ' +
                                    'which was set by phoSimMetaData')
 
-        self._unrefractedDec = numpy.radians(value)
+        self._pointingDec = numpy.radians(value)
         self._buildBounds()
 
     @property
@@ -509,7 +544,7 @@ class ObservationMetaData(object):
         """
         A dict of parameters expected by PhoSim characterizing this
         ObservationMetaData.  Note that setting this paramter
-        could overwrite unrefractedRA, unrefractedDec, rotSkyPos,
+        could overwrite pointingRA, pointingDec, rotSkyPos,
         MJD, or bandpass and m5 (if they are present in this
         dict).
         """
@@ -517,11 +552,11 @@ class ObservationMetaData(object):
 
     @phoSimMetaData.setter
     def phoSimMetaData(self, value):
-        if 'Unrefracted_RA' in value:
-            self._unrefractedRA = None
+        if 'pointingRA' in value:
+            self._pointingRA = None
 
-        if 'Unrefracted_Dec' in value:
-            self._unrefractedDec = None
+        if 'pointingDec' in value:
+            self._pointingDec = None
 
         if 'Opsim_rotskypos' in value:
             self._rotSkyPos = None

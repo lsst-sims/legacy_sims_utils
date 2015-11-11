@@ -1033,9 +1033,9 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
         raise RuntimeError("Cannot call raDecFromPupilCoords without rotSkyPos " + \
                            "in obs_metadata")
 
-    if obs_metadata.unrefractedRA is None or obs_metadata.unrefractedDec is None:
+    if obs_metadata.pointingRA is None or obs_metadata.pointingDec is None:
         raise RuntimeError("Cannot call raDecFromPupilCoords "+ \
-                          "without unrefractedRA, unrefractedDec in obs_metadata")
+                          "without pointingRA, pointingDec in obs_metadata")
 
     if obs_metadata.mjd is None:
         raise RuntimeError("Cannot calculate x_pupil, y_pupil without mjd " + \
@@ -1050,13 +1050,6 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     #This is because we will be reversing the rotation performed in that other method.
     theta = -1.0*obs_metadata._rotSkyPos
 
-    #correct for precession and nutation
-    pointingRA=numpy.array([obs_metadata._unrefractedRA])
-    pointingDec=numpy.array([obs_metadata._unrefractedDec])
-
-    #transform from mean, ICRS pointing coordinates to observed pointing coordinates
-    boreRA, boreDec = _observedFromICRS(pointingRA, pointingDec, epoch=epoch, obs_metadata=obs_metadata)
-
     x_g = xPupil*numpy.cos(theta) - yPupil*numpy.sin(theta)
     y_g = xPupil*numpy.sin(theta) + yPupil*numpy.cos(theta)
 
@@ -1068,7 +1061,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     raOut = []
     decOut = []
     for xx, yy in zip(x_g, y_g):
-        rr, dd = palpy.dtp2s(xx, yy, boreRA[0], boreDec[0])
+        rr, dd = palpy.dtp2s(xx, yy, obs_metadata._pointingRA, obs_metadata._pointingDec)
         raOut.append(rr)
         decOut.append(dd)
 
@@ -1144,21 +1137,16 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
         #there is no observation meta data on which to base astrometry
         raise RuntimeError("Cannot calculate [x,y]_focal_nominal without obs_metadata.rotSkyPos")
 
-    if obs_metadata.unrefractedRA is None or obs_metadata.unrefractedDec is None:
-        raise RuntimeError("Cannot calculate [x,y]_focal_nominal without unrefracted RA and Dec in obs_metadata")
+    if obs_metadata.pointingRA is None or obs_metadata.pointingDec is None:
+        raise RuntimeError("Cannot calculate [x,y]_focal_nominal without pointingRA and Dec in obs_metadata")
 
     theta = obs_metadata._rotSkyPos
-
-    # convert pointing RA, Dec from above-the-atmosphere mean RA, Dec to observed RA, Dec
-    pointingRA=numpy.array([obs_metadata._unrefractedRA])
-    pointingDec=numpy.array([obs_metadata._unrefractedDec])
-    boreRA, boreDec = _observedFromICRS(pointingRA, pointingDec, epoch=epoch, obs_metadata=obs_metadata)
 
     #palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
     #with a tangent point at (trueRA, trueDec)
     #
     try:
-        x, y = palpy.ds2tpVector(ra_in,dec_in,boreRA[0],boreDec[0])
+        x, y = palpy.ds2tpVector(ra_in, dec_in, obs_metadata._pointingRA, obs_metadata._pointingDec)
     except:
         # apparently, one of your ra/dec values was improper; we will have to do this
         # element-wise, putting NaN in the place of the bad values
@@ -1166,7 +1154,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
         y = []
         for rr, dd in zip(ra_in, dec_in):
             try:
-                xx, yy = palpy.ds2tp(rr, dd, boreRA[0], boreDec[0])
+                xx, yy = palpy.ds2tp(rr, dd, obs_metadata._pointingRA, obs_metadata._pointingDec)
             except:
                 xx = numpy.NaN
                 yy = numpy.NaN

@@ -102,8 +102,8 @@ class astrometryUnitTest(unittest.TestCase):
         #these would be set to meaningful values.  Because we are generating
         #an artificial set of inputs that must comport to the baseline SLALIB
         #inputs, these are set arbitrarily by hand
-        self.metadata['Unrefracted_RA'] = (numpy.radians(200.0), float)
-        self.metadata['Unrefracted_Dec'] = (numpy.radians(-30.0), float)
+        self.metadata['pointingRA'] = (numpy.radians(200.0), float)
+        self.metadata['pointingDec'] = (numpy.radians(-30.0), float)
         self.metadata['Opsim_rotskypos'] = (1.0, float)
 
         self.obs_metadata=ObservationMetaData(mjd=50984.371741,
@@ -235,21 +235,21 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertRaises(RuntimeError, _observedFromAppGeo, ra, dec)
 
         #test without site
-        dummy=ObservationMetaData(unrefractedRA=obs_metadata.unrefractedRA,
-                                  unrefractedDec=obs_metadata.unrefractedDec,
+        dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
+                                  pointingDec=obs_metadata.pointingDec,
                                   mjd=obs_metadata.mjd,
                                   site=None)
         self.assertRaises(RuntimeError, _observedFromAppGeo, ra, dec, obs_metadata=dummy)
 
         #test without mjd
-        dummy=ObservationMetaData(unrefractedRA=obs_metadata.unrefractedRA,
-                                  unrefractedDec=obs_metadata.unrefractedDec,
+        dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
+                                  pointingDec=obs_metadata.pointingDec,
                                   site=Site())
         self.assertRaises(RuntimeError, _observedFromAppGeo, ra, dec, obs_metadata=dummy)
 
         #test mismatches
-        dummy=ObservationMetaData(unrefractedRA=obs_metadata.unrefractedRA,
-                                  unrefractedDec=obs_metadata.unrefractedDec,
+        dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
+                                  pointingDec=obs_metadata.pointingDec,
                                   mjd=obs_metadata.mjd,
                                   site=Site())
 
@@ -267,14 +267,14 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertRaises(RuntimeError, _observedFromICRS, ra, dec, epoch=2000.0)
 
         #test without mjd
-        dummy=ObservationMetaData(unrefractedRA=obs_metadata.unrefractedRA,
-                                  unrefractedDec=obs_metadata.unrefractedDec,
+        dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
+                                  pointingDec=obs_metadata.pointingDec,
                                   site=obs_metadata.site)
         self.assertRaises(RuntimeError, _observedFromICRS, ra, dec, epoch=2000.0, obs_metadata=dummy)
 
         #test that it actually runs
-        dummy=ObservationMetaData(unrefractedRA=obs_metadata.unrefractedRA,
-                                  unrefractedDec=obs_metadata.unrefractedDec,
+        dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
+                                  pointingDec=obs_metadata.pointingDec,
                                   site=obs_metadata.site,
                                   mjd=obs_metadata.mjd)
 
@@ -473,7 +473,7 @@ class astrometryUnitTest(unittest.TestCase):
                                                              site.latitude,
                                                              mjd)
 
-                        obs = ObservationMetaData(unrefractedRA=raPointing, unrefractedDec=decPointing,
+                        obs = ObservationMetaData(pointingRA=raPointing, pointingDec=decPointing,
                                                   mjd=mjd, site=site)
 
                         params = pal.mappa(2000.0, mjd)
@@ -527,13 +527,13 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertEqual(context.exception.args[0],
                          "cannot call icrsFromObserved; obs_metadata is None")
 
-        obs = ObservationMetaData(unrefractedRA=23.0, unrefractedDec=-19.0)
+        obs = ObservationMetaData(pointingRA=23.0, pointingDec=-19.0)
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _icrsFromObserved(ra_in, dec_in, epoch=2000.0, obs_metadata=obs)
         self.assertEqual(context.exception.args[0],
                          "cannot call icrsFromObserved; obs_metadata.mjd is None")
 
-        obs = ObservationMetaData(unrefractedRA=23.0, unrefractedDec=-19.0, mjd=52344.0)
+        obs = ObservationMetaData(pointingRA=23.0, pointingDec=-19.0, mjd=52344.0)
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _icrsFromObserved(ra_in, dec_in, obs_metadata=obs)
         self.assertEqual(context.exception.args[0],
@@ -674,7 +674,7 @@ class astrometryUnitTest(unittest.TestCase):
                                              numpy.degrees(site.latitude),
                                              mjd)
 
-        obs = ObservationMetaData(unrefractedRA=raCenter, unrefractedDec=decCenter,
+        obs = ObservationMetaData(pointingRA=raCenter, pointingDec=decCenter,
                                   mjd=58350.0,
                                   site=site)
 
@@ -729,7 +729,7 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertEqual(context.exception.args[0],
                          "Cannot call appGeoFromObserved without an obs_metadata")
 
-        obs = ObservationMetaData(unrefractedRA=25.0, unrefractedDec=-12.0,
+        obs = ObservationMetaData(pointingRA=25.0, pointingDec=-12.0,
                                   site=None, mjd=52000.0)
 
         with self.assertRaises(RuntimeError) as context:
@@ -737,13 +737,13 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertEqual(context.exception.args[0],
                          "Cannot call appGeoFromObserved: obs_metadata has no site info")
 
-        obs = ObservationMetaData(unrefractedRA=25.0, unrefractedDec=-12.0)
+        obs = ObservationMetaData(pointingRA=25.0, pointingDec=-12.0)
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _appGeoFromObserved(ra_in, dec_in, obs_metadata=obs)
         self.assertEqual(context.exception.args[0],
                          "Cannot call appGeoFromObserved: obs_metadata has no mjd")
 
-        obs = ObservationMetaData(unrefractedRA=25.0, unrefractedDec=-12.0, mjd=52000.0)
+        obs = ObservationMetaData(pointingRA=25.0, pointingDec=-12.0, mjd=52000.0)
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _appGeoFromObserved(ra_in[:2], dec_in, obs_metadata=obs)
         self.assertEqual(context.exception.args[0],
