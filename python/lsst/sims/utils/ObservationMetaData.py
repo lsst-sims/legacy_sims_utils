@@ -257,7 +257,7 @@ class ObservationMetaData(object):
         fudge_factor = haversine(raICRS[0], decICRS[0], self._pointingRA, self._pointingDec)
 
         self._bounds = SpatialBounds.getSpatialBounds(self._boundType, raICRS[0], decICRS[0],
-                                                     self._boundLength + 0.5*fudge_factor)
+                                                     self._boundLength + fudge_factor)
 
     def _assignPhoSimMetaData(self, metaData):
         """
