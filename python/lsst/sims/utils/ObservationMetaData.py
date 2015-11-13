@@ -252,12 +252,12 @@ class ObservationMetaData(object):
         raICRS, decICRS = _icrsFromObserved(numpy.array([self._pointingRA]), numpy.array([self._pointingDec]),
                                             obs_metadata=self, epoch=self._epoch)
 
-        # we will adjust the boundLength by half this much to make sure that we get all of the
+        # we will adjust the boundLength by this much to make sure that we get all of the
         # objects in our field of view
-        fudge_factor = haversine(raICRS[0], decICRS[0], self._pointingRA, self._pointingDec)
+        offset = haversine(raICRS[0], decICRS[0], self._pointingRA, self._pointingDec)
 
         self._bounds = SpatialBounds.getSpatialBounds(self._boundType, raICRS[0], decICRS[0],
-                                                     self._boundLength + fudge_factor)
+                                                     self._boundLength + offset)
 
     def _assignPhoSimMetaData(self, metaData):
         """
