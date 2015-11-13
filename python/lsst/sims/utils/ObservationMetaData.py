@@ -329,7 +329,7 @@ class ObservationMetaData(object):
 
         ddec_test_max = numpy.abs(dec_test_icrs - decICRS[0]).max()
         if ddec_test_max>ddecMax:
-            ddecMax = dra_test_max
+            ddecMax = ddec_test_max
 
         return [draMax, ddecMax]
 
