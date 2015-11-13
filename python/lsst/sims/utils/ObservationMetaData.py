@@ -251,16 +251,15 @@ class ObservationMetaData(object):
 
         radius = self._boundLength
 
-        rr_list = numpy.arange(0.01*radius, 1.11*radius, 0.1*radius)
-        theta_list = numpy.arange(0.0, 2.0*numpy.pi+0.01, 0.2*numpy.pi)
+        theta_list = numpy.arange(0.0, 2.0*numpy.pi+0.01, 0.02*numpy.pi)
 
         ra_test_list = []
         dec_test_list = []
-        for rr in rr_list:
-            for theta in theta_list:
-                ra_test, dec_test = _raDecFromNativeLonLat(theta, 0.5*numpy.pi-rr, self._pointingRA, self._pointingDec)
-                ra_test_list.append(ra_test)
-                dec_test_list.append(dec_test)
+        for theta in theta_list:
+            ra_test, dec_test = _raDecFromNativeLonLat(theta, 0.5*numpy.pi-radius, self._pointingRA, self._pointingDec)
+            dd = haversine(ra_test, dec_test, self._pointingRA, self._pointingDec)
+            ra_test_list.append(ra_test)
+            dec_test_list.append(dec_test)
 
         ra_test_icrs, dec_test_icrs = _icrsFromObserved(numpy.array(ra_test_list),
                                                         numpy.array(dec_test_list),
