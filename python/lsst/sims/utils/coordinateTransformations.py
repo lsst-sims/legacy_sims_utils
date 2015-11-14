@@ -737,8 +737,8 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
 
     rotSkyPos = _getRotSkyPos(raRad, decRad, longRad, latRad, mjd, rotTelRad)
     obsMd['Opsim_filter'] = band
-    obsMd['Unrefracted_RA'] = raRad
-    obsMd['Unrefracted_Dec'] = decRad
+    obsMd['pointingRA'] = raRad
+    obsMd['pointingDec'] = decRad
     obsMd['Opsim_rotskypos'] = rotSkyPos
     obsMd['Opsim_rottelpos'] = rotTelRad
     obsMd['Unrefracted_Altitude'] = altRad
