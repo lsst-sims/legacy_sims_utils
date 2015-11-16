@@ -1143,7 +1143,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     theta = obs_metadata._rotSkyPos
 
     #palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
-    #with a tangent point at (trueRA, trueDec)
+    #with a tangent point at (pointingRA, pointingDec)
     #
     try:
         x, y = palpy.ds2tpVector(ra_in, dec_in, obs_metadata._pointingRA, obs_metadata._pointingDec)
