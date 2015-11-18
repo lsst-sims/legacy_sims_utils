@@ -4,6 +4,7 @@ import palpy
 import dutLookup as dut
 
 __all__ = ["taiFromUtc", "utcFromTai",
+           "dutFromUtc",
            "ut1FromUtc", "utcFromUt1"]
 
 
@@ -44,6 +45,30 @@ def utcFromTai(tai):
     return np.interp(tai, tai_arr, utc_arr)
 
 
+def dutFromUtc(utc):
+    """
+    Use data downloaded from
+
+    ftp://cddis.gsfc.nasa.gov/pub/products/iers/
+
+    to return UT1-UTC as a function of UTC
+
+    @param [in] UTC as an MJD
+
+    @param [out] UT1-UTC in seconds
+    """
+
+    if utc<dut._mjd_arr[0] or utc>dut._mjd_arr[-1]:
+        warnings.warn("UTC = %e is outside of the the bounds " % utc
+                      + "for which we have UT1-UTC "
+                      + "data (%e <= utc <= %e)\n" % (dut._mjd_arr[0], dut._mjd_arr[-1])
+                      + "We will return UT1-UTC = 0, for lack of a better idea")
+
+        return 0.0
+
+    return np.interp(utc, dut._mjd_arr, dut._dut_arr)
+
+
 def ut1FromUtc(utc):
     """
     Use data downloaded from
@@ -57,17 +82,8 @@ def ut1FromUtc(utc):
     @param [out] UT1 as an MJD
     """
 
-    if utc<dut._mjd_arr[0] or utc>dut._mjd_arr[-1]:
-        warnings.warn("UTC = %e is outside of the the bounds " % utc
-                      + "for which we have UT1-UTC "
-                      + "data (%e <= utc <= %e)\n" % (dut._mjd_arr[0], dut._mjd_arr[-1])
-                      + "We will return ut1 = utc, for lack of a better idea")
-
-        return utc
-
     sec_to_days = 1.0/86400.0
-
-    dt = np.interp(utc, dut._mjd_arr, dut._dut_arr)
+    dt = dutFromUtc(utc)
     return utc + dt*sec_to_days
 
 
