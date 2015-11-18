@@ -161,6 +161,28 @@ class TimeTest(unittest.TestCase):
                 self.assertAlmostEqual(utc_test, utc, 15)
 
 
+    def test_ut1_from_utc(self):
+        """
+        Test our conversion from UT1 to UTC by just checking that the
+        values from our lookup table are properly applied.
+        """
+
+        utc_control = [48622.0, 48638.0, 49528.0, 51638.0,
+                       53933.0]
+
+        dt_control = [-0.12516880, -0.16103330, -0.20954640, 0.27327980,
+                      0.18471120]
+
+        sec_to_day = 1.0/86400.0
+        for utc, dt in zip(utc_control, dt_control):
+            ut1 = utils.ut1FromUtc(utc)
+            dd = (ut1-utc)/sec_to_day
+            self.assertAlmostEqual(dd, dt, 6)
+            # adding dt to the utc introduces some rounding error,
+            # so we do not get back the full 7 decimal places
+            # specified by the data
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
