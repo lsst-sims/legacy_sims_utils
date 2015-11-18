@@ -1,7 +1,7 @@
 import numpy as np
 import warnings
 import palpy
-import dutLookup as dut
+from lsst.sims.utils import Ut1MinusUtcData
 
 __all__ = ["taiFromUtc", "utcFromTai",
            "dutFromUtc",
@@ -58,15 +58,15 @@ def dutFromUtc(utc):
     @param [out] UT1-UTC in seconds
     """
 
-    if utc<dut._mjd_arr[0] or utc>dut._mjd_arr[-1]:
+    if utc<Ut1MinusUtcData._mjd_arr[0] or utc>Ut1MinusUtcData._mjd_arr[-1]:
         warnings.warn("UTC = %e is outside of the the bounds " % utc
                       + "for which we have UT1-UTC "
-                      + "data (%e <= utc <= %e)\n" % (dut._mjd_arr[0], dut._mjd_arr[-1])
+                      + "data (%e <= utc <= %e)\n" % (Ut1MinusUtcData._mjd_arr[0], Ut1MinusUtcData._mjd_arr[-1])
                       + "We will return UT1-UTC = 0, for lack of a better idea")
 
         return 0.0
 
-    return np.interp(utc, dut._mjd_arr, dut._dut_arr)
+    return np.interp(utc, Ut1MinusUtcData._mjd_arr, Ut1MinusUtcData._dut_arr)
 
 
 def ut1FromUtc(utc):
