@@ -14,7 +14,6 @@ __all__ = ["_galacticFromEquatorial", "galacticFromEquatorial",
            "haversine",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",
-           "taiFromUtc", "utcFromTai",
            "arcsecFromRadians", "radiansFromArcsec",
            "arcsecFromDegrees", "degreesFromArcsec"]
 
@@ -820,44 +819,6 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=numpy.pi, longRad=
     '''
     rotTelRad = _getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
-
-
-def taiFromUtc(utc):
-    """
-    Use the palpy method palDat to convert from Coordinated Universal Time
-    (UTC) to International Atomic Time (TAI)
-
-    @param [in] utc is the UTC time as an MJD
-
-    @param [out] TAI time as an MJD
-    """
-
-    dt = palpy.dat(utc) # returns TAI-UTC in seconds
-    return utc + dt/86400.0
-
-
-def utcFromTai(tai):
-    """
-    Use the palpy method palDat to convert from International Atomic Time
-    (TAI) to Coordinated Universal Time (UTC)
-
-    @param [in] tai is the TAI time as an MJD
-
-    @param [out] utc time as an MJD
-    """
-
-    # because the PALPY method only returns TAI-UTC as a function
-    # of UTC, we will have to construct an array of TAI and UTC
-    # values using taiFromUtc and interpolate along them
-
-    sec_to_day = 1.0/86400.0
-
-    dt_approx = palpy.dat(tai)*sec_to_day
-    utc_arr = numpy.arange(tai - 1.0*dt_approx, tai+1.0*dt_approx, 1.0e-6)
-    tai_arr = numpy.array([taiFromUtc(utc) for utc in utc_arr])
-
-    return numpy.interp(tai, tai_arr, utc_arr)
-
 
 
 def arcsecFromRadians(value):
