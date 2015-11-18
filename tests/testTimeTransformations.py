@@ -241,7 +241,7 @@ class TimeTest(unittest.TestCase):
 
     def test_ut1_warnings(self):
         """
-        Test that a warning is raised if you as ut1FromUtc to calculate
+        Test that a warning is raised if you ask ut1FromUtc to calculate
         UT1 for a UTC value that is outside the span of our data.
         """
 
