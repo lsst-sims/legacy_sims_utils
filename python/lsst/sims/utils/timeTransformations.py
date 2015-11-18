@@ -1,3 +1,9 @@
+"""
+For definitions of all (or, at least, most of) the time systems handled in this file, see
+
+https://www.cv.nrao.edu/~rfisher/Ephemerides/times.html
+"""
+
 import numpy as np
 import warnings
 import palpy
