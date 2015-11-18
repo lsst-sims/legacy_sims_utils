@@ -180,6 +180,30 @@ class TimeTest(unittest.TestCase):
             self.assertAlmostEqual(dt, dt_test, 7)
 
 
+    def test_dut_warnings(self):
+        """
+        Test that a warning is raised if you ask dutFromUTC to calculate
+        UT1-UTC for a UTC value that is outside the span of our data.
+        """
+
+        # Note: the values fed to dutFromUtc in this unit test must be
+        # distinct from the values passed into test_ut1_warnings,
+        # otherwise, warnings will suppress the warning as already
+        # having been raised
+
+        with warnings.catch_warnings(record=True) as context:
+            ut1 = utils.dutFromUtc(48619.5)
+        self.assertEqual(ut1, 0.0)
+        self.assertIn("We will return UT1-UTC = 0, for lack of a better idea",
+                      str(context[-1].message))
+
+        with warnings.catch_warnings(record=True) as context:
+            ut1 = utils.dutFromUtc(57712.5)
+        self.assertEqual(ut1, 0.0)
+        self.assertIn("We will return UT1-UTC = 0, for lack of a better idea",
+                      str(context[-1].message))
+
+
     def test_ut1_from_utc(self):
         """
         Test our conversion from UT1 to UTC by just checking that the
@@ -220,6 +244,11 @@ class TimeTest(unittest.TestCase):
         Test that a warning is raised if you as ut1FromUtc to calculate
         UT1 for a UTC value that is outside the span of our data.
         """
+
+        # Note: the values fed to ut1FromUtc in this unit test must be
+        # distinct from the values passed into test_dut_warnings,
+        # otherwise, warnings will suppress the warning as already
+        # having been raised
 
         with warnings.catch_warnings(record=True) as context:
             ut1 = utils.ut1FromUtc(48621.5)
