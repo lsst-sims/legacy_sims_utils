@@ -263,6 +263,38 @@ class TimeTest(unittest.TestCase):
                       str(context[-1].message))
 
 
+    def test_dtt_from_utc(self):
+        """
+        Test our method to find TT-TAI in seconds
+        """
+
+        precision = 11 # expect 0.1 nanonsecond precision
+
+        self.assertAlmostEqual(utils.dttFromUtc(42588.0), 32.1840, precision)
+
+        self.assertAlmostEqual(utils.dttFromUtc(57020.0), 32.1840276970, precision)
+
+        self.assertAlmostEqual(utils.dttFromUtc(43679.0), 32.1840054460, precision)
+
+        self.assertAlmostEqual(utils.dttFromUtc(46459.0), 32.1840146120, precision)
+
+        self.assertAlmostEqual(utils.dttFromUtc(52629.0), 32.1840262340, precision)
+
+        self.assertAlmostEqual(utils.dttFromUtc(56829.0), 32.1840276936, precision)
+
+        self.assertAlmostEqual(utils.dttFromUtc(56999.0), 32.1840276961, precision)
+
+
+    def test_tt_from_tai(self):
+        """
+        Test our method to convert from TAI to TT (Terrestrial Time)
+        """
+
+        np.random.seed(99)
+        tai_arr = np.random.random_sample(10)+43000.0
+
+        for tai in tai_arr:
+            self.assertAlmostEqual(utils.ttFromTai(tai), tai+0.00037250, 8)
 
 
 def suite():

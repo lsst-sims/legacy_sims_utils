@@ -2,10 +2,12 @@ import numpy as np
 import warnings
 import palpy
 from lsst.sims.utils import Ut1MinusUtcData
+from lsst.sims.utils import TT_from_TAI_Data
 
 __all__ = ["taiFromUtc", "utcFromTai",
            "dutFromUtc",
-           "ut1FromUtc", "utcFromUt1"]
+           "ut1FromUtc", "utcFromUt1",
+           "dttFromUtc", "ttFromTai"]
 
 
 def taiFromUtc(utc):
@@ -107,3 +109,48 @@ def utcFromUt1(ut1):
     utc_arr = np.arange(ut1-1.0, ut1+1.0, 0.25)
     ut1_arr = np.array([ut1FromUtc(utc) for utc in utc_arr])
     return np.interp(ut1, ut1_arr, utc_arr)
+
+
+def dttFromUtc(utc):
+    """
+    Use data downloaded from
+
+    ftp://tai.bipm.org/TFG/TT(BIPM)/TTBIPM.14
+
+    to to calculate TT-TAI in seconds as a function of UTC
+
+    @param [in] UTC as an MJD
+
+    @param [out] TT-TAI in seconds
+
+    Note: The bounds of our data are 42589.0 < UTC < 57019.0
+
+    for UTC < 42589.0 this method returns 32.184 seconds
+
+    for UTC > 57019.0 this method returns 32.184 seconds + 27.697 microseconds
+
+    Discussion of the precision of this method can be found at the URL above.
+    Roughly speaking, the precision is 1 ns before UTC=52729; 0.1 ns after that.
+    """
+
+    if utc>57019.0:
+        dt = 27.6970
+    elif utc<42589.0:
+        dt = 0.0
+    else:
+        dt = np.interp(utc, TT_from_TAI_Data._mjd_arr, TT_from_TAI_Data._dt_arr)
+
+    return 32.1840 + dt*1.0e-6
+
+
+def ttFromTai(tai):
+    """
+    Return Terestrial Time (TT) as a function of TAI.
+
+    Because of numerical precision, this method assumes
+
+    TT = TAI + 32.184 seconds
+
+    for better precision, find TT-TAI using the method dttFromUtc
+    """
+    return tai + 0.00037250
