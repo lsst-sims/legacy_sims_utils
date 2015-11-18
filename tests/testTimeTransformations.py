@@ -1,4 +1,6 @@
+from __future__ import with_statement
 import numpy as np
+import warnings
 import unittest
 import lsst.utils.tests as utilsTests
 import lsst.sims.utils as utils
@@ -194,6 +196,27 @@ class TimeTest(unittest.TestCase):
         ut1_arr = np.array([utils.ut1FromUtc(utc) for utc in utc_arr])
         utc_test = np.array([utils.utcFromUt1(ut1) for ut1 in ut1_arr])
         np.testing.assert_array_almost_equal(utc_arr, utc_test, 6)
+
+
+    def test_ut1_warnings(self):
+        """
+        Test that a warning is raised if you as ut1FromUtc to calculate
+        UT1 for a UTC value that is outside the span of our data.
+        """
+
+        with warnings.catch_warnings(record=True) as context:
+            ut1 = utils.ut1FromUtc(48621.5)
+        self.assertEqual(ut1, 48621.5)
+        self.assertIn("We will return ut1 = utc, for lack of a better idea",
+                      str(context[-1].message))
+
+        with warnings.catch_warnings(record=True) as context:
+            ut1 = utils.ut1FromUtc(57711.5)
+        self.assertEqual(ut1, 57711.5)
+        self.assertIn("We will return ut1 = utc, for lack of a better idea",
+                      str(context[-1].message))
+
+
 
 
 def suite():
