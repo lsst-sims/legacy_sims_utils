@@ -208,7 +208,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.boundType, 'box')
         self.assertAlmostEqual(testObsMD.boundLength[0], 1.2, 10)
         self.assertAlmostEqual(testObsMD.boundLength[1], 3.0, 10)
-        self.assertAlmostEqual(testObsMD.mjd, mjd, 10)
+        self.assertAlmostEqual(testObsMD.mjd.TAI, mjd, 10)
 
         #test reassignment
 
@@ -226,7 +226,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness+1.0, 10)
         self.assertEqual(testObsMD.boundType, 'circle')
         self.assertAlmostEqual(testObsMD.boundLength,2.2, 10)
-        self.assertAlmostEqual(testObsMD.mjd, mjd+10.0, 10)
+        self.assertAlmostEqual(testObsMD.mjd.TAI, mjd+10.0, 10)
 
         phosimMD = OrderedDict([('pointingRA', (-2.0,float)),
                                 ('pointingDec', (0.9,float)),
@@ -239,14 +239,14 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.pointingRA, numpy.degrees(-2.0), 10)
         self.assertAlmostEqual(testObsMD.pointingDec, numpy.degrees(0.9), 10)
         self.assertAlmostEqual(testObsMD.rotSkyPos, numpy.degrees(1.1))
-        self.assertAlmostEqual(testObsMD.mjd, 4000.0, 10)
+        self.assertAlmostEqual(testObsMD.mjd.TAI, 4000.0, 10)
         self.assertAlmostEqual(testObsMD.bandpass, 'g')
 
         testObsMD = ObservationMetaData(mjd=mjd, pointingRA=RA,
             pointingDec=Dec, rotSkyPos=rotSkyPos, bandpassName='z',
             skyBrightness=skyBrightness)
 
-        self.assertAlmostEqual(testObsMD.mjd,5120.0,10)
+        self.assertAlmostEqual(testObsMD.mjd.TAI,5120.0,10)
         self.assertAlmostEqual(testObsMD.pointingRA,1.5,10)
         self.assertAlmostEqual(testObsMD.pointingDec,-1.1,10)
         self.assertAlmostEqual(testObsMD.rotSkyPos,-10.0,10)
@@ -256,7 +256,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         testObsMD = ObservationMetaData()
         testObsMD.phoSimMetaData = phosimMD
 
-        self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
+        self.assertAlmostEqual(testObsMD.mjd.TAI,4000.0,10)
 
         #recall that pointingRA/Dec are stored as radians in phoSim metadata
         self.assertAlmostEqual(testObsMD.pointingRA,numpy.degrees(-2.0),10)
@@ -267,7 +267,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         testObsMD = ObservationMetaData()
         testObsMD.phoSimMetaData = phosimMD
 
-        self.assertAlmostEqual(testObsMD.mjd,4000.0,10)
+        self.assertAlmostEqual(testObsMD.mjd.TAI,4000.0,10)
 
         #recall that pointingRA/Dec are stored as radians in phoSim metadata
         self.assertAlmostEqual(testObsMD.pointingRA,numpy.degrees(-2.0),10)

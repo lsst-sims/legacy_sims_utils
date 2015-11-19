@@ -48,6 +48,10 @@ def utcFromTai(tai):
     sec_to_day = 1.0/86400.0
 
     dt_approx = palpy.dat(tai)*sec_to_day
+
+    if dt_approx == 0.0:
+        return tai
+
     utc_arr = np.arange(tai - 1.0*dt_approx, tai+1.0*dt_approx, 1.0e-6)
     tai_arr = np.array([taiFromUtc(utc) for utc in utc_arr])
 

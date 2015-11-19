@@ -97,7 +97,8 @@ def applyPrecession(ra, dec, epoch=2000.0, mjd=None):
 
     @param [in] epoch is the epoch of the mean equinox (in years; default 2000)
 
-    @param [in] mjd is the MJD of the observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the RA
     corrected for precession and nutation and the second row is the
@@ -129,7 +130,8 @@ def _applyPrecession(ra, dec, epoch=2000.0, mjd=None):
 
     @param [in] epoch is the epoch of the mean equinox (in years; default 2000)
 
-    @param [in] mjd is the MJD of the observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the RA
     corrected for precession and nutation and the second row is the
@@ -150,7 +152,7 @@ def _applyPrecession(ra, dec, epoch=2000.0, mjd=None):
     #
     #TODO it is not specified what this MJD should be (i.e. in which
     #time system it should be reckoned)
-    rmat=palpy.prenut(epoch, mjd)
+    rmat=palpy.prenut(epoch, mjd.TT)
 
     # Apply rotation matrix
     xyz = cartesianFromSpherical(ra,dec)
@@ -190,7 +192,8 @@ def applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
 
     @param [in] epoch is epoch in Julian years (default: 2000.0)
 
-    @param [in] mjd is the MJD of the actual observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the RA corrected
     for proper motion and the second row is the Dec corrected for proper motion
@@ -236,7 +239,8 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
 
     @param [in] epoch is epoch in Julian years (default: 2000.0)
 
-    @param [in] mjd is the MJD of the actual observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the RA corrected
     for proper motion and the second row is the Dec corrected for proper motion
@@ -260,10 +264,12 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
 
     # Generate Julian epoch from MJD
     #
-    #TODO do we actually want proper motion measured against
-    #obs_metadata.mjd (it is unclear what time system we should
-    #be using; just that the argument passed to palpy.pmVector should be in julian years)
-    julianEpoch = palpy.epj(mjd)
+    # 19 November 2015
+    # I am assuming here that the time scale should be
+    # Terrestrial Dynamical Time (TT), since that is used
+    # as the independent variable for apparent geocentric
+    # ephemerides
+    julianEpoch = palpy.epj(mjd.TT)
 
     #because PAL and ERFA expect proper motion in terms of "coordinate
     #angle; not true angle" (as stated in erfa/starpm.c documentation)
@@ -318,7 +324,8 @@ def appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
 
-    @param[in] MJD is the date of the observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the apparent
     geocentric RA and the second row is the apparent geocentric Dec (both in degrees)
@@ -372,7 +379,8 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
 
-    @param[in] MJD is the date of the observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the apparent
     geocentric RAand the second row is the apparent geocentric Dec (both in radians)
@@ -407,9 +415,7 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     # epoch of mean equinox to be used (Julian)
     #
     # date (MJD)
-    #
-    # TODO This mjd should be the Barycentric Dynamical Time
-    prms=palpy.mappa(epoch, mjd)
+    prms=palpy.mappa(epoch, mjd.TDB)
 
     # palpy.mapqk does a quick mean to apparent place calculation using
     # the output of palpy.mappa
@@ -448,7 +454,8 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
 
-    @param[in] MJD is the date of the observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the mean ICRS RA and
     the second row is the mean ICRS Dec (both in radians)
@@ -464,9 +471,7 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
     # epoch of mean equinox to be used (Julian)
     #
     # date (MJD)
-    #
-    # TODO This mjd should be the Barycentric Dynamical Time
-    params = palpy.mappa(epoch, mjd)
+    params = palpy.mappa(epoch, mjd.TDB)
 
     raOut, decOut = palpy.ampqkVector(ra, dec, params)
 
@@ -494,7 +499,8 @@ def icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
 
-    @param[in] MJD is the date of the observation
+    @param [in] mjd is an instantiation of the ModifiedJulianDate class
+    representing the date of the observation
 
     @param [out] a 2-D numpy array in which the first row is the mean ICRS RA and
     the second row is the mean ICRS Dec (both in degrees)
@@ -581,11 +587,6 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
     #currently, palPolmo is not implemented in PAL
     #I have filed an issue with the PAL team to change that.
 
-    # TODO NEED UT1 - UTC to be kept as a function of date.
-    # Requires a look up of the IERS tables (-0.9<dut1<0.9)
-    # Assume dut = 0.3 (seconds)
-    dut = 0.3
-
     #
     #palpy.aoppa computes star-independent parameters necessary for
     #converting apparent place into observed place
@@ -596,7 +597,7 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
     #the UTC time expressed as an MJD.  It is not clear to me
     #how to actually calculate that.
     if (includeRefraction == True):
-        obsPrms=palpy.aoppa(obs_metadata.mjd, dut,
+        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut,
                           obs_metadata.site.longitude,
                           obs_metadata.site.latitude,
                           obs_metadata.site.height,
@@ -609,7 +610,7 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
                           obs_metadata.site.lapseRate)
     else:
         #we can discard refraction by setting pressure and humidity to zero
-        obsPrms=palpy.aoppa(obs_metadata.mjd, dut,
+        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut,
                           obs_metadata.site.longitude,
                           obs_metadata.site.latitude,
                           obs_metadata.site.height,
