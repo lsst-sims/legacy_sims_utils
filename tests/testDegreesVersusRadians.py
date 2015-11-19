@@ -2,7 +2,7 @@ import unittest
 import numpy
 import lsst.utils.tests as utilsTests
 import lsst.sims.utils as utils
-from lsst.sims.utils import ObservationMetaData
+from lsst.sims.utils import ObservationMetaData, ModifiedJulianDate
 
 class testDegrees(unittest.TestCase):
     """
@@ -265,11 +265,11 @@ class AstrometryDegreesTest(unittest.TestCase):
         for mjd in self.mjdList:
             raRad, decRad = utils._applyPrecession(self.raList,
                                                         self.decList,
-                                                        mjd=mjd)
+                                                        mjd=ModifiedJulianDate(TAI=mjd))
 
             raDeg, decDeg = utils.applyPrecession(numpy.degrees(self.raList),
                                                        numpy.degrees(self.decList),
-                                                       mjd=mjd)
+                                                       mjd=ModifiedJulianDate(TAI=mjd))
 
             dRa = utils.arcsecFromRadians(raRad-numpy.radians(raDeg))
             numpy.testing.assert_array_almost_equal(dRa, numpy.zeros(self.nStars), 9)
@@ -282,14 +282,16 @@ class AstrometryDegreesTest(unittest.TestCase):
         for mjd in self.mjdList:
             raRad, decRad = utils._applyProperMotion(self.raList, self.decList,
                                                           self.pm_raList, self.pm_decList,
-                                                          self.pxList, self.v_radList, mjd=mjd)
+                                                          self.pxList, self.v_radList,
+                                                          mjd=ModifiedJulianDate(TAI=mjd))
 
             raDeg, decDeg = utils.applyProperMotion(numpy.degrees(self.raList),
                                                          numpy.degrees(self.decList),
                                                          utils.arcsecFromRadians(self.pm_raList),
                                                          utils.arcsecFromRadians(self.pm_decList),
                                                          utils.arcsecFromRadians(self.pxList),
-                                                         self.v_radList, mjd=mjd)
+                                                         self.v_radList,
+                                                         mjd=ModifiedJulianDate(TAI=mjd))
 
             dRa = utils.arcsecFromRadians(raRad-numpy.radians(raDeg))
             numpy.testing.assert_array_almost_equal(dRa, numpy.zeros(self.nStars), 9)
@@ -303,11 +305,12 @@ class AstrometryDegreesTest(unittest.TestCase):
         self.pxList, self.v_radList):
 
             raRad, decRad = utils._applyProperMotion(ra, dec, pm_ra, pm_dec, px, v_rad,
-                                                          mjd=self.mjdList[0])
+                                                          mjd=ModifiedJulianDate(TAI=self.mjdList[0]))
 
             raDeg, decDeg = utils.applyProperMotion(numpy.degrees(ra), numpy.degrees(dec),
                                                          utils.arcsecFromRadians(pm_ra), utils.arcsecFromRadians(pm_dec),
-                                                         utils.arcsecFromRadians(px), v_rad, mjd=self.mjdList[0])
+                                                         utils.arcsecFromRadians(px), v_rad,
+                                                         mjd=ModifiedJulianDate(TAI=self.mjdList[0]))
 
             self.assertAlmostEqual(utils.arcsecFromRadians(raRad-numpy.radians(raDeg)), 0.0, 9)
             self.assertAlmostEqual(utils.arcsecFromRadians(decRad-numpy.radians(decDeg)), 0.0, 9)
@@ -321,14 +324,16 @@ class AstrometryDegreesTest(unittest.TestCase):
                     for vRadList in [self.v_radList, None]:
                         raRad, decRad = utils._appGeoFromICRS(self.raList, self.decList,
                                                                    pmRaList, pmDecList,
-                                                                   pxList, vRadList, mjd=mjd)
+                                                                   pxList, vRadList,
+                                                                   mjd=ModifiedJulianDate(TAI=mjd))
 
                         raDeg, decDeg = utils.appGeoFromICRS(numpy.degrees(self.raList),
                                                                  numpy.degrees(self.decList),
                                                                  utils.arcsecFromRadians(pmRaList),
                                                                  utils.arcsecFromRadians(pmDecList),
                                                                  utils.arcsecFromRadians(pxList),
-                                                                 vRadList, mjd=mjd)
+                                                                 vRadList,
+                                                                 mjd=ModifiedJulianDate(TAI=mjd))
 
                         dRa = utils.arcsecFromRadians(raRad-numpy.radians(raDeg))
                         numpy.testing.assert_array_almost_equal(dRa, numpy.zeros(self.nStars), 9)
@@ -422,11 +427,13 @@ class AstrometryDegreesTest(unittest.TestCase):
             for epoch in( 2000.0, 1950.0, 2010.0):
 
                 raRad, decRad = utils._icrsFromAppGeo(self.raList, self.decList,
-                                                           epoch=epoch, mjd=mjd)
+                                                           epoch=epoch,
+                                                           mjd=ModifiedJulianDate(TAI=mjd))
 
                 raDeg, decDeg = utils.icrsFromAppGeo(numpy.degrees(self.raList),
                                                           numpy.degrees(self.decList),
-                                                          epoch=epoch, mjd=mjd)
+                                                          epoch=epoch,
+                                                          mjd=ModifiedJulianDate(TAI=mjd))
 
                 dRa = utils.arcsecFromRadians(numpy.abs(raRad-numpy.radians(raDeg)))
                 self.assertLess(dRa.max(), 1.0e-9)
@@ -461,10 +468,10 @@ class AstrometryDegreesTest(unittest.TestCase):
 
 
                             dRa = utils.arcsecFromRadians(raRad-numpy.radians(raDeg))
-                            numpy.testing.assert_array_almost_equal(dRa, numpy.zeros(self.nStars), 9)
+                            numpy.testing.assert_array_almost_equal(dRa, numpy.zeros(self.nStars), 8)
 
                             dDec = utils.arcsecFromRadians(decRad-numpy.radians(decDeg))
-                            numpy.testing.assert_array_almost_equal(dDec, numpy.zeros(self.nStars), 9)
+                            numpy.testing.assert_array_almost_equal(dDec, numpy.zeros(self.nStars), 8)
 
 
     def testIcrsFromObserved(self):
