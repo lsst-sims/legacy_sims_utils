@@ -13,7 +13,8 @@ from lsst.sims.utils import TT_from_TAI_Data
 __all__ = ["taiFromUtc", "utcFromTai",
            "dutFromUtc",
            "ut1FromUtc", "utcFromUt1",
-           "dttFromUtc", "ttFromTai"]
+           "dttFromUtc", "ttFromTai",
+           "tdbFromTt"]
 
 
 def taiFromUtc(utc):
@@ -160,3 +161,26 @@ def ttFromTai(tai):
     for better precision, find TT-TAI using the method dttFromUtc
     """
     return tai + 0.00037250
+
+
+def tdbFromTt(tt):
+    """
+    Return TDB (Barycentric Dynamical Time) from TT (Terrestrial Time)
+    using equation 2.222-1 from
+
+    Seidelmann 1992, "Explanatory Supplement to the Astronomical Almanac"
+    Unviversity Science Books
+
+    @param [in] tt as an MJD
+
+    @param [out] TDB as an MJD
+    """
+
+    sec_to_day = 1.0/86400.0
+    jd_minus_mjd = 2400000.5
+
+    tt_jd = tt + jd_minus_mjd
+    julian_date = round(tt_jd, 2)
+    jd_minus = julian_date - 2451545.0
+    gg = np.radians(357.53 + 0.9856003*jd_minus)
+    return tt + (0.001658*np.sin(gg) + 0.000014*np.sin(2*gg))*sec_to_day

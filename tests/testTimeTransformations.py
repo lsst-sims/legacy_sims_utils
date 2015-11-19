@@ -297,6 +297,27 @@ class TimeTest(unittest.TestCase):
             self.assertAlmostEqual(utils.ttFromTai(tai), tai+0.00037250, 8)
 
 
+    def test_tdb_from_tt(self):
+        """
+        Test our method to convert from Terrestrial Time (TT) to Barycentric Dynamical Time (TDB)
+        """
+
+        sec_to_day = 1.0/86400.0
+
+        tt_control = [57388.645, 46132.112]
+        jd_minus_control = [5844.15, -5412.39] # the rounding of the JD to two decimals
+                                             # and subtracting of 2451545.0 was done by
+                                             # hand, to check that tdbFromTt does it correctly
+
+        for tt, jd in zip(tt_control, jd_minus_control):
+            gg_deg = 357.53 + 0.9856003*jd
+            gg_rad = np.radians(gg_deg)
+            dt = 0.001658*np.sin(gg_rad) + 0.000014*np.sin(2.0*gg_rad)
+            tdb = utils.tdbFromTt(tt)
+            self.assertAlmostEqual(tdb, tt+dt*sec_to_day, 14)
+
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
