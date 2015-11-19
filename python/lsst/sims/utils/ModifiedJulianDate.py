@@ -20,17 +20,17 @@ class ModifiedJulianDate(object):
                                "instantiate ModifiedJulianDate")
 
         if TAI is not None:
-            _tai = TAI
-            _utc = utcFromTai(_tai)
+            self._tai = TAI
+            self._utc = utcFromTai(self._tai)
         else:
-            _utc = UTC
-            _tai = taiFromUtc(_utc)
+            self._utc = UTC
+            self._tai = taiFromUtc(self._utc)
 
-        _dut = dutFromUtc(_utc)
-        _ut1 = ut1FromUtc(_utc)
-        _tt = ttFromTai(_tai)
-        _tdb = tdbFromTt(_tt)
-        _dtt = dttFromUtc(_utc)
+        self._dut = dutFromUtc(self._utc)
+        self._ut1 = ut1FromUtc(self._utc)
+        self._tt = ttFromTai(self._tai)
+        self._tdb = tdbFromTt(self._tt)
+        self._dtt = dttFromUtc(self._utc)
 
 
     @property

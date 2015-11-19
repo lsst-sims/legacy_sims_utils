@@ -318,6 +318,24 @@ class TimeTest(unittest.TestCase):
             self.assertAlmostEqual(dt_test, dt, 6)
 
 
+    def test_modified_julian_date_class(self):
+        """
+        Test the construction of ModifiedJulianDate
+        """
+        mjd1 = utils.ModifiedJulianDate(TAI=57388.0)
+        mjd2 = utils.ModifiedJulianDate(UTC=mjd1.UTC)
+        self.assertEqual(mjd1.TAI, mjd2.TAI)
+        self.assertEqual(mjd1.UTC, mjd2.UTC)
+        self.assertEqual(mjd1.TT, mjd2.TT)
+        self.assertEqual(mjd1.TDB, mjd2.TDB)
+        self.assertEqual(mjd1.dut, mjd2.dut)
+
+        with self.assertRaises(RuntimeError) as context:
+            mjd3 = utils.ModifiedJulianDate()
+        self.assertEqual(context.exception.args[0],
+                         "You must specify either TAI or UTC to "
+                         "instantiate ModifiedJulianDate")
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
