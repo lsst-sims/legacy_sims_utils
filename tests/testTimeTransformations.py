@@ -314,7 +314,8 @@ class TimeTest(unittest.TestCase):
             gg_rad = np.radians(gg_deg)
             dt = 0.001658*np.sin(gg_rad) + 0.000014*np.sin(2.0*gg_rad)
             tdb = utils.tdbFromTt(tt)
-            self.assertAlmostEqual(tdb, tt+dt*sec_to_day, 14)
+            dt_test = (tdb-tt)/sec_to_day
+            self.assertAlmostEqual(dt_test, dt, 6)
 
 
 

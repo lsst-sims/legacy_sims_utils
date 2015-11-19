@@ -174,6 +174,10 @@ def tdbFromTt(tt):
     @param [in] tt as an MJD
 
     @param [out] TDB as an MJD
+
+    Note: this method should only be accurate to within a few tens of
+    microseconds (because of General Relativistic corrections that have
+    been neglected)
     """
 
     sec_to_day = 1.0/86400.0
