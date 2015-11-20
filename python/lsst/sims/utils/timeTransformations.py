@@ -72,10 +72,11 @@ def dutFromUtc(utc):
     """
 
     if utc<Ut1MinusUtcData._mjd_arr[0] or utc>Ut1MinusUtcData._mjd_arr[-1]:
-        warnings.warn("UTC = %e is outside of the the bounds " % utc
-                      + "for which we have UT1-UTC "
-                      + "data (%e <= utc <= %e)\n" % (Ut1MinusUtcData._mjd_arr[0], Ut1MinusUtcData._mjd_arr[-1])
-                      + "We will return UT1-UTC = 0, for lack of a better idea")
+        msg = "UTC = %e is outside of the the bounds " % utc \
+               + "for which we have UT1-UTC "\
+               + "data (%e <= utc <= %e) " % (Ut1MinusUtcData._mjd_arr[0], Ut1MinusUtcData._mjd_arr[-1]) \
+               + "We will return UT1-UTC = 0, for lack of a better idea"
+        warnings.warn(msg)
 
         return 0.0
 
