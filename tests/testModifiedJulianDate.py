@@ -32,6 +32,7 @@ class MjdTest(unittest.TestCase):
             utc = utils.utcFromTai(tai)
             self.assertEqual(mjd.TAI, tai)
             self.assertEqual(mjd.UTC, utc)
+            self.assertEqual(mjd.UT1, utils.ut1FromUtc(utc))
             self.assertEqual(mjd.dut, utils.dutFromUtc(utc))
             self.assertEqual(mjd.TT, utils.ttFromTai(tai))
             self.assertEqual(mjd.dtt, utils.dttFromUtc(utc))
@@ -59,6 +60,7 @@ class MjdTest(unittest.TestCase):
             mjd = ModifiedJulianDate(UTC=utc)
             self.assertEqual(mjd.TAI, tai)
             self.assertEqual(mjd.UTC, utc)
+            self.assertEqual(mjd.UT1, utils.ut1FromUtc(utc))
             self.assertEqual(mjd.dut, utils.dutFromUtc(utc))
             self.assertEqual(mjd.TT, utils.ttFromTai(tai))
             self.assertEqual(mjd.dtt, utils.dttFromUtc(utc))
@@ -89,6 +91,7 @@ class MjdTest(unittest.TestCase):
 
             self.assertEqual(mjd1.TAI, mjd2.TAI)
             self.assertEqual(mjd1.UTC, mjd2.UTC)
+            self.assertEqual(mjd1.UT1, mjd2.UT1)
             self.assertEqual(mjd1.dut, mjd2.dut)
             self.assertEqual(mjd1.TT, mjd2.TT)
             self.assertEqual(mjd1.TDB, mjd2.TDB)

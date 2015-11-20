@@ -38,6 +38,7 @@ class ModifiedJulianDate(object):
     def __eq__(self, other):
         return (self._tai == other._tai) \
                and (self._utc == other._utc) \
+               and (self._ut1 == other._ut1) \
                and (self._dut == other._dut) \
                and (self._tt == other._tt) \
                and (self._tdb == other._tdb) \
