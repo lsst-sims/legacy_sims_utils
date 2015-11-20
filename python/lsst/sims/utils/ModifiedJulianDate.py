@@ -82,3 +82,14 @@ class ModifiedJulianDate(object):
         Barycentric Dynamical Time as an MJD
         """
         return self._tdb
+
+
+    @property
+    def dtt(self):
+        """
+        TT - TAI in seconds
+
+        where TT is Terrestrial Time
+        and TAI is International Atomic Time
+        """
+        return self._dtt
