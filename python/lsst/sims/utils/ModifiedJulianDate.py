@@ -35,6 +35,15 @@ class ModifiedJulianDate(object):
         self._dtt = dttFromUtc(self._utc)
 
 
+    def __eq__(self, other):
+        return (self._tai == other._tai) \
+               and (self._utc == other._utc) \
+               and (self._dut == other._dut) \
+               and (self._tt == other._tt) \
+               and (self._tdb == other._tdb) \
+               and (self._dtt == other._dtt)
+
+
     @property
     def TAI(self):
         """
