@@ -102,7 +102,7 @@ class MjdTest(unittest.TestCase):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
         self.assertEqual(mjd1, mjd2)
-        mjd3 = ModifiedJulianDate(TAI=43001.0)
+        mjd3 = ModifiedJulianDate(TAI=43000.01)
         self.assertNotEqual(mjd1, mjd3)
 
 
