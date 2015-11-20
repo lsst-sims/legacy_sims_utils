@@ -5,7 +5,7 @@ import numpy
 import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
-from lsst.sims.utils import ObservationMetaData
+from lsst.sims.utils import ObservationMetaData, ModifiedJulianDate
 from lsst.sims.utils import Site
 
 class ObservationMetaDataTest(unittest.TestCase):
@@ -274,6 +274,18 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.pointingDec,numpy.degrees(0.9),10)
         self.assertAlmostEqual(testObsMD.rotSkyPos,numpy.degrees(1.1),10)
         self.assertEqual(testObsMD.bandpass,'g')
+
+
+        # test assigning ModifiedJulianDate
+        obs = ObservationMetaData()
+        mjd = ModifiedJulianDate(TAI=57388.0)
+        obs.mjd = mjd
+        self.assertEqual(obs.mjd, mjd)
+
+        mjd2 = ModifiedJulianDate(TAI=45000.0)
+        obs.mjd = mjd2
+        self.assertEqual(obs.mjd, mjd2)
+        self.assertNotEqual(obs.mjd, mjd)
 
 
     def testBoundBuilding(self):
