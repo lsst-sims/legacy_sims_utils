@@ -1,4 +1,5 @@
 import unittest
+import warnings
 import numpy as np
 import lsst.utils.tests as utilsTests
 
@@ -12,6 +13,12 @@ class MjdTest(unittest.TestCase):
     The 'by hand' transformations will have been tested by
     testTimeTransformations.py
     """
+
+    def setUp(self):
+        """
+        suppress warnings raised by asking for dut at odd values of utc
+        """
+        warnings.filterwarnings('ignore', message='.*UT1-UTC.*')
 
     def test_tai(self):
         """
