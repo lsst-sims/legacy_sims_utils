@@ -497,6 +497,7 @@ class astrometryUnitTest(unittest.TestCase):
                                                        for ii in range(earthToStar.shape[0])])
 
 
+                        # test a round-trip between observedFromICRS and icrsFromObserved
                         ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in, obs_metadata=obs,
                                                             includeRefraction=includeRefraction,
                                                             epoch=2000.0)
@@ -505,18 +506,26 @@ class astrometryUnitTest(unittest.TestCase):
                                                               includeRefraction=includeRefraction,
                                                               epoch=2000.0)
 
+                        valid_pts = numpy.where(solarDotProduct<numpy.cos(0.25*numpy.pi))[0]
+                        self.assertGreater(len(valid_pts), 0)
+
+                        distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
+                                                     ra_icrs[valid_pts], dec_icrs[valid_pts]))
+
+                        self.assertLess(distance.max(), 0.01)
 
 
+                        # test a round-trip between observedFromAppGeo and appGeoFromObserved
                         ra_obs, dec_obs = _observedFromAppGeo(ra_in, dec_in, obs_metadata=obs,
                                                               includeRefraction=includeRefraction)
-                        ra_icrs, dec_icrs = _appGeoFromObserved(ra_obs, dec_obs, obs_metadata=obs,
+                        ra_app, dec_app = _appGeoFromObserved(ra_obs, dec_obs, obs_metadata=obs,
                                                                 includeRefraction=includeRefraction)
 
                         valid_pts = numpy.where(solarDotProduct<numpy.cos(0.25*numpy.pi))[0]
                         self.assertGreater(len(valid_pts), 0)
 
                         distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
-                                                     ra_icrs[valid_pts], dec_icrs[valid_pts]))
+                                                     ra_app[valid_pts], dec_app[valid_pts]))
 
                         self.assertLess(distance.max(), 0.01)
 
