@@ -1,9 +1,8 @@
 import numpy
 import inspect
 from .SpatialBounds import SpatialBounds
-from lsst.sims.utils import haversine, Site, _icrsFromObserved, _observedFromICRS
-from lsst.sims.utils import _raDecFromNativeLonLat
 from lsst.sims.utils import ModifiedJulianDate
+from lsst.sims.utils import haversine, Site
 
 __all__ = ["ObservationMetaData"]
 
