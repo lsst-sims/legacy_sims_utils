@@ -6,39 +6,6 @@ import lsst.utils.tests as utilsTests
 import lsst.sims.utils as utils
 from lsst.sims.utils import Site
 
-def controlAltAzFromRaDec(raRad, decRad, longRad, latRad, mjd):
-    """
-    Converts RA and Dec to altitude and azimuth
-
-    @param [in] raRad is the RA in radians
-
-    @param [in] decRad is the Dec in radians
-
-    @param [in] longRad is the longitude of the observer in radians
-    (positive east of the prime meridian)
-
-    @param [in[ latRad is the latitude of the observer in radians
-    (positive north of the equator)
-
-    @param [in] mjd is the universal time expressed as an MJD
-
-    @param [out] altitude in radians
-
-    @param [out[ azimuth in radians
-
-    see: http://www.stargazing.net/kepler/altaz.html#twig04
-    """
-    lst = utils.calcLmstLast(mjd, longRad)
-    last = lst[1]
-    haRad = numpy.radians(last*15.) - raRad
-    sinDec = numpy.sin(decRad)
-    cosLat = numpy.cos(latRad)
-    sinLat = numpy.sin(latRad)
-    sinAlt = sinDec*sinLat+numpy.cos(decRad)*cosLat*numpy.cos(haRad)
-    altRad = numpy.arcsin(sinAlt)
-    azRad = numpy.arccos((sinDec - sinAlt*sinLat)/(numpy.cos(altRad)*cosLat))
-    azRadOut = numpy.where(numpy.sin(haRad)>=0.0, 2.0*numpy.pi-azRad, azRad)
-    return altRad, azRadOut
 
 def controlEquationOfEquinoxes(mjd):
     """
@@ -106,26 +73,6 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertRaises(RuntimeError, utils.calcLmstLast, mjd3, longList)
         ans = utils.calcLmstLast(mjdFloat, longFloat)
         ans = utils.calcLmstLast(mjd2, longList)
-
-        self.assertRaises(RuntimeError, utils._altAzPaFromRaDec, raList, decList, longList, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils._altAzPaFromRaDec, raList, decList, longFloat, latList, mjd2)
-        self.assertRaises(RuntimeError, utils._altAzPaFromRaDec, raList, decFloat, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils._altAzPaFromRaDec, raFloat, decList, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils._altAzPaFromRaDec, raFloat, decFloat, longFloat, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils._altAzPaFromRaDec, raList, decList, longFloat, latFloat, mjd3)
-        ans = utils._altAzPaFromRaDec(raFloat, decFloat, longFloat, latFloat, mjdFloat)
-        ans = utils._altAzPaFromRaDec(raList, decList, longFloat, latFloat, mjdFloat)
-        ans = utils._altAzPaFromRaDec(raList, decList, longFloat, latFloat, mjd2)
-
-        self.assertRaises(RuntimeError, utils._raDecFromAltAz, raList, decList, longList, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils._raDecFromAltAz, raList, decList, longFloat, latList, mjd2)
-        self.assertRaises(RuntimeError, utils._raDecFromAltAz, raList, decFloat, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils._raDecFromAltAz, raFloat, decList, longFloat, latFloat, mjdFloat)
-        self.assertRaises(RuntimeError, utils._raDecFromAltAz, raFloat, decFloat, longFloat, latFloat, mjd2)
-        self.assertRaises(RuntimeError, utils._raDecFromAltAz, raList, decList, longFloat, latFloat, mjd3)
-        ans = utils._raDecFromAltAz(raFloat, decFloat, longFloat, latFloat, mjdFloat)
-        ans = utils._raDecFromAltAz(raList, decList, longFloat, latFloat, mjdFloat)
-        ans = utils._raDecFromAltAz(raList, decList, longFloat, latFloat, mjd2)
 
 
     def testEquationOfEquinoxes(self):
@@ -195,118 +142,6 @@ class testCoordinateTransformations(unittest.TestCase):
                 self.assertTrue(numpy.abs(testLmst - controlLmst) < self.tolerance)
                 self.assertTrue(numpy.abs(testLast - controlLast) < self.tolerance)
 
-
-    def testAltAzFromRaDec(self):
-        """
-        Test conversion from RA, Dec to Alt, Az
-        """
-
-        numpy.random.seed(32)
-        ra = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
-        dec = (numpy.random.sample(len(self.mjd))-0.5)*numpy.pi
-        longitude = 1.467
-        latitude = -0.234
-        controlAlt, controlAz = controlAltAzFromRaDec(ra, dec, \
-                                                    longitude, latitude, \
-                                                    self. mjd)
-
-        #verify parallactic angle against an expression from
-        #http://www.astro.washington.edu/groups/APO/Mirror.Motions/Feb.2000.Image.Jumps/report.html#Image%20motion%20directions
-        #
-        lmst, last = utils.calcLmstLast(self.mjd, longitude)
-        hourAngle = numpy.radians(last*15.0) - ra
-        controlSinPa = numpy.sin(hourAngle)*numpy.cos(latitude)/numpy.cos(controlAlt)
-
-        testAlt, testAz, testPa = utils._altAzPaFromRaDec(ra, dec, \
-                                                       longitude, latitude, \
-                                                       self.mjd)
-
-        self.assertTrue(numpy.abs(testAz - controlAz).max() < self.tolerance)
-        self.assertTrue(numpy.abs(testAlt - controlAlt).max() < self.tolerance)
-        self.assertTrue(numpy.abs(numpy.sin(testPa) - controlSinPa).max() < self.tolerance)
-
-        #test non-vectorized version
-        for r,d,m in zip(ra, dec, self.mjd):
-            controlAlt, controlAz = controlAltAzFromRaDec(r, d, longitude, latitude, m)
-            testAlt, testAz, testPa = utils._altAzPaFromRaDec(r, d, longitude, latitude, m)
-            lmst, last = utils.calcLmstLast(m, longitude)
-            hourAngle = numpy.radians(last*15.0) - r
-            controlSinPa = numpy.sin(hourAngle)*numpy.cos(latitude)/numpy.cos(controlAlt)
-            self.assertTrue(numpy.abs(testAz - controlAz) < self.tolerance)
-            self.assertTrue(numpy.abs(testAlt - controlAlt) < self.tolerance)
-            self.assertTrue(numpy.abs(numpy.sin(testPa) - controlSinPa) < self.tolerance)
-
-    def test_raDecFromAltAz(self):
-        """
-        Test conversion of Alt, Az to Ra, Dec
-        """
-        numpy.random.seed(32)
-        raIn = numpy.random.sample(len(self.mjd))*2.0*numpy.pi
-        decIn = (numpy.random.sample(len(self.mjd))-0.5)*numpy.pi
-        longitude = 1.467
-        latitude = -0.234
-        lst, last = utils.calcLmstLast(self.mjd, longitude)
-        hourAngle = numpy.radians(last*15.0) - raIn
-        controlAz, azd, azdd, \
-        controlAlt, eld, eldd, \
-        pa, pad, padd = palpy.altazVector(hourAngle, decIn, latitude)
-
-        raOut, decOut, = utils._raDecFromAltAz(controlAlt, controlAz,
-                                           longitude, latitude, self.mjd)
-
-        self.assertTrue(numpy.abs(numpy.cos(raOut) - numpy.cos(raIn)).max() < self.tolerance)
-        self.assertTrue(numpy.abs(numpy.sin(raOut) - numpy.sin(raIn)).max() < self.tolerance)
-        self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(decIn)).max() < self.tolerance)
-        self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(decIn)).max() < self.tolerance)
-
-        #test non-vectorized version
-        for alt, az, r, d, m in zip(controlAlt, controlAz, raIn, decIn, self.mjd):
-            raOut, decOut = utils._raDecFromAltAz(alt, az, longitude, latitude, m)
-            self.assertTrue(numpy.abs(numpy.cos(raOut) - numpy.cos(r)) < self.tolerance)
-            self.assertTrue(numpy.abs(numpy.sin(raOut) - numpy.sin(r)) < self.tolerance)
-            self.assertTrue(numpy.abs(numpy.cos(decOut) - numpy.cos(d)) < self.tolerance)
-            self.assertTrue(numpy.abs(numpy.sin(decOut) - numpy.sin(d)) < self.tolerance)
-
-
-    def testAltAzRADecRoundTrip(self):
-        """
-        Test that altAzPaFromRaDec and raDecFromAltAz really invert each other
-        """
-
-        numpy.random.seed(42)
-        nSamples = 1000
-        mjd = 58350.0
-
-        alt_in = []
-        az_in = []
-        for alt in numpy.arange(0.0, 90.0, 10.0):
-            for az in numpy.arange(0.0, 360.0, 10.0):
-                alt_in.append(alt)
-                az_in.append(az)
-
-        alt_in = numpy.array(alt_in)
-        az_in = numpy.array(az_in)
-
-        for lon in (0.0, 90.0, 135.0):
-            for lat in (60.0, 30.0, -60.0, -30.0):
-
-                ra_in, dec_in = utils.raDecFromAltAz(alt_in, az_in, lon, lat, mjd)
-
-                self.assertFalse(numpy.isnan(ra_in).any())
-                self.assertFalse(numpy.isnan(dec_in).any())
-
-                alt_out, az_out, pa_out = utils.altAzPaFromRaDec(ra_in, dec_in, lon, lat, mjd)
-
-                self.assertFalse(numpy.isnan(pa_out).any())
-
-                for alt_c, az_c, alt_t, az_t in \
-                    zip(numpy.radians(alt_in), numpy.radians(az_in), numpy.radians(alt_out), numpy.radians(az_out)):
-
-                    distance = utils.arcsecFromRadians(utils.haversine(az_c, alt_c, az_t, alt_t))
-                    if az_c<0.01 or az_c>3.14159:
-                        self.assertAlmostEqual(distance, 0.0, 2)
-                    else:
-                        self.assertAlmostEqual(distance, 0.0, 8)
 
 
     def test_galacticFromEquatorial(self):
