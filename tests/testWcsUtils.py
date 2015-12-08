@@ -257,7 +257,10 @@ def suite():
 
     return unittest.TestSuite(suites)
 
+
 def run(shouldExit = False):
     utilsTests.run(suite(), shouldExit)
+
+
 if __name__ == "__main__":
     run(True)
