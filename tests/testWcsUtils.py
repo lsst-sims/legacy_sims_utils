@@ -3,6 +3,7 @@ import numpy as np
 import lsst.utils.tests as utilsTests
 
 from lsst.sims.utils import raDecFromNativeLonLat, nativeLonLatFromRaDec
+from lsst.sims.utils import _raDecFromNativeLonLat, _nativeLonLatFromRaDec
 from lsst.sims.utils import observedFromICRS, icrsFromObserved
 from lsst.sims.utils import ObservationMetaData, haversine
 from lsst.sims.utils import arcsecFromRadians, raDecFromAltAz, Site
@@ -247,6 +248,29 @@ class NativeLonLatTest(unittest.TestCase):
             distance = arcsecFromRadians(haversine(np.radians(ra0), np.radians(dec0),
                                                    np.radians(ra1), np.radians(dec1)))
             self.assertLess(distance, 0.1)
+
+
+    def testDegreesVersusRadians(self):
+        """
+        Test that the radian and degree versions of nativeLonLatFromRaDec
+        and raDecFromNativeLonLat are consistent with each other
+        """
+
+        np.random.seed(873)
+        nSamples = 1000
+        obs = ObservationMetaData(pointingRA=45.0, pointingDec=-34.5, mjd=54656.76)
+        raList = np.random.random_sample(nSamples)*360.0
+        decList = np.random.random_sample(nSamples)*180.0-90.0
+
+        lonDeg, latDeg = nativeLonLatFromRaDec(raList, decList, obs)
+        lonRad, latRad = _nativeLonLatFromRaDec(np.radians(raList), np.radians(decList), obs)
+        np.testing.assert_array_almost_equal(np.radians(lonDeg), lonRad, 15)
+        np.testing.assert_array_almost_equal(np.radians(latDeg), latRad, 15)
+
+        raDeg, decDeg = raDecFromNativeLonLat(raList, decList, obs)
+        raRad, decRad = _raDecFromNativeLonLat(np.radians(raList), np.radians(decList), obs)
+        np.testing.assert_array_almost_equal(np.radians(raDeg), raRad, 15)
+        np.testing.assert_array_almost_equal(np.radians(decDeg), decRad, 15)
 
 
 
