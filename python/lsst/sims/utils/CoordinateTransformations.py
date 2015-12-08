@@ -133,9 +133,9 @@ def _equatorialFromGalactic(gLong, gLat):
     @param [in] gLat is galactic latitude in radians, either a float or a numpy array
     (-pi/2 <= gLat <= pi/2)
 
-    @param [out] ra is right ascension in radians
+    @param [out] ra is right ascension in radians (J2000)
 
-    @param [out] dec is declination in radians
+    @param [out] dec is declination in radians (J2000)
     '''
 
     if isinstance(gLong, numpy.ndarray):
