@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 
 __all__ = ["_nativeLonLatFromRaDec", "_raDecFromNativeLonLat",
@@ -35,7 +35,7 @@ def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
     """
 
     if not hasattr(ra_in, '__len__'):
-        ra_temp, dec_temp = _observedFromICRS(numpy.array([ra_in]), numpy.array([dec_in]),
+        ra_temp, dec_temp = _observedFromICRS(np.array([ra_in]), np.array([dec_in]),
                                               obs_metadata=obs_metadata, epoch=2000.0,
                                               includeRefraction=True)
 
@@ -46,74 +46,74 @@ def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
                                     obs_metadata=obs_metadata, epoch=2000.0,
                                     includeRefraction=True)
 
-    ra_temp, dec_temp = _observedFromICRS(numpy.array([obs_metadata._pointingRA]),
-                                          numpy.array([obs_metadata._pointingDec]),
+    ra_temp, dec_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
+                                          np.array([obs_metadata._pointingDec]),
                                           obs_metadata=obs_metadata, epoch=2000.0,
                                           includeRefraction=True)
 
     raPointing = ra_temp[0]
     decPointing = dec_temp[0]
 
-    x = -1.0*numpy.cos(dec)*numpy.sin(ra)
-    y = numpy.cos(dec)*numpy.cos(ra)
-    z = numpy.sin(dec)
+    x = -1.0*np.cos(dec)*np.sin(ra)
+    y = np.cos(dec)*np.cos(ra)
+    z = np.sin(dec)
 
-    alpha = decPointing - 0.5*numpy.pi
+    alpha = decPointing - 0.5*np.pi
     beta = raPointing
 
-    ca=numpy.cos(alpha)
-    sa=numpy.sin(alpha)
-    cb=numpy.cos(beta)
-    sb=numpy.sin(beta)
+    ca=np.cos(alpha)
+    sa=np.sin(alpha)
+    cb=np.cos(beta)
+    sb=np.sin(beta)
 
-    v2 = numpy.dot(numpy.array([
-                                [1.0, 0.0, 0.0],
-                                [0.0, ca, sa],
-                                [0.0, -1.0*sa, ca]
-                                ]),
-                   numpy.dot(numpy.array([[cb, sb, 0.0],
-                                          [-sb, cb, 0.0],
-                                          [0.0, 0.0, 1.0]
-                                          ]), numpy.array([x,y,z])))
+    v2 = np.dot(np.array([
+                          [1.0, 0.0, 0.0],
+                          [0.0, ca, sa],
+                          [0.0, -1.0*sa, ca]
+                          ]),
+                   np.dot(np.array([[cb, sb, 0.0],
+                                    [-sb, cb, 0.0],
+                                    [0.0, 0.0, 1.0]
+                                    ]), np.array([x,y,z])))
 
-    cc = numpy.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
-    latOut = numpy.arctan2(v2[2], cc)
+    cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
+    latOut = np.arctan2(v2[2], cc)
 
-    _y = v2[1]/numpy.cos(latOut)
-    _ra_raw = numpy.arccos(_y)
+    _y = v2[1]/np.cos(latOut)
+    _ra_raw = np.arccos(_y)
 
     # control for _y=1.0, -1.0 but actually being stored as just outside
     # the bounds of -1.0<=_y<=1.0 because of floating point error
     if hasattr(_ra_raw, '__len__'):
-        _ra = numpy.array([rr if not numpy.isnan(rr) \
-                           else 0.5*numpy.pi*(1.0-numpy.sign(yy)) \
+        _ra = np.array([rr if not np.isnan(rr) \
+                           else 0.5*np.pi*(1.0-np.sign(yy)) \
                            for rr, yy in zip(_ra_raw, _y)])
     else:
-        if numpy.isnan(_ra_raw):
-            if numpy.sign(_y)<0.0:
-                _ra = numpy.pi
+        if np.isnan(_ra_raw):
+            if np.sign(_y)<0.0:
+                _ra = np.pi
             else:
                 _ra = 0.0
         else:
             _ra = _ra_raw
 
-    _x = -numpy.sin(_ra)
+    _x = -np.sin(_ra)
 
-    if type(_ra) is numpy.float64:
-        if numpy.isnan(_ra):
+    if type(_ra) is np.float64:
+        if np.isnan(_ra):
             lonOut = 0.0
-        elif (numpy.abs(_x)>1.0e-9 and numpy.sign(_x)!=numpy.sign(v2[0])) \
-             or (numpy.abs(_y)>1.0e-9 and numpy.sign(_y)!=numpy.sign(v2[1])):
-            lonOut = 2.0*numpy.pi-_ra
+        elif (np.abs(_x)>1.0e-9 and np.sign(_x)!=np.sign(v2[0])) \
+             or (np.abs(_y)>1.0e-9 and np.sign(_y)!=np.sign(v2[1])):
+            lonOut = 2.0*np.pi-_ra
         else:
             lonOut = _ra
     else:
-        _lonOut = [2.0*numpy.pi-rr if (numpy.abs(xx)>1.0e-9 and numpy.sign(xx)!=numpy.sign(v2_0)) \
-                                   or (numpy.abs(yy)>1.0e-9 and numpy.sign(yy)!=numpy.sign(v2_1)) \
+        _lonOut = [2.0*np.pi-rr if (np.abs(xx)>1.0e-9 and np.sign(xx)!=np.sign(v2_0)) \
+                                   or (np.abs(yy)>1.0e-9 and np.sign(yy)!=np.sign(v2_1)) \
                                    else rr \
                                    for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
 
-        lonOut = numpy.array([0.0 if numpy.isnan(ll) else ll for ll in _lonOut])
+        lonOut = np.array([0.0 if np.isnan(ll) else ll for ll in _lonOut])
 
     return lonOut, latOut
 
@@ -150,10 +150,10 @@ def nativeLonLatFromRaDec(ra, dec, obs_metadata):
     @param [out] latOut is the native latitude in degrees
     """
 
-    lon, lat = _nativeLonLatFromRaDec(numpy.radians(ra), numpy.radians(dec),
+    lon, lat = _nativeLonLatFromRaDec(np.radians(ra), np.radians(dec),
                                       obs_metadata)
 
-    return numpy.degrees(lon), numpy.degrees(lat)
+    return np.degrees(lon), np.degrees(lat)
 
 
 def _raDecFromNativeLonLat(lon, lat, obs_metadata):
@@ -180,59 +180,59 @@ def _raDecFromNativeLonLat(lon, lat, obs_metadata):
     than 45 degrees and zenith distances of less than 75 degrees.
     """
 
-    ra_temp, dec_temp = _observedFromICRS(numpy.array([obs_metadata._pointingRA]),
-                                          numpy.array([obs_metadata._pointingDec]),
+    ra_temp, dec_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
+                                          np.array([obs_metadata._pointingDec]),
                                           obs_metadata=obs_metadata, epoch=2000.0,
                                           includeRefraction=True)
 
     raPointing = ra_temp[0]
     decPointing = dec_temp[0]
 
-    x = -1.0*numpy.cos(lat)*numpy.sin(lon)
-    y = numpy.cos(lat)*numpy.cos(lon)
-    z = numpy.sin(lat)
+    x = -1.0*np.cos(lat)*np.sin(lon)
+    y = np.cos(lat)*np.cos(lon)
+    z = np.sin(lat)
 
-    alpha = 0.5*numpy.pi - decPointing
+    alpha = 0.5*np.pi - decPointing
     beta = raPointing
 
-    ca=numpy.cos(alpha)
-    sa=numpy.sin(alpha)
-    cb=numpy.cos(beta)
-    sb=numpy.sin(beta)
+    ca=np.cos(alpha)
+    sa=np.sin(alpha)
+    cb=np.cos(beta)
+    sb=np.sin(beta)
 
-    v2 = numpy.dot(numpy.array([[cb, -1.0*sb, 0.0],
-                                [sb, cb, 0.0],
-                                [0.0, 0.0, 1.0]
+    v2 = np.dot(np.array([[cb, -1.0*sb, 0.0],
+                          [sb, cb, 0.0],
+                          [0.0, 0.0, 1.0]
+                          ]),
+                                np.dot(np.array([[1.0, 0.0, 0.0],
+                                                 [0.0, ca, sa],
+                                                 [0.0, -1.0*sa, ca]
                                 ]),
-                                numpy.dot(numpy.array([[1.0, 0.0, 0.0],
-                                                       [0.0, ca, sa],
-                                                       [0.0, -1.0*sa, ca]
-                                ]),
-                                numpy.array([x,y,z])))
+                                np.array([x,y,z])))
 
 
-    cc = numpy.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
-    decObs = numpy.arctan2(v2[2], cc)
+    cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
+    decObs = np.arctan2(v2[2], cc)
 
-    _y = v2[1]/numpy.cos(decObs)
-    _ra = numpy.arccos(_y)
-    _x = -numpy.sin(_ra)
+    _y = v2[1]/np.cos(decObs)
+    _ra = np.arccos(_y)
+    _x = -np.sin(_ra)
 
-    if type(_ra) is numpy.float64:
-        if numpy.isnan(_ra):
+    if type(_ra) is np.float64:
+        if np.isnan(_ra):
             raObs = 0.0
-        elif (numpy.abs(_x)>1.0e-9 and numpy.sign(_x)!=numpy.sign(v2[0])) \
-             or (numpy.abs(_y)>1.0e-9 and numpy.sign(_y)!=numpy.sign(v2[1])):
-            raObs = 2.0*numpy.pi-_ra
+        elif (np.abs(_x)>1.0e-9 and np.sign(_x)!=np.sign(v2[0])) \
+             or (np.abs(_y)>1.0e-9 and np.sign(_y)!=np.sign(v2[1])):
+            raObs = 2.0*np.pi-_ra
         else:
             raObs = _ra
     else:
-        _raObs = [2.0*numpy.pi-rr if (numpy.abs(xx)>1.0e-9 and numpy.sign(xx)!=numpy.sign(v2_0)) \
-                                  or (numpy.abs(yy)>1.0e-9 and numpy.sign(yy)!=numpy.sign(v2_1)) \
+        _raObs = [2.0*np.pi-rr if (np.abs(xx)>1.0e-9 and np.sign(xx)!=np.sign(v2_0)) \
+                                  or (np.abs(yy)>1.0e-9 and np.sign(yy)!=np.sign(v2_1)) \
                                   else rr \
                                   for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
 
-        raObs = numpy.array([0.0 if numpy.isnan(rr) else rr for rr in _raObs])
+        raObs = np.array([0.0 if np.isnan(rr) else rr for rr in _raObs])
 
 
     # convert from observed geocentric coordinates to International Celestial Reference System
@@ -242,7 +242,7 @@ def _raDecFromNativeLonLat(lon, lat, obs_metadata):
         raOut, decOut = _icrsFromObserved(raObs, decObs, obs_metadata=obs_metadata,
                                           epoch=2000.0, includeRefraction=True)
     else:
-        raOut, decOut = _icrsFromObserved(numpy.array([raObs]), numpy.array([decObs]),
+        raOut, decOut = _icrsFromObserved(np.array([raObs]), np.array([decObs]),
                                           obs_metadata=obs_metadata,
                                           epoch=2000.0, includeRefraction=True)
 
@@ -276,8 +276,8 @@ def raDecFromNativeLonLat(lon, lat, obs_metadata):
     than 45 degrees and zenith distances of less than 75 degrees.
     """
 
-    ra, dec = _raDecFromNativeLonLat(numpy.radians(lon),
-                                     numpy.radians(lat),
+    ra, dec = _raDecFromNativeLonLat(np.radians(lon),
+                                     np.radians(lat),
                                      obs_metadata)
 
-    return numpy.degrees(ra), numpy.degrees(dec)
+    return np.degrees(ra), np.degrees(dec)
