@@ -2,7 +2,7 @@ import numpy
 import inspect
 from .SpatialBounds import SpatialBounds
 from lsst.sims.utils import ModifiedJulianDate
-from lsst.sims.utils import haversine, Site
+from lsst.sims.utils import Site
 
 __all__ = ["ObservationMetaData"]
 
