@@ -1,6 +1,7 @@
 from .ModifiedJulianDate import *
 from .coordinateTransformations import *
 from .AstrometryUtils import *
+from .FocalPlaneUtils import *
 from .WcsUtils import *
 from .Site import *
 from .SpatialBounds import *
