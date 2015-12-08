@@ -1,5 +1,5 @@
 from .ModifiedJulianDate import *
-from .coordinateTransformations import *
+from .CoordinateTransformations import *
 from .AstrometryUtils import *
 from .FocalPlaneUtils import *
 from .WcsUtils import *
