@@ -1,9 +1,10 @@
 import numpy
+from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 
 __all__ = ["_nativeLonLatFromRaDec", "_raDecFromNativeLonLat",
            "nativeLonLatFromRaDec", "raDecFromNativeLonLat"]
 
-def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
+def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
     """
     Convert the RA and Dec of a star into `native' longitude and latitude.
 
@@ -15,23 +16,43 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
 
     Calabretta and Greisen (2002), A&A 395, p. 1077
 
+    Note: RA, and Dec are assumed to be in the International Celestial Reference
+    System.  Before calculating native longitude and latitude, this method will
+    convert RA, and Dec to observed geocentric coordinates.
+
     @param [in] ra is the RA of the star being transformed in radians
+    (in the International Celestial Reference System)
 
     @param [in] dec is the Dec of the star being transformed in radians
+    (in the International Celestial Reference System)
 
-    @param [in] raPointing is the RA at which the telescope is pointing
-    in radians
-
-    @param [in] decPointing is the Dec at which the telescope is pointing
-    in radians
+    @param [in] obs_metadata is an ObservationMetaData characterizing the pointing of
+    the telescope.
 
     @param [out] lonOut is the native longitude in radians
 
     @param [out] latOut is the native latitude in radians
-
-    Note: while ra and dec can be numpy.arrays, raPointing and decPointing
-    must be floats (you cannot transform for more than one pointing at once)
     """
+
+    if not hasattr(ra_in, '__len__'):
+        ra_temp, dec_temp = _observedFromICRS(numpy.array([ra_in]), numpy.array([dec_in]),
+                                              obs_metadata=obs_metadata, epoch=2000.0,
+                                              includeRefraction=True)
+
+        ra = ra_temp[0]
+        dec = dec_temp[0]
+    else:
+        ra, dec = _observedFromICRS(ra_in, dec_in,
+                                    obs_metadata=obs_metadata, epoch=2000.0,
+                                    includeRefraction=True)
+
+    ra_temp, dec_temp = _observedFromICRS(numpy.array([obs_metadata._pointingRA]),
+                                          numpy.array([obs_metadata._pointingDec]),
+                                          obs_metadata=obs_metadata, epoch=2000.0,
+                                          includeRefraction=True)
+
+    raPointing = ra_temp[0]
+    decPointing = dec_temp[0]
 
     x = -1.0*numpy.cos(dec)*numpy.sin(ra)
     y = numpy.cos(dec)*numpy.cos(ra)
@@ -97,7 +118,7 @@ def _nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
     return lonOut, latOut
 
 
-def nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
+def nativeLonLatFromRaDec(ra, dec, obs_metadata):
     """
     Convert the RA and Dec of a star into `native' longitude and latitude.
 
@@ -111,32 +132,31 @@ def nativeLonLatFromRaDec(ra, dec, raPointing, decPointing):
 
     Calabretta and Greisen (2002), A&A 395, p. 1077
 
+    Note: RA, and Dec are assumed to be in the International Celestial Reference
+    System.  Before calculating native longitude and latitude, this method will
+    convert RA, and Dec to observed geocentric coordinates.
+
     @param [in] ra is the RA of the star being transformed in degrees
+    (in the International Celestial Reference System)
 
     @param [in] dec is the Dec of the star being transformed in degrees
+    (in the International Celestial Reference System)
 
-    @param [in] raPointing is the RA at which the telescope is pointing
-    in degrees
-
-    @param [in] decPointing is the Dec at which the telescope is pointing
-    in degrees
+    @param [in] obs_metadata is an ObservationMetaData characterizing the pointing of
+    the telescope.
 
     @param [out] lonOut is the native longitude in degrees
 
     @param [out] latOut is the native latitude in degrees
-
-    Note: while ra and dec can be numpy.arrays, raPointing and decPointing
-    must be floats (you cannot transform for more than one pointing at once)
     """
 
     lon, lat = _nativeLonLatFromRaDec(numpy.radians(ra), numpy.radians(dec),
-                                      numpy.radians(raPointing),
-                                      numpy.radians(decPointing))
+                                      obs_metadata)
 
     return numpy.degrees(lon), numpy.degrees(lat)
 
 
-def _raDecFromNativeLonLat(lon, lat, raPointing, decPointing):
+def _raDecFromNativeLonLat(lon, lat, obs_metadata):
     """
     Transform a star's position in native longitude and latitude into
     RA and Dec.  See the doc string for _nativeLonLatFromRaDec for definitions
@@ -146,19 +166,27 @@ def _raDecFromNativeLonLat(lon, lat, raPointing, decPointing):
 
     @param [in] lat is the native latitude in radians
 
-    @param [in] raPointing is the RA at which the telescope is pointing in
-    radians
-
-    @param [in] decPointing is the Dec at which the telescope is pointing
-    in radians
+    @param [in] obs_metadata is an ObservationMetaData characterizing the pointing
+    of the telescope
 
     @param [out] raOut is the RA of the star in radians
+    (in the International Celestial Reference System)
 
     @param [in] decOut is the Dec of the star in radians
+    (in the International Celestial Reference System)
 
-    Note: while lon and lat can be numpy.arrays, raPointing and decPointing
-    must be floats (you cannot transform for more than one pointing at once)
+    Note: Because of its reliance on icrsFromObserved, this
+    method is only accurate at angular distances from the sun of greater
+    than 45 degrees and zenith distances of less than 75 degrees.
     """
+
+    ra_temp, dec_temp = _observedFromICRS(numpy.array([obs_metadata._pointingRA]),
+                                          numpy.array([obs_metadata._pointingDec]),
+                                          obs_metadata=obs_metadata, epoch=2000.0,
+                                          includeRefraction=True)
+
+    raPointing = ra_temp[0]
+    decPointing = dec_temp[0]
 
     x = -1.0*numpy.cos(lat)*numpy.sin(lon)
     y = numpy.cos(lat)*numpy.cos(lon)
@@ -184,33 +212,47 @@ def _raDecFromNativeLonLat(lon, lat, raPointing, decPointing):
 
 
     cc = numpy.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
-    decOut = numpy.arctan2(v2[2], cc)
+    decObs = numpy.arctan2(v2[2], cc)
 
-    _y = v2[1]/numpy.cos(decOut)
+    _y = v2[1]/numpy.cos(decObs)
     _ra = numpy.arccos(_y)
     _x = -numpy.sin(_ra)
 
     if type(_ra) is numpy.float64:
         if numpy.isnan(_ra):
-            raOut = 0.0
+            raObs = 0.0
         elif (numpy.abs(_x)>1.0e-9 and numpy.sign(_x)!=numpy.sign(v2[0])) \
              or (numpy.abs(_y)>1.0e-9 and numpy.sign(_y)!=numpy.sign(v2[1])):
-            raOut = 2.0*numpy.pi-_ra
+            raObs = 2.0*numpy.pi-_ra
         else:
-            raOut = _ra
+            raObs = _ra
     else:
-        _raOut = [2.0*numpy.pi-rr if (numpy.abs(xx)>1.0e-9 and numpy.sign(xx)!=numpy.sign(v2_0)) \
+        _raObs = [2.0*numpy.pi-rr if (numpy.abs(xx)>1.0e-9 and numpy.sign(xx)!=numpy.sign(v2_0)) \
                                   or (numpy.abs(yy)>1.0e-9 and numpy.sign(yy)!=numpy.sign(v2_1)) \
                                   else rr \
                                   for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
 
-        raOut = numpy.array([0.0 if numpy.isnan(rr) else rr for rr in _raOut])
+        raObs = numpy.array([0.0 if numpy.isnan(rr) else rr for rr in _raObs])
 
+
+    # convert from observed geocentric coordinates to International Celestial Reference System
+    # coordinates
+
+    if hasattr(raObs,'__len__'):
+        raOut, decOut = _icrsFromObserved(raObs, decObs, obs_metadata=obs_metadata,
+                                          epoch=2000.0, includeRefraction=True)
+    else:
+        raOut, decOut = _icrsFromObserved(numpy.array([raObs]), numpy.array([decObs]),
+                                          obs_metadata=obs_metadata,
+                                          epoch=2000.0, includeRefraction=True)
+
+    if not hasattr(lon, '__len__'):
+        return raOut[0], decOut[0]
 
     return raOut, decOut
 
 
-def raDecFromNativeLonLat(lon, lat, raPointing, decPointing):
+def raDecFromNativeLonLat(lon, lat, obs_metadata):
     """
     Transform a star's position in native longitude and latitude into
     RA and Dec.  See the doc string for nativeLonLatFromRaDec for definitions
@@ -220,23 +262,22 @@ def raDecFromNativeLonLat(lon, lat, raPointing, decPointing):
 
     @param [in] lat is the native latitude in degrees
 
-    @param [in] raPointing is the RA at which the telescope is pointing in
-    degrees
-
-    @param [in] decPointing is the Dec at which the telescope is pointing
-    in degrees
+    @param [in] obs_metadata is an ObservationMetaData characterizing the
+    pointing of the telescope
 
     @param [out] raOut is the RA of the star in degrees
+    (in the International Celestial Reference System)
 
     @param [in] decOut is the Dec of the star in degrees
+    (in the International Celestial Reference System)
 
-    Note: while lon and lat can be numpy.arrays, raPointing and decPointing
-    must be floats (you cannot transform for more than one pointing at once)
+    Note: Because of its reliance on icrsFromObserved, this
+    method is only accurate at angular distances from the sun of greater
+    than 45 degrees and zenith distances of less than 75 degrees.
     """
 
     ra, dec = _raDecFromNativeLonLat(numpy.radians(lon),
                                      numpy.radians(lat),
-                                     numpy.radians(raPointing),
-                                     numpy.radians(decPointing))
+                                     obs_metadata)
 
     return numpy.degrees(ra), numpy.degrees(dec)
