@@ -177,9 +177,7 @@ class NativeLonLatTest(unittest.TestCase):
         zip(rrPointingList, thetaPointingList, mjdList):
             site = Site()
             raZenith, decZenith = raDecFromAltAz(180.0, 0.0,
-                                                  np.degrees(site.longitude),
-                                                  np.degrees(site.latitude),
-                                                  mjd)
+                                                 ObservationMetaData(mjd=mjd, site=site))
 
             rp = raZenith + rrp*np.cos(thetap)
             dp = decZenith + rrp*np.sin(thetap)
