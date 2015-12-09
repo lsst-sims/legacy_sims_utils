@@ -1,6 +1,6 @@
 import numpy as np
 import palpy
-
+from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 
 __all__ = ["_pupilCoordsFromRaDec", "pupilCoordsFromRaDec",
            "_raDecFromPupilCoords", "raDecFromPupilCoords"]
@@ -15,9 +15,19 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     plane is perfectly flat.  The output is in Cartesian coordinates, assuming
     that the Celestial Sphere is a unit sphere.
 
+    The RA, Dec accepted by this method are in the International Celestial
+    Reference System.  Before applying the gnomonic projection, this method
+    transforms those RA, Dec into observed geocentric coordinates, applying
+    the effects of precession, nutation, aberration, parallax and refraction.
+    This is done, because the gnomonic projection ought to be applied to what
+    observers actually see, rather than the idealized, above-the-atmosphere
+    coordinates represented by the ICRS.
+
     @param [in] ra_in is a numpy array of RAs in degrees
+    (in the International Celestial Reference System)
 
     @param [in] dec_in in degrees
+    (in the International Celestial Reference System)
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
@@ -43,9 +53,19 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     plane is perfectly flat.  The output is in Cartesian coordinates, assuming
     that the Celestial Sphere is a unit sphere.
 
+    The RA, Dec accepted by this method are in the International Celestial
+    Reference System.  Before applying the gnomonic projection, this method
+    transforms those RA, Dec into observed geocentric coordinates, applying
+    the effects of precession, nutation, aberration, parallax and refraction.
+    This is done, because the gnomonic projection ought to be applied to what
+    observers actually see, rather than the idealized, above-the-atmosphere
+    coordinates represented by the ICRS.
+
     @param [in] ra_in is a numpy array of RAs in radians
+    (in the International Celestial Reference System)
 
     @param [in] dec_in in radians
+    (in the International Celestial Reference System)
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
@@ -79,19 +99,30 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
 
     theta = obs_metadata._rotSkyPos
 
+    ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in, obs_metadata=obs_metadata,
+                                        epoch=2000.0, includeRefraction=True)
+
+    ra_pointing_temp, dec_pointing_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
+                                                            np.array([obs_metadata._pointingDec]),
+                                                            obs_metadata=obs_metadata,
+                                                            epoch=2000.0, includeRefraction=True)
+
+    ra_pointing = ra_pointing_temp[0]
+    dec_pointing = dec_pointing_temp[0]
+
     #palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
     #with a tangent point at (pointingRA, pointingDec)
     #
     try:
-        x, y = palpy.ds2tpVector(ra_in, dec_in, obs_metadata._pointingRA, obs_metadata._pointingDec)
+        x, y = palpy.ds2tpVector(ra_obs, dec_obs, ra_pointing, dec_pointing)
     except:
         # apparently, one of your ra/dec values was improper; we will have to do this
         # element-wise, putting NaN in the place of the bad values
         x = []
         y = []
-        for rr, dd in zip(ra_in, dec_in):
+        for rr, dd in zip(ra_obs, dec_obs):
             try:
-                xx, yy = palpy.ds2tp(rr, dd, obs_metadata._pointingRA, obs_metadata._pointingDec)
+                xx, yy = palpy.ds2tp(rr, dd, ra_pointing, dec_pointing)
             except:
                 xx = np.NaN
                 yy = np.NaN
@@ -131,7 +162,7 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     transforations (in years)
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
-    row is Dec (both in degrees)
+    row is Dec (both in degrees; both in the International Celestial Reference System)
     """
 
     output = _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=obs_metadata,
@@ -153,7 +184,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     transforations (in years)
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
-    row is Dec (both in radians)
+    row is Dec (both in radians; both in the International Celestial Reference System)
     """
 
     if obs_metadata is None:
@@ -178,6 +209,13 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
         raise RuntimeError("You passed %d RAs but %d Decs into raDecFromPupilCoords" % \
                            (len(raObj), len(decObj)))
 
+    ra_pointing_temp, dec_pointing_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
+                                                            np.array([obs_metadata._pointingDec]),
+                                                            obs_metadata=obs_metadata,
+                                                            epoch=2000.0, includeRefraction=True)
+
+    ra_pointing = ra_pointing_temp[0]
+    dec_pointing = dec_pointing_temp[0]
 
     #This is the same as theta in pupilCoordsFromRaDec, except without the minus sign.
     #This is because we will be reversing the rotation performed in that other method.
@@ -190,12 +228,10 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
 
     # x_g and y_g are now the x and y coordinates
     # can now use the PALPY method palDtp2s to convert to RA, Dec.
-    # Unfortunately, that method has not yet been vectorized.
-    raOut = []
-    decOut = []
-    for xx, yy in zip(x_g, y_g):
-        rr, dd = palpy.dtp2s(xx, yy, obs_metadata._pointingRA, obs_metadata._pointingDec)
-        raOut.append(rr)
-        decOut.append(dd)
 
-    return np.array([raOut, decOut])
+    raObs, decObs = palpy.dtp2sVector(x_g, y_g, ra_pointing, dec_pointing)
+
+    ra_icrs, dec_icrs = _icrsFromObserved(raObs, decObs,
+                                          obs_metadata=obs_metadata, epoch=2000.0, includeRefraction=True)
+
+    return np.array([ra_icrs, dec_icrs])

@@ -5,8 +5,11 @@ import lsst.utils.tests as utilsTests
 from lsst.sims.utils import ObservationMetaData, _nativeLonLatFromRaDec
 from lsst.sims.utils import _pupilCoordsFromRaDec
 from lsst.sims.utils import _raDecFromPupilCoords
+from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
+from lsst.sims.utils import haversine, arcsecFromRadians
 
 class PupilCoordinateUnitTest(unittest.TestCase):
+
 
     def testExceptions(self):
         """
@@ -121,12 +124,21 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                                           mjd=mjd,
                                           rotSkyPos=rotSkyPos)
 
-                #test order E, W, N, S
-                raTest = numpy.radians(ra) + numpy.array([0.01, -0.01, 0.0, 0.0])
-                decTest = numpy.radians(dec) + numpy.array([0.0, 0.0, 0.01, -0.01])
+                ra_obs, dec_obs = _observedFromICRS(numpy.radians([ra]), numpy.radians([dec]),
+                                                    obs_metadata=obs, epoch=2000.0,
+                                                    includeRefraction=True)
+
+                # test points that are displaced just to the (E, W, N, S) of the pointing
+                # in observed geocentric RA, Dec; verify that the pupil coordinates
+                # change as expected
+                raTest_obs = ra_obs[0] + numpy.array([0.01, -0.01, 0.0, 0.0])
+                decTest_obs = dec_obs[0] + numpy.array([0.0, 0.0, 0.01, -0.01])
+                raTest, decTest = _icrsFromObserved(raTest_obs, decTest_obs, obs_metadata=obs,
+                                                    epoch=2000.0, includeRefraction=True)
+
                 x, y = _pupilCoordsFromRaDec(raTest, decTest, obs_metadata=obs, epoch=epoch)
 
-                lon, lat = _nativeLonLatFromRaDec(raTest, decTest, numpy.radians(ra), numpy.radians(dec))
+                lon, lat = _nativeLonLatFromRaDec(raTest, decTest, obs)
                 rr = numpy.abs(numpy.cos(lat)/numpy.sin(lat))
 
                 if numpy.abs(rotSkyPos)<0.01:
@@ -148,7 +160,6 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                 numpy.testing.assert_array_almost_equal(dy, numpy.ones(4), decimal=4)
 
 
-
     def testRaDecFromPupil(self):
         """
         Test conversion from pupil coordinates back to Ra, Dec
@@ -162,14 +173,15 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                                   rotSkyPos=23.0,
                                   mjd=52000.0)
 
-        nSamples = 100
+        nSamples = 1000
         numpy.random.seed(42)
         ra = (numpy.random.random_sample(nSamples)*0.1-0.2) + numpy.radians(raCenter)
         dec = (numpy.random.random_sample(nSamples)*0.1-0.2) + numpy.radians(decCenter)
         xp, yp = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs, epoch=2000.0)
         raTest, decTest = _raDecFromPupilCoords(xp, yp, obs_metadata=obs, epoch=2000.0)
-        numpy.testing.assert_array_almost_equal(raTest, ra, decimal=10)
-        numpy.testing.assert_array_almost_equal(decTest, dec, decimal=10)
+        distance = arcsecFromRadians(haversine(ra, dec, raTest, decTest))
+        self.assertLess(distance.max(), 1.0) # because of the imprecision in _icrsFromObserved,
+                                             # the best we can hope for is sub-arcsecond accuracy
 
 
     def testNaNs(self):
