@@ -7,30 +7,27 @@ and ICRS RA, Dec)
 
 import numpy as np
 import palpy
-from lsst.sims.utils import _icrsFromObserved, calcLmstLast
+from lsst.sims.utils import _icrsFromObserved, _observedFromICRS, calcLmstLast, _observedFromAppGeo
+from lsst.sims.utils import ObservationMetaData, Site
 
 __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
-           "_raDecFromAltAz", "raDecFromAltAz"]
+           "_raDecFromAltAz", "raDecFromAltAz",
+           "getRotTelPos", "_getRotTelPos",
+           "getRotSkyPos", "_getRotSkyPos"]
 
-def altAzPaFromRaDec(ra, dec, lon, lat, mjd):
+def altAzPaFromRaDec(ra, dec, obs):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
 
     @param [in] ra is RA in degrees.  Can be a numpy array or a single value.
+    Assumed to be in the International Celestial Reference System.
 
     @param [in] dec is Dec in degrees.  Can be a numpy array or a single value.
+    Assumed to be in the International Celestial Reference System.
 
-    @param [in] lon is the longitude of the observer in degrees
-    (positive east of the prime meridian).  Must be a single value.
-
-    @param [in] lat is the latitude of the observer in degrees
-    (positive north of the equator).  Must be a single value.
-
-    @param [in] mjd is the Universal Time expressed as an MJD.
-    Can be a numpy array or a single value.  If a numpy array, should have the
-    same number of entries as ra and dec.  In this case,
-    each mjd will be applied to its corresponding ra, dec pair.
+    @param [in] obs is an ObservationMetaData characterizing
+    the site of the telescope and the MJD of the observation
 
     @param [out] altitude in degrees
 
@@ -39,33 +36,28 @@ def altAzPaFromRaDec(ra, dec, lon, lat, mjd):
     @param [out] parallactic angle in degrees
     """
 
+    #sfd time This should be passing around Universal Time
+
     alt, az, pa = _altAzPaFromRaDec(np.radians(ra), np.radians(dec),
-                                    np.radians(lon), np.radians(lat),
-                                    mjd)
+                                    obs)
 
     return np.degrees(alt), np.degrees(az), np.degrees(pa)
 
 
 
-def _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
+def _altAzPaFromRaDec(raRad, decRad, obs):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
 
     @param [in] raRad is RA in radians.  Can be a numpy array or a single value.
+    Assumed to be in the International Celestial Reference System.
 
     @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
+    Assumed to be in the International Celestial Reference System.
 
-    @param [in] longRad is the longitude of the observer in radians
-    (positive east of the prime meridian).  Must be a single value.
-
-    @param [in] latRad is the latitude of the observer in radians
-    (positive north of the equator).  Must be a single value.
-
-    @param [in] mjd is the Universal Time expressed as an MJD.
-    Can be a numpy array or a single value.  If a numpy array, should have the
-    same number of entries as ra and dec.  In this case,
-    each mjd will be applied to its corresponding ra, dec pair.
+    @param [in] obs is an ObservationMetaData characterizing
+    the site of the telescope and the MJD of the observation
 
     @param [out] altitude in radians
 
@@ -74,23 +66,13 @@ def _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
     @param [out] parallactic angle in radians
     """
 
-    if isinstance(longRad, np.ndarray):
-        raise RuntimeError('cannot pass numpy array of longitudes to altAzPaFromRaDec')
-
-    if isinstance(latRad, np.ndarray):
-        raise RuntimeError('cannot pass numpy array of latitudes to altAzPaFromRaDec')
-
     raIsArray = False
     decIsArray = False
-    mjdIsArray = False
     if isinstance(raRad, np.ndarray):
         raIsArray = True
 
     if isinstance(decRad, np.ndarray):
         decIsArray = True
-
-    if isinstance(mjd, np.ndarray):
-        mjdIsArray = True
 
     if raIsArray and not decIsArray:
         raise RuntimeError('passed numpy array of RA to altAzPaFromRaDec; but only one Dec')
@@ -101,29 +83,38 @@ def _altAzPaFromRaDec(raRad, decRad, longRad, latRad, mjd):
     if raIsArray and decIsArray and len(raRad) != len(decRad):
         raise RuntimeError('in altAzPaFromRaDec length of RA numpy array does not match length of Dec numpy array')
 
-    if mjdIsArray and not raIsArray:
-        raise RuntimeError('passed numpy array of mjd to altAzPaFromRaDec; but only one RA, Dec')
 
-    if mjdIsArray and len(mjd) != len(raRad):
-        raise RuntimeError('in altAzPaFromRaDec length of mjd numpy array is not the same as length of RA numpy array')
+    if not hasattr(raRad, '__len__'):
+        raObs_temp, decObs_temp = _observedFromICRS(np.array([raRad]), np.array([decRad]), obs_metadata=obs,
+                                                      includeRefraction=True, epoch=2000.0)
 
-    lst = calcLmstLast(mjd, longRad)
+        raObs = raObs_temp[0]
+        decObs = decObs_temp[0]
+
+
+    else:
+        raObs, decObs = _observedFromICRS(raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
+
+    lst = calcLmstLast(obs.mjd, obs.site.longitude)
     last = lst[1]
-    haRad = np.radians(last*15.0) - raRad
+    haRad = np.radians(last*15.0) - raObs
+
+
+    #sfd time This should be passing around Universal Time
 
     if isinstance(haRad, np.ndarray):
         az, azd, azdd, \
         alt, altd, altdd, \
-        pa, pad, padd = palpy.altazVector(haRad, decRad, latRad)
+        pa, pad, padd = palpy.altazVector(haRad, decObs, obs.site.latitude)
     else:
         az, azd, azdd, \
         alt, altd, altdd, \
-        pa, pad, padd = palpy.altaz(haRad, decRad, latRad)
+        pa, pad, padd = palpy.altaz(haRad, decObs, obs.site.latitude)
 
     return alt, az, pa
 
 
-def raDecFromAltAz(alt, az, lon, lat, mjd):
+def raDecFromAltAz(alt, az, obs):
     """
     Convert altitude and azimuth to RA and Dec
 
@@ -131,31 +122,22 @@ def raDecFromAltAz(alt, az, lon, lat, mjd):
 
     @param [in] az is the azimuth in degrees.  Cant be a numpy array or a single value.
 
-    @param [in] lon is the observatory longitude in degrees
-    (positive east of the prime meridian).  Must be a single value.
+    @param [in] obs is an ObservationMetaData characterizing
+    the site of the telescope and the MJD of the observation
 
-    @param [in] lat is the latitude in degrees
-    (positive north of the equator).  Must be a single value.
+    @param [out] RA in degrees (in the International Celestial Reference System)
 
-    @param [in] mjd is the Universal Time expressed as an MD.
-    Can be a numpy array or a single value.  If a single value, must have the same length as
-    the numpy array of alt and az.  In this case, each MJD will be associated with the corresponding
-    alt, az pair.
-
-    @param [out] RA in degrees
-
-    @param [out] Dec in degrees
+    @param [out] Dec in degrees (in the International Celestial Reference System)
 
     Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
 
-    ra, dec = _raDecFromAltAz(np.radians(alt), np.radians(az),
-                              np.radians(lon), np.radians(lat), mjd)
+    ra, dec = _raDecFromAltAz(np.radians(alt), np.radians(az), obs)
 
     return np.degrees(ra), np.degrees(dec)
 
 
-def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
+def _raDecFromAltAz(altRad, azRad, obs):
     """
     Convert altitude and azimuth to RA and Dec
 
@@ -163,16 +145,8 @@ def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
 
     @param [in] azRad is the azimuth in radians.  Cant be a numpy array or a single value.
 
-    @param [in] longRad is the observatory longitude in radians
-    (positive east of the prime meridian).  Must be a single value.
-
-    @param [in] latRad is the latitude in radians
-    (positive north of the equator).  Must be a single value.
-
-    @param [in] mjd is the Universal Time expressed as an MD.
-    Can be a numpy array or a single value.  If a single value, must have the same length as
-    the numpy array of alt and az.  In this case, each MJD will be associated with the corresponding
-    alt, az pair.
+    @param [in] obs is an ObservationMetaData characterizing
+    the site of the telescope and the MJD of the observation
 
     @param [out] RA in radians
 
@@ -180,17 +154,9 @@ def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
 
     Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
-    if isinstance(longRad, np.ndarray):
-        raise RuntimeError('cannot pass a numpy array of longitudes to raDecFromAltAz')
 
-    if isinstance(latRad, np.ndarray):
-        raise RuntimeError('cannot pass a numpy array of latitudes to raDecFromAltAz')
-
-    mjdIsArray = False
     altIsArray = False
     azIsArray = False
-    if isinstance(mjd, np.ndarray):
-        mjdIsArray = True
 
     if isinstance(altRad, np.ndarray):
         altIsArray = True
@@ -207,19 +173,13 @@ def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
     if azIsArray and altIsArray and len(altRad)!=len(azRad):
         raise RuntimeError('in raDecFromAltAz, length of alt numpy array does not match length of az numpy array')
 
-    if mjdIsArray and not azIsArray:
-        raise RuntimeError('passed a numpy array of mjd to raDecFromAltAz, but only one alt, az pair')
-
-    if mjdIsArray and len(mjd) != len(azRad):
-        raise RuntimeError('in raDecFromAltAz length of mjd numpy array does not match length of az numpy array')
-
-    lst = calcLmstLast(mjd, longRad)
+    lst = calcLmstLast(obs.mjd, obs.site.longitude)
     last = lst[1]
     sinAlt = np.sin(altRad)
-    cosLat = np.cos(latRad)
-    sinLat = np.sin(latRad)
-    decRad = np.arcsin(sinLat*sinAlt+ cosLat*np.cos(altRad)*np.cos(azRad))
-    costheta = (sinAlt - np.sin(decRad)*sinLat)/(np.cos(decRad)*cosLat)
+    cosLat = np.cos(obs.site.latitude)
+    sinLat = np.sin(obs.site.latitude)
+    decObs = np.arcsin(sinLat*sinAlt+ cosLat*np.cos(altRad)*np.cos(azRad))
+    costheta = (sinAlt - np.sin(decObs)*sinLat)/(np.cos(decObs)*cosLat)
     if altIsArray:
         haRad0 =  np.arccos(costheta)
         # Make sure there were no NaNs
@@ -235,6 +195,145 @@ def _raDecFromAltAz(altRad, azRad, longRad, latRad, mjd):
                 haRad0 = np.pi
 
     haRad = np.where(np.sin(azRad)>=0.0, -1.0*haRad0, haRad0)
-    raRad = np.radians(last*15.) - haRad
+    raObs = np.radians(last*15.) - haRad
+
+    if not hasattr(raObs, '__len__'):
+        raRad, decRad = _icrsFromObserved(np.array([raObs]), np.array([decObs]),
+                                          obs_metadata=obs, epoch=2000.0,
+                                          includeRefraction=True)
+
+        return raRad[0], decRad[0]
+
+
+    raRad, decRad = _icrsFromObserved(raObs, decObs,
+                                      obs_metadata=obs, epoch=2000.0,
+                                      includeRefraction=True)
+
     return raRad, decRad
+
+
+def getRotSkyPos(ra, dec, obs, rotTel):
+    """
+    @param [in] ra is the RA in degrees.  Can be a numpy array or a single value.
+
+    @param [in] dec is Dec in degrees.  Can be a numpy array or a single value.
+
+    @param [in] obs is an ObservationMetaData characterizing the telescope pointing
+    and site.
+
+    @param [in] rotTel is rotTelPos in degrees
+    (the angle of the camera rotator).  Can be a numpy array or a single value.
+    If a numpy array, should have the same length as ra and dec.  In this case,
+    each rotTel will be associated with the corresponding ra, dec pair.
+
+    @param [out] rotSkyPos in degrees
+
+    WARNING: As of 13 April 2015, this method does not agree with OpSim on
+    the relationship between rotSkyPos and rotTelPos.  This is due to a
+    discrepancy between the time that OpSim uses as the MJD when calculating
+    rotTelPos and the time that OpSim reports as being the actual expmjd
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
+    """
+
+    rotSky = _getRotSkyPos(np.radians(ra), np.radians(dec),
+                           obs, np.radians(rotTel))
+
+    return np.degrees(rotSky)
+
+
+
+def _getRotSkyPos(raRad, decRad, obs, rotTelRad):
+    """
+    @param [in] raRad is the RA in radians.  Can be a numpy array or a single value.
+
+    @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
+
+    @param [in] obs is an ObservationMetaData characterizing the telescope pointing
+    and site.
+
+    @param [in] rotTelRad is rotTelPos in radians
+    (the angle of the camera rotator).  Can be a numpy array or a single value.
+    If a numpy array, should have the same length as raRad and decRad.  In this case,
+    each rotTelRad will be associated with the corresponding raRad, decRad pair.
+
+    @param [out] rotSkyPos in radians
+
+    WARNING: As of 13 April 2015, this method does not agree with OpSim on
+    the relationship between rotSkyPos and rotTelPos.  This is due to a
+    discrepancy between the time that OpSim uses as the MJD when calculating
+    rotTelPos and the time that OpSim reports as being the actual expmjd
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
+    """
+    altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, obs)
+
+    #20 March 2015
+    #I do not know where this expression comes from; we should validate it against
+    #the definitions of rotTelPos and rotSkyPos
+    return (rotTelRad - paRad)%(2.*np.pi)
+
+
+def getRotTelPos(ra, dec, obs, rotSky):
+    """
+    @param [in] ra is RA in degrees.  Can be a numpy array or a single value.
+
+    @param [in] dec is Dec in degrees.  Can be a numpy array or a single value.
+
+    @param [in] obs is an ObservationMetaData characterizing the telescope pointing
+    and site.
+
+    @param [in] rotSky is rotSkyPos in degrees
+    (the angle of the field of view relative to the South pole given a
+    rotator angle).  Can be a numpy array or a single value.  If a numpy array, should
+    have the same length as ra and dec.  In this case, each rotSkyPos
+    will be associated with the corresponding ra, dec pair.
+
+    @param [out] rotTelPos in degrees.
+
+    WARNING: As of 13 April 2015, this method does not agree with OpSim on
+    the relationship between rotSkyPos and rotTelPos.  This is due to a
+    discrepancy between the time that OpSim uses as the MJD when calculating
+    rotTelPos and the time that OpSim reports as being the actual expmjd
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
+    """
+
+    rotTel = _getRotTelPos(np.radians(ra), np.radians(dec),
+                           obs, np.radians(rotSky))
+
+    return np.degrees(rotTel)
+
+
+def _getRotTelPos(raRad, decRad, obs, rotSkyRad):
+    """
+    @param [in] raRad is RA in radians.  Can be a numpy array or a single value.
+
+    @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
+
+    @param [in] obs is an ObservationMetaData characterizing the telescope pointing
+    and site.
+
+    @param [in] rotSkyRad is rotSkyPos in radians
+    (the angle of the field of view relative to the South pole given a
+    rotator angle).  Can be a numpy array or a single value.  If a numpy array, should
+    have the same length as raRad and decRad.  In this case, each rotSkyPos
+    will be associated with the corresponding raRad, decRad pair.
+
+    @param [out] rotTelPos in radians.
+
+    WARNING: As of 13 April 2015, this method does not agree with OpSim on
+    the relationship between rotSkyPos and rotTelPos.  This is due to a
+    discrepancy between the time that OpSim uses as the MJD when calculating
+    rotTelPos and the time that OpSim reports as being the actual expmjd
+    of the exposure (rotTelPos is calculated at the beginning of the exposure;
+    expmjd is reckoned at the middle of the exposure).
+    """
+    altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, obs)
+
+    #20 March 2015
+    #I do not know where this expression comes from; we should validate it against
+    #the definitions of rotTelPos and rotSkyPos
+    return (rotSkyRad + paRad)%(2.*np.pi)
+
 

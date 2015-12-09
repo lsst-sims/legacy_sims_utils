@@ -46,8 +46,12 @@ def makeObservationMetaData():
     band = 'r'
     testSite = Site(latitude=0.5, longitude=1.1, height=3000, meanTemperature=260.0,
                     meanPressure=725.0, lapseRate=0.005)
-    centerRA, centerDec = _raDecFromAltAz(alt,az,testSite.longitude,testSite.latitude,mjd)
-    rotTel = _getRotTelPos(centerRA, centerDec, testSite.longitude, testSite.latitude, mjd, 0.0)
+
+    obsTemp = ObservationMetaData(site=testSite, mjd=mjd)
+
+    centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
+
+    rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
 
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
                  testSite.longitude, testSite.latitude)
@@ -538,10 +542,9 @@ class astrometryUnitTest(unittest.TestCase):
                 for raPointing in (23.5, 256.9, 100.0):
                     for decPointing in (-12.0, 45.0, 66.8):
 
-                        raZenith, decZenith = _raDecFromAltAz(0.5*numpy.pi, 0.0,
-                                                             site.longitude,
-                                                             site.latitude,
-                                                             mjd)
+                        obs = ObservationMetaData(mjd=mjd, site=site)
+
+                        raZenith, decZenith = _raDecFromAltAz(0.5*numpy.pi, 0.0, obs)
 
                         obs = ObservationMetaData(pointingRA=raPointing, pointingDec=decPointing,
                                                   mjd=mjd, site=site)
@@ -632,9 +635,7 @@ class astrometryUnitTest(unittest.TestCase):
         mjd = 58350.0
         site = Site(longitude=0.235, latitude=-1.2)
         raCenter, decCenter = raDecFromAltAz(90.0, 0.0,
-                                             numpy.degrees(site.longitude),
-                                             numpy.degrees(site.latitude),
-                                             mjd)
+                                             ObservationMetaData(mjd=mjd, site=site))
 
         obs = ObservationMetaData(pointingRA=raCenter, pointingDec=decCenter,
                                   mjd=ModifiedJulianDate(TAI=58350.0),
