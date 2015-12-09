@@ -379,8 +379,7 @@ class astrometryUnitTest(unittest.TestCase):
         # data taken from
         # http://aa.usno.navy.mil/data/docs/geocentric.php
         ra_icrs = 14.0*hours + 15.0*minutes + 39.67207*seconds
-        dec_icrs = numpy.radians(19.0 + 10.0/60.0 + 56.67/3600.0)
-
+        dec_icrs = numpy.radians(19.0 + 10.0/60.0 + 56.673/3600.0)
         pm_ra = radiansFromArcsec(-1.0939)
         pm_dec = radiansFromArcsec(-2.00006)
         v_rad = -5.19
@@ -428,8 +427,45 @@ class astrometryUnitTest(unittest.TestCase):
         # test on Sirius
         # data taken from
         # http://simbad.u-strasbg.fr/simbad/sim-id?Ident=Sirius
+        ra_icrs = 6.0*hours + 45.0*minutes + 8.91728*seconds
+        dec_icrs = numpy.radians(-16.0 - 42.0/60.0 -58.0171/3600.0)
+        pm_ra = radiansFromArcsec(-0.54601)
+        pm_dec = radiansFromArcsec(-1.22307)
+        px = radiansFromArcsec(0.37921)
+        v_rad = -5.5
 
+        mjd_list = []
+        ra_app_list = []
+        dec_app_list = []
 
+        jd = 2457247.000000
+        mjd_list.append(jd-2400000.5)
+        ra_app_list.append(6.0*hours + 45.0*minutes + 49.276*seconds)
+        dec_app_list.append(numpy.radians(-16.0 - 44.0/60.0 - 18.69/3600.0))
+
+        jd = 2456983.958333
+        mjd_list.append(jd-2400000.5)
+        ra_app_list.append(6.0*hours + 45.0*minutes + 49.635*seconds)
+        dec_app_list.append(numpy.radians(-16.0 - 44.0/60.0 - 17.04/3600.0))
+
+        jd = 2457523.958333
+        mjd_list.append(jd-2400000.5)
+        ra_app_list.append(6.0*hours + 45.0*minutes + 50.99*seconds)
+        dec_app_list.append(numpy.radians(-16.0 - 44.0/60.0 - 39.76/3600.0))
+
+        for mjd, ra_app, dec_app in zip(mjd_list, ra_app_list, dec_app_list):
+            obs = ObservationMetaData(mjd=mjd)
+
+            ra_test, dec_test = _appGeoFromICRS(numpy.array([ra_icrs]), numpy.array([dec_icrs]),
+                                                mjd=obs.mjd,
+                                                pm_ra=numpy.array([pm_ra]),
+                                                pm_dec=numpy.array([pm_dec]),
+                                                v_rad=numpy.array([v_rad]),
+                                                parallax=numpy.array([px]),
+                                                epoch=2000.0)
+
+            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
+            self.assertLess(distance, 0.1)
 
 
 
