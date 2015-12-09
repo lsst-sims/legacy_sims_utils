@@ -358,51 +358,79 @@ class astrometryUnitTest(unittest.TestCase):
 
 
     def test_appGeoFromICRS(self):
-        ra=numpy.zeros((3),dtype=float)
-        dec=numpy.zeros((3),dtype=float)
-        pm_ra=numpy.zeros((3),dtype=float)
-        pm_dec=numpy.zeros((3),dtype=float)
-        parallax=numpy.zeros((3),dtype=float)
-        v_rad=numpy.zeros((3),dtype=float)
+        """
+        Test conversion between ICRS RA, Dec and apparent geocentric ICRS.
+
+        Observed, geocentric RA, Dec of objects will be taken from this website
+
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+
+        dates converted to JD using this website
+
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+
+        """
+
+        hours = numpy.radians(360.0/24.0)
+        minutes = hours/60.0
+        seconds = minutes/60.0
+
+        # test on Arcturus
+        # data taken from
+        # http://aa.usno.navy.mil/data/docs/geocentric.php
+        ra_icrs = 14.0*hours + 15.0*minutes + 39.67207*seconds
+        dec_icrs = numpy.radians(19.0 + 10.0/60.0 + 56.67/3600.0)
+
+        pm_ra = radiansFromArcsec(-1.0939)
+        pm_dec = radiansFromArcsec(-2.00006)
+        v_rad = -5.19
+        px = radiansFromArcsec(0.08883)
+
+        mjd_list = []
+        ra_app_list = []
+        dec_app_list = []
+
+        #jd (UT)
+        jd = 2457000.375000
+        mjd = jd-2400000.5
+
+        mjd_list.append(mjd)
+        ra_app_list.append(14.0*hours + 16.0*minutes + 19.59*seconds)
+        dec_app_list.append(numpy.radians(19.0 + 6.0/60.0 + 19.56/3600.0))
+
+        jd = 2457187.208333
+        mjd = jd-2400000.5
+        mjd_list.append(mjd)
+        ra_app_list.append(14.0*hours + 16.0*minutes + 22.807*seconds)
+        dec_app_list.append(numpy.radians(19.0+6.0/60.0+18.12/3600.0))
+
+        jd = 2457472.625000
+        mjd = jd-2400000.5
+        mjd_list.append(mjd)
+        ra_app_list.append(14.0*hours + 16.0*minutes + 24.946*seconds)
+        dec_app_list.append(numpy.radians(19.0 + 5.0/60.0 + 49.65/3600.0))
+
+        for mjd, ra_app, dec_app in zip(mjd_list, ra_app_list, dec_app_list):
+            obs = ObservationMetaData(mjd=mjd)
+
+            ra_test, dec_test = _appGeoFromICRS(numpy.array([ra_icrs]), numpy.array([dec_icrs]),
+                                                mjd=obs.mjd,
+                                                pm_ra=numpy.array([pm_ra]),
+                                                pm_dec=numpy.array([pm_dec]),
+                                                v_rad=numpy.array([v_rad]),
+                                                parallax=numpy.array([px]),
+                                                epoch=2000.0)
+
+            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
+            self.assertLess(distance, 0.1)
 
 
-        ra[0]=2.549091039839124218e+00
-        dec[0]=5.198752733024248895e-01
-        pm_ra[0]=-8.472633255615005918e-05
-        pm_dec[0]=-5.618517146980475171e-07
-        parallax[0]=9.328946209650547383e-02
-        v_rad[0]=3.060308412186171267e+02
+        # test on Sirius
+        # data taken from
+        # http://simbad.u-strasbg.fr/simbad/sim-id?Ident=Sirius
 
-        ra[1]=8.693375673649429425e-01
-        dec[1]=1.038086165642298164e+00
-        pm_ra[1]=-5.848962163813087908e-05
-        pm_dec[1]=-3.000346282603337522e-05
-        parallax[1]=5.392364722571952457e-02
-        v_rad[1]=4.785834687356999098e+02
 
-        ra[2]=7.740864769302191473e-01
-        dec[2]=2.758053025017753179e-01
-        pm_ra[2]=5.904070507320858615e-07
-        pm_dec[2]=-2.958381482198743105e-05
-        parallax[2]=2.172865273161764255e-02
-        v_rad[2]=-3.225459751425886452e+02
 
-        ep=2.001040286039033845e+03
-        mjd=2.018749109074271473e+03
-
-        #The proper motion arguments in this function are weird
-        #because there was a misunderstanding when the baseline
-        #SLALIB data was made.
-        output=_appGeoFromICRS(ra,dec,pm_ra=pm_ra*numpy.cos(dec), pm_dec=pm_dec/numpy.cos(dec),
-                              parallax=radiansFromArcsec(parallax),v_rad=v_rad, epoch=ep,
-                              mjd=ModifiedJulianDate(TAI=mjd))
-
-        self.assertAlmostEqual(output[0][0],2.525858337335585180e+00,6)
-        self.assertAlmostEqual(output[1][0],5.309044018653210628e-01,6)
-        self.assertAlmostEqual(output[0][1],8.297492370691380570e-01,6)
-        self.assertAlmostEqual(output[1][1],1.037400063009288331e+00,6)
-        self.assertAlmostEqual(output[0][2],7.408639821342507537e-01,6)
-        self.assertAlmostEqual(output[1][2],2.703229189890907214e-01,6)
 
 
     def test_icrsFromAppGeo(self):
