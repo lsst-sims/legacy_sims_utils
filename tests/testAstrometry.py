@@ -361,7 +361,7 @@ class astrometryUnitTest(unittest.TestCase):
         """
         Test conversion between ICRS RA, Dec and apparent geocentric ICRS.
 
-        Observed, geocentric RA, Dec of objects will be taken from this website
+        Apparent, geocentric RA, Dec of objects will be taken from this website
 
         http://aa.usno.navy.mil/data/docs/geocentric.php
 
