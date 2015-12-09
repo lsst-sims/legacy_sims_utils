@@ -8,12 +8,15 @@ and ICRS RA, Dec)
 import numpy as np
 import palpy
 from lsst.sims.utils import _icrsFromObserved, _observedFromICRS, calcLmstLast, _observedFromAppGeo
-from lsst.sims.utils import ObservationMetaData, Site
+from lsst.sims.utils import ObservationMetaData, Site, haversine
 
 __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
            "_raDecFromAltAz", "raDecFromAltAz",
            "getRotTelPos", "_getRotTelPos",
-           "getRotSkyPos", "_getRotSkyPos"]
+           "getRotSkyPos", "_getRotSkyPos",
+           "calcObsDefaults",
+            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
+           "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",]
 
 def altAzPaFromRaDec(ra, dec, obs):
     """
@@ -336,4 +339,143 @@ def _getRotTelPos(raRad, decRad, obs, rotSkyRad):
     #the definitions of rotTelPos and rotSkyPos
     return (rotSkyRad + paRad)%(2.*np.pi)
 
+
+def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad):
+    """
+    Fromats input data into a dict of metadata that PhoSim expect.
+
+    Users should probably not be calling this by hand, as it makes no effort to ensure that
+    the input values are self-consistent.  This method is called by
+    makeObsParamsAzAltTel
+    makeObsParamsAzAltSky
+    makeObsPeramsRaDecTel
+    makeObsParamsRaDecSky
+    which do ensure self-consistency of values.
+
+    @param [in] raRad is RA in radians
+
+    @param [in] decRad is Dec in radians
+
+    @param [in] altRad is altitude in radians
+
+    @param [in] azRad is azimuth in radians
+
+    @param [in] rotTelRad is rotTelPos in radians
+
+    @param [in] mjd is the Universal Time expressed as an MJD
+
+    @param [in] band is 'u', 'g', 'r', 'i', 'z', or 'y'
+    (i.e. the bandpass of the observation)
+
+    @param [in] longRad is the observer's longitude in radians
+    (positive east of the prime meridan)
+
+    @param [in] latRad is the observer's latitude in radians
+    (positive north of the equator)
+
+    @param [out] a dict of meta data which PhoSim expects in the
+    headers of its input InstanceCatalogs
+    """
+    obsMd = {}
+    #Defaults
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad))
+    moonra, moondec = _raDecFromAltAz(-np.pi/2., 0., obsTemp)
+    sunalt = -np.pi/2.
+    moonalt = -np.pi/2.
+    dist2moon = haversine(moonra, moondec, raRad, decRad)
+    obsMd['Opsim_moonra'] = moonra
+    obsMd['Opsim_moondec'] = moondec
+    obsMd['Opsim_sunalt'] = sunalt
+    obsMd['Opsim_moonalt'] = moonalt
+    obsMd['Opsim_dist2moon'] = dist2moon
+
+    rotSkyPos = _getRotSkyPos(raRad, decRad, obsTemp, rotTelRad)
+    obsMd['Opsim_filter'] = band
+    obsMd['pointingRA'] = raRad
+    obsMd['pointingDec'] = decRad
+    obsMd['Opsim_rotskypos'] = rotSkyPos
+    obsMd['Opsim_rottelpos'] = rotTelRad
+    obsMd['Unrefracted_Altitude'] = altRad
+    obsMd['Unrefracted_Azimuth'] = azRad
+    return obsMd
+
+
+def makeObservationMetadata(metaData):
+    return OrderedDict([(k,(metaData[k], np.asarray(metaData[k]).dtype))
+                         for k in metaData])
+
+
+def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.2320792, latRad=-0.517781017, **kwargs):
+    '''
+    Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
+    altRad -- Altitude of the boresite of the observation in radians
+    azRad -- Azimuth of the boresite of the observation in radians
+    mjd -- MJD of the observation
+    band -- bandpass of the observation e.g. 'r'
+    rotTelRad -- Rotation of the camera relative to the telescope in radians Default=0.
+    longRad -- Longitude of the observatory in radians Default=-1.2320792
+    latRad -- Latitude of the observatory in radians Default=-0.517781017
+    **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
+    '''
+
+    obsTemp = ObservationMetaData(mjd, site=Site(longitude=longRad, latitude=latRad))
+
+    raRad, decRad = _raDecFromAltAz(altRad, azRad, obsTemp)
+    obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
+    obsMd.update(kwargs)
+    return makeObservationMetadata(obsMd)
+
+
+def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=np.pi, longRad=-1.2320792, latRad=-0.517781017, **kwargs):
+    '''
+    Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
+    altRad -- Altitude of the boresite of the observation in radians
+    azRad -- Azimuth of the boresite of the observation in radians
+    mjd -- MJD of the observation
+    band -- bandpass of the observation e.g. 'r'
+    rotTelRad -- Rotation of the field of view relative to the North pole in radians Default=0.
+    longRad -- Longitude of the observatory in radians Default=-1.2320792
+    latRad -- Latitude of the observatory in radians Default=-0.517781017
+    **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
+    '''
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad))
+    raRad, decRad = _raDecFromAltAz(altRad, azRad, obsTemp)
+    rotTelRad = _getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
+    return makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
+
+
+def makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=0., longRad=-1.2320792, latRad=-0.517781017, **kwargs):
+    '''
+    Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
+    raRad -- RA of the boresite of the observation in radians
+    decRad -- Dec of the boresite of the observation in radians
+    mjd -- MJD of the observation
+    band -- bandpass of the observation e.g. 'r'
+    rotTelRad -- Rotation of the camera relative to the telescope in radians Default=0.
+    longRad -- Longitude of the observatory in radians Default=-1.2320792
+    latRad -- Latitude of the observatory in radians Default=-0.517781017
+    **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
+    '''
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad))
+    altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, obsTemp)
+    obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
+    obsMd.update(kwargs)
+    return makeObservationMetadata(obsMd)
+
+
+def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=np.pi, longRad=-1.2320792, latRad=-0.517781017, **kwargs):
+    '''
+    Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
+    raRad -- RA of the boresite of the observation in radians
+    decRad -- Dec of the boresite of the observation in radians
+    mjd -- MJD of the observation
+    band -- bandpass of the observation e.g. 'r'
+    rotSkyRad -- Rotation of the field of view relative to the North pole in radians Default=0.
+    longRad -- Longitude of the observatory in radians Default=-1.2320792
+    latRad -- Latitude of the observatory in radians Default=-0.517781017
+    **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
+    '''
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad))
+    rotTelRad = _getRotTelPos(raRad, decRad, obsTemp, rotSkyRad)
+    return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 
