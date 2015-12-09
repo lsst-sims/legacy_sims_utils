@@ -136,13 +136,13 @@ class CircleBounds(SpatialBounds):
 
 
     def __eq__(self, other):
-        return (type(self) is type(other)) and \
-               (self.RA is other.RA) and \
-               (self.DEC is other.DEC) and \
-               (self.radius is other.radius) and \
-               (self.RAdeg is other.RAdeg) and \
-               (self.DECdeg is other.DECdeg) and \
-               (self.radiusdeg is other.radiusdeg)
+        return (type(self) == type(other)) and \
+               (self.RA == other.RA) and \
+               (self.DEC == other.DEC) and \
+               (self.radius == other.radius) and \
+               (self.RAdeg == other.RAdeg) and \
+               (self.DECdeg == other.DECdeg) and \
+               (self.radiusdeg == other.radiusdeg)
 
 
     def to_SQL(self, RAname, DECname):
@@ -238,15 +238,15 @@ class BoxBounds(SpatialBounds):
 
 
     def __eq__(self, other):
-        return (type(self) is type(other)) and \
-               (self.RA is other.RA) and \
-               (self.RAdeg is other.RAdeg) and \
-               (self.DEC is other.DEC) and \
-               (self.DECdeg is other.DECdeg) and \
-               (self.RAminDeg is other.RAminDeg) and \
-               (self.RAmaxDeg is other.RAmaxDeg) and \
-               (self.DECminDeg is other.DECminDeg) and \
-               (self.DECmaxDeg is other.DECmaxDeg)
+        return (type(self) == type(other)) and \
+               (self.RA == other.RA) and \
+               (self.RAdeg == other.RAdeg) and \
+               (self.DEC == other.DEC) and \
+               (self.DECdeg == other.DECdeg) and \
+               (self.RAminDeg == other.RAminDeg) and \
+               (self.RAmaxDeg == other.RAmaxDeg) and \
+               (self.DECminDeg == other.DECminDeg) and \
+               (self.DECmaxDeg == other.DECmaxDeg)
 
 
     def to_SQL(self, RAname, DECname):
