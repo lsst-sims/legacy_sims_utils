@@ -1,3 +1,8 @@
+"""
+This file contains coordinate transformation methods that are very thin wrappers
+of palpy methods, or that have no dependence on palpy at all
+"""
+
 import numpy
 import palpy
 from collections import OrderedDict
