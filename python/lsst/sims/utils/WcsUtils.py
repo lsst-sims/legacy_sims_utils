@@ -1,7 +1,7 @@
 import numpy as np
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 
-__all__ = ["_nativeLonLatFromPointing",
+__all__ = ["_nativeLonLatFromPointing", "_lonLatFromNativeLonLat",
            "_nativeLonLatFromRaDec", "_raDecFromNativeLonLat",
            "nativeLonLatFromRaDec", "raDecFromNativeLonLat"]
 
@@ -96,6 +96,78 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
                                    for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
 
         lonOut = np.array([0.0 if np.isnan(ll) else ll for ll in _lonOut])
+
+    return lonOut, latOut
+
+
+def _lonLatFromNativeLonLat(nativeLon, nativeLat, lonPointing, latPointing):
+    """
+    Transform a position in native longitude and latitude into
+    longitude and latitude in a coordinate system where the telescope pointing
+    is defined.  See the doc string for _nativeLonLatFromPointing for definitions
+    of native longitude and latitude.
+
+    @param [in] nativeLon is the native longitude in radians
+
+    @param [in] nativeLat is the native latitude in radians
+
+    @param [in] lonPointing is the longitude-like coordinate of the telescope
+    pointing in radians
+
+    @param [in] latPointing is the latitude-like coordinate of the telescope
+    pointing in radians
+
+    @param [out] latOut is the latitude of the transformed point(s)
+    in the same coordinate system as the telescope pointing in radians
+
+    @param [in] latOut is the latitude of the transformed point(s)
+    in the same coordinate system as the telescope pointing in radians
+    """
+    x = -1.0*np.cos(nativeLat)*np.sin(nativeLon)
+    y = np.cos(nativeLat)*np.cos(nativeLon)
+    z = np.sin(nativeLat)
+
+    alpha = 0.5*np.pi - latPointing
+    beta = lonPointing
+
+    ca=np.cos(alpha)
+    sa=np.sin(alpha)
+    cb=np.cos(beta)
+    sb=np.sin(beta)
+
+    v2 = np.dot(np.array([[cb, -1.0*sb, 0.0],
+                          [sb, cb, 0.0],
+                          [0.0, 0.0, 1.0]
+                          ]),
+                                np.dot(np.array([[1.0, 0.0, 0.0],
+                                                 [0.0, ca, sa],
+                                                 [0.0, -1.0*sa, ca]
+                                ]),
+                                np.array([x,y,z])))
+
+
+    cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
+    latOut = np.arctan2(v2[2], cc)
+
+    _y = v2[1]/np.cos(latOut)
+    _lonOut = np.arccos(_y)
+    _x = -np.sin(_lonOut)
+
+    if type(_lonOut) is np.float64:
+        if np.isnan(_lonOut):
+            lonOut = 0.0
+        elif (np.abs(_x)>1.0e-9 and np.sign(_x)!=np.sign(v2[0])) \
+             or (np.abs(_y)>1.0e-9 and np.sign(_y)!=np.sign(v2[1])):
+            lonOut = 2.0*np.pi-_lonOut
+        else:
+            lonOut = _lonOut
+    else:
+        _lonOut = [2.0*np.pi-rr if (np.abs(xx)>1.0e-9 and np.sign(xx)!=np.sign(v2_0)) \
+                                  or (np.abs(yy)>1.0e-9 and np.sign(yy)!=np.sign(v2_1)) \
+                                  else rr \
+                                  for rr, xx, yy, v2_0, v2_1 in zip(_lonOut, _x, _y, v2[0], v2[1])]
+
+        lonOut = np.array([0.0 if np.isnan(rr) else rr for rr in _lonOut])
 
     return lonOut, latOut
 
@@ -223,51 +295,7 @@ def _raDecFromNativeLonLat(lon, lat, obs_metadata):
     raPointing = ra_temp[0]
     decPointing = dec_temp[0]
 
-    x = -1.0*np.cos(lat)*np.sin(lon)
-    y = np.cos(lat)*np.cos(lon)
-    z = np.sin(lat)
-
-    alpha = 0.5*np.pi - decPointing
-    beta = raPointing
-
-    ca=np.cos(alpha)
-    sa=np.sin(alpha)
-    cb=np.cos(beta)
-    sb=np.sin(beta)
-
-    v2 = np.dot(np.array([[cb, -1.0*sb, 0.0],
-                          [sb, cb, 0.0],
-                          [0.0, 0.0, 1.0]
-                          ]),
-                                np.dot(np.array([[1.0, 0.0, 0.0],
-                                                 [0.0, ca, sa],
-                                                 [0.0, -1.0*sa, ca]
-                                ]),
-                                np.array([x,y,z])))
-
-
-    cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
-    decObs = np.arctan2(v2[2], cc)
-
-    _y = v2[1]/np.cos(decObs)
-    _ra = np.arccos(_y)
-    _x = -np.sin(_ra)
-
-    if type(_ra) is np.float64:
-        if np.isnan(_ra):
-            raObs = 0.0
-        elif (np.abs(_x)>1.0e-9 and np.sign(_x)!=np.sign(v2[0])) \
-             or (np.abs(_y)>1.0e-9 and np.sign(_y)!=np.sign(v2[1])):
-            raObs = 2.0*np.pi-_ra
-        else:
-            raObs = _ra
-    else:
-        _raObs = [2.0*np.pi-rr if (np.abs(xx)>1.0e-9 and np.sign(xx)!=np.sign(v2_0)) \
-                                  or (np.abs(yy)>1.0e-9 and np.sign(yy)!=np.sign(v2_1)) \
-                                  else rr \
-                                  for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
-
-        raObs = np.array([0.0 if np.isnan(rr) else rr for rr in _raObs])
+    raObs, decObs = _lonLatFromNativeLonLat(lon, lat, raPointing, decPointing)
 
 
     # convert from observed geocentric coordinates to International Celestial Reference System
