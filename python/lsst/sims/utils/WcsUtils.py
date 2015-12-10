@@ -1,65 +1,47 @@
 import numpy as np
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 
-__all__ = ["_nativeLonLatFromRaDec", "_raDecFromNativeLonLat",
+__all__ = ["_nativeLonLatFromPointing",
+           "_nativeLonLatFromRaDec", "_raDecFromNativeLonLat",
            "nativeLonLatFromRaDec", "raDecFromNativeLonLat"]
 
-def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
+def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     """
-    Convert the RA and Dec of a star into `native' longitude and latitude.
+    Convert the longitude and latitude of a point into `native'
+    longitude and latitude defined by a telescope pointing.
 
-    Native longitude and latitude are defined as what RA and Dec would be
-    if the celestial pole were at the location where the telescope is pointing.
-    The transformation is achieved by rotating the vector pointing to the RA
-    and Dec being transformed once about the x axis and once about the z axis.
+    Native longitude and latitude are defined as what longitude and latitude would be
+    if the pole were at the location where the telescope is pointing.
+    The transformation is achieved by rotating the vector pointing to the lon
+    and lat being transformed once about the x axis and once about the z axis.
     These are the Euler rotations referred to in Section 2.3 of
 
     Calabretta and Greisen (2002), A&A 395, p. 1077
 
-    Note: RA, and Dec are assumed to be in the International Celestial Reference
-    System.  Before calculating native longitude and latitude, this method will
-    convert RA and Dec to observed geocentric coordinates.
+    Note: This method does not assume anything about the input coordinate
+    system.  It merely takes a longitude-like coordinate, a latitude-like coordinate
+    and a longitude-like coordinate of the pointing and a latitude-like coordinate
+    of the pointing and transforms them using spherical geometry.
 
-    @param [in] ra is the RA of the star being transformed in radians
-    (in the International Celestial Reference System)
+    @param [in] a longitude-like coordinate in radians
 
-    @param [in] dec is the Dec of the star being transformed in radians
-    (in the International Celestial Reference System)
+    @param [in] a latitude-like coordinate in radians
 
-    @param [in] obs_metadata is an ObservationMetaData characterizing the pointing of
-    the telescope.
+    @param [in] a longitude-like coordinate of the telescope pointing in radians
 
-    @param [out] lonOut is the native longitude in radians
+    @param [in] a latitude-like coordinate of the telescope pointing in radians
 
-    @param [out] latOut is the native latitude in radians
+    @param [out] the native longitude of the transformed point(s) in radians
+
+    @param [out] the native latitude of the transformed point(s) in radians
     """
 
-    if not hasattr(ra_in, '__len__'):
-        ra_temp, dec_temp = _observedFromICRS(np.array([ra_in]), np.array([dec_in]),
-                                              obs_metadata=obs_metadata, epoch=2000.0,
-                                              includeRefraction=True)
+    x = -1.0*np.cos(lat)*np.sin(lon)
+    y = np.cos(lat)*np.cos(lon)
+    z = np.sin(lat)
 
-        ra = ra_temp[0]
-        dec = dec_temp[0]
-    else:
-        ra, dec = _observedFromICRS(ra_in, dec_in,
-                                    obs_metadata=obs_metadata, epoch=2000.0,
-                                    includeRefraction=True)
-
-    ra_temp, dec_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
-                                          np.array([obs_metadata._pointingDec]),
-                                          obs_metadata=obs_metadata, epoch=2000.0,
-                                          includeRefraction=True)
-
-    raPointing = ra_temp[0]
-    decPointing = dec_temp[0]
-
-    x = -1.0*np.cos(dec)*np.sin(ra)
-    y = np.cos(dec)*np.cos(ra)
-    z = np.sin(dec)
-
-    alpha = decPointing - 0.5*np.pi
-    beta = raPointing
+    alpha = latPointing - 0.5*np.pi
+    beta = lonPointing
 
     ca=np.cos(alpha)
     sa=np.sin(alpha)
@@ -116,6 +98,59 @@ def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
         lonOut = np.array([0.0 if np.isnan(ll) else ll for ll in _lonOut])
 
     return lonOut, latOut
+
+
+def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
+    """
+    Convert the RA and Dec of a star into `native' longitude and latitude.
+
+    Native longitude and latitude are defined as what RA and Dec would be
+    if the celestial pole were at the location where the telescope is pointing.
+    The transformation is achieved by rotating the vector pointing to the RA
+    and Dec being transformed once about the x axis and once about the z axis.
+    These are the Euler rotations referred to in Section 2.3 of
+
+    Calabretta and Greisen (2002), A&A 395, p. 1077
+
+    Note: RA, and Dec are assumed to be in the International Celestial Reference
+    System.  Before calculating native longitude and latitude, this method will
+    convert RA and Dec to observed geocentric coordinates.
+
+    @param [in] ra is the RA of the star being transformed in radians
+    (in the International Celestial Reference System)
+
+    @param [in] dec is the Dec of the star being transformed in radians
+    (in the International Celestial Reference System)
+
+    @param [in] obs_metadata is an ObservationMetaData characterizing the pointing of
+    the telescope.
+
+    @param [out] lonOut is the native longitude in radians
+
+    @param [out] latOut is the native latitude in radians
+    """
+
+    if not hasattr(ra_in, '__len__'):
+        ra_temp, dec_temp = _observedFromICRS(np.array([ra_in]), np.array([dec_in]),
+                                              obs_metadata=obs_metadata, epoch=2000.0,
+                                              includeRefraction=True)
+
+        ra = ra_temp[0]
+        dec = dec_temp[0]
+    else:
+        ra, dec = _observedFromICRS(ra_in, dec_in,
+                                    obs_metadata=obs_metadata, epoch=2000.0,
+                                    includeRefraction=True)
+
+    ra_temp, dec_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
+                                          np.array([obs_metadata._pointingDec]),
+                                          obs_metadata=obs_metadata, epoch=2000.0,
+                                          includeRefraction=True)
+
+    raPointing = ra_temp[0]
+    decPointing = dec_temp[0]
+
+    return _nativeLonLatFromPointing(ra, dec, raPointing, decPointing)
 
 
 def nativeLonLatFromRaDec(ra, dec, obs_metadata):
