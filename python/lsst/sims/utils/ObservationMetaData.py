@@ -16,7 +16,8 @@ class ObservationMetaData(object):
     **Parameters**
 
         * pointing[RA,Dec] float
-          The coordinates of the pointing (in degrees)
+          The coordinates of the pointing (in degrees; in the International
+          Celestial Reference System)
 
         * boundType characterizes the shape of the field of view.  Current options
           are 'box, and 'circle'
@@ -328,7 +329,8 @@ class ObservationMetaData(object):
     @property
     def pointingRA(self):
         """
-        The RA of the telescope pointing in degrees.
+        The RA of the telescope pointing in degrees
+        (in the International Celestial Reference System).
         """
         if self._pointingRA is not None:
             return numpy.degrees(self._pointingRA)
@@ -348,7 +350,8 @@ class ObservationMetaData(object):
     @property
     def pointingDec(self):
         """
-        The Dec of the telescope pointing in degrees.
+        The Dec of the telescope pointing in degrees
+        (in the International Celestial Reference System).
         """
         if self._pointingDec is not None:
             return numpy.degrees(self._pointingDec)
@@ -375,8 +378,8 @@ class ObservationMetaData(object):
         details (specifically, the 'length' paramter).
 
         In degrees (Yes: the documentation in SpatialBounds says that
-        the length should be in degrees.  The present class converts
-        from degrees to radians before passing to SpatialBounds.
+        the length should be in radians.  The present class converts
+        from degrees to radians before passing to SpatialBounds).
         """
         if self._boundLength is None:
             return None

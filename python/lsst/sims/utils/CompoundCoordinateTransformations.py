@@ -18,6 +18,7 @@ __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
             "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",]
 
+
 def altAzPaFromRaDec(ra, dec, obs):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
@@ -39,7 +40,7 @@ def altAzPaFromRaDec(ra, dec, obs):
     @param [out] parallactic angle in degrees
     """
 
-    #sfd time This should be passing around Universal Time
+    # TODO time This should be passing around Universal Time
 
     alt, az, pa = _altAzPaFromRaDec(np.radians(ra), np.radians(dec),
                                     obs)
@@ -68,6 +69,8 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
 
     @param [out] parallactic angle in radians
     """
+
+    # TODO time this should be passing around Universal Time
 
     raIsArray = False
     decIsArray = False
@@ -151,9 +154,9 @@ def _raDecFromAltAz(altRad, azRad, obs):
     @param [in] obs is an ObservationMetaData characterizing
     the site of the telescope and the MJD of the observation
 
-    @param [out] RA in radians
+    @param [out] RA in radians (in the International Celestial Reference System)
 
-    @param [out] Dec in radians
+    @param [out] Dec in radians (in the International Celestial Reference System)
 
     Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
@@ -218,8 +221,10 @@ def _raDecFromAltAz(altRad, azRad, obs):
 def getRotSkyPos(ra, dec, obs, rotTel):
     """
     @param [in] ra is the RA in degrees.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] dec is Dec in degrees.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] obs is an ObservationMetaData characterizing the telescope pointing
     and site.
@@ -249,8 +254,10 @@ def getRotSkyPos(ra, dec, obs, rotTel):
 def _getRotSkyPos(raRad, decRad, obs, rotTelRad):
     """
     @param [in] raRad is the RA in radians.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] obs is an ObservationMetaData characterizing the telescope pointing
     and site.
@@ -280,8 +287,10 @@ def _getRotSkyPos(raRad, decRad, obs, rotTelRad):
 def getRotTelPos(ra, dec, obs, rotSky):
     """
     @param [in] ra is RA in degrees.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] dec is Dec in degrees.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] obs is an ObservationMetaData characterizing the telescope pointing
     and site.
@@ -311,8 +320,10 @@ def getRotTelPos(ra, dec, obs, rotSky):
 def _getRotTelPos(raRad, decRad, obs, rotSkyRad):
     """
     @param [in] raRad is RA in radians.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] decRad is Dec in radians.  Can be a numpy array or a single value.
+    (In the International Celestial Reference System)
 
     @param [in] obs is an ObservationMetaData characterizing the telescope pointing
     and site.
@@ -353,8 +364,10 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
     which do ensure self-consistency of values.
 
     @param [in] raRad is RA in radians
+    (In the International Celestial Reference System)
 
     @param [in] decRad is Dec in radians
+    (In the International Celestial Reference System)
 
     @param [in] altRad is altitude in radians
 
