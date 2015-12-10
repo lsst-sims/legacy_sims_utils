@@ -14,8 +14,7 @@ __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
            "_raDecFromAltAz", "raDecFromAltAz",
            "getRotTelPos", "_getRotTelPos",
            "getRotSkyPos", "_getRotSkyPos",
-           "calcObsDefaults",
-            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
+           "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
            "makeObsParamsAzAltSky", "makeObsParamsRaDecTel", "makeObsParamsRaDecSky",]
 
 
