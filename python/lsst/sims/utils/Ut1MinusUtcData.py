@@ -23,6 +23,7 @@ class Ut1MinusUtcData(object):
     _utc_arr = arr['utc']
     _dut_arr = arr['dut']
     _ut1_arr = arr['utc']+arr['dut']/86400.0
+    _leap_second_indices = np.where(np.diff(_dut_arr)>0.1)[0]
 
 
     @classmethod
@@ -44,7 +45,15 @@ class Ut1MinusUtcData(object):
 
             return 0.0
 
+        # find the index of the data largest utc that is less than the input
+        # utc
         min_dex = np.searchsorted(cls._utc_arr, utc, side='right')-1
+
+        # if we would have to interpolate across a leap second, reduce min_dex
+        # by 1
+        if min_dex in cls._leap_second_indices:
+            min_dex -= 1
+
         return np.interp(utc, cls._utc_arr[min_dex:min_dex+2], cls._dut_arr[min_dex:min_dex+2])
 
 
@@ -66,5 +75,13 @@ class Ut1MinusUtcData(object):
 
             return 0.0
 
+        # find the index of the largest data ut1 that is less than the input
+        # ut1
         min_dex = np.searchsorted(cls._ut1_arr, ut1, side='right')-1
+
+        # if we would have to interpolate across a leap second, reduce min_dex
+        # by 1
+        if min_dex in cls._leap_second_indices:
+            min_dex -= 1
+
         return np.interp(ut1, cls._ut1_arr[min_dex:min_dex+2], cls._dut_arr[min_dex:min_dex+2])
