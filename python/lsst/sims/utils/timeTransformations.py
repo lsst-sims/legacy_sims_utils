@@ -9,6 +9,7 @@ import warnings
 import palpy
 from lsst.sims.utils import Ut1MinusUtcData
 from lsst.sims.utils import TT_from_TAI_Data
+from lsst.sims.utils import TaiMinusUtcData
 
 __all__ = ["taiFromUtc", "utcFromTai",
            "dutFromUtc",
@@ -27,7 +28,7 @@ def taiFromUtc(utc):
     @param [out] TAI time as an MJD
     """
 
-    dt = palpy.dat(utc) # returns TAI-UTC in seconds
+    dt = TaiMinusUtcData.d_tai_from_utc(utc) # returns TAI-UTC in seconds
     return utc + dt/86400.0
 
 
@@ -47,15 +48,8 @@ def utcFromTai(tai):
 
     sec_to_day = 1.0/86400.0
 
-    dt_approx = palpy.dat(tai)*sec_to_day
-
-    if dt_approx == 0.0:
-        return tai
-
-    utc_arr = np.arange(tai - 1.0*dt_approx, tai+1.0*dt_approx, 1.0e-6)
-    tai_arr = np.array([taiFromUtc(utc) for utc in utc_arr])
-
-    return np.interp(tai, tai_arr, utc_arr)
+    dt = TaiMinusUtcData.d_tai_from_tai(tai) # returns TAI-UTC in seconds
+    return tai - dt*sec_to_day
 
 
 def dutFromUtc(utc):
