@@ -1,5 +1,6 @@
 from __future__ import with_statement
 import numpy as np
+import palpy as pal
 import warnings
 import unittest
 import lsst.utils.tests as utilsTests
@@ -120,6 +121,26 @@ class TimeTest(unittest.TestCase):
             tai_test = utils.taiFromUtc(utc)
             msg = "year: %s... %.12f != %.12f" % (year, tai, tai_test)
             self.assertAlmostEqual(tai_test, tai, 12, msg=msg)
+
+
+    def test_tai_from_uts_from_pal(self):
+        """
+        Verify the UTC-to-TAI transformation against
+        the same calculation done using palpy's dat method
+        """
+
+        # MJDs where leap seconds were added
+        utc_list = np.array([37300.0, 37512.0, 45516.0, 448804.0, 457204.0])
+        tai_control = np.array([uu + pal.dat(uu)/86400.0 for uu in utc_list])
+        tai_test = np.array([utils.taiFromUtc(uu) for uu in utc_list])
+        np.testing.assert_array_almost_equal(tai_control, tai_test, 15)
+
+        np.random.seed(77)
+        # random MJDs
+        utc_list = np.random.random_sample(10)*(57204.0-37300.0) + 37300.0
+        tai_control = np.array([uu + pal.dat(uu)/86400.0 for uu in utc_list])
+        tai_test = np.array([utils.taiFromUtc(uu) for uu in utc_list])
+        np.testing.assert_array_almost_equal(tai_control, tai_test, 15)
 
 
     def test_utc_from_tai(self):
