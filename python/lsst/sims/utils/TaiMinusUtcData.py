@@ -66,9 +66,6 @@ class TaiMinusUtcData(object):
         # is less than tai
         min_dex = np.searchsorted(cls._tai_arr, tai, side='right')-1
 
-        if min_dex >= len(cls._leap_second_arr):
-            min_dex = len(cls._leap_second_arr)-1
-
         if min_dex>12:
             dt_out = cls._leap_second_arr[min_dex]
         else:
