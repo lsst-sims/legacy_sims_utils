@@ -197,6 +197,17 @@ class TimeTest(unittest.TestCase):
                 self.assertAlmostEqual(utc_test, utc, 15)
 
 
+    def test_roundtrip_extremities(self):
+        """
+        Test the round trip from UTC to TAI and back on values outside
+        the bounds when the first and last leap seconds were added
+        """
+
+        for utc in (100.0, 2000.0, 60000.0, 70000.0):
+            tai = utils.taiFromUtc(utc)
+            utc_test = utils.utcFromTai(tai)
+            self.assertAlmostEqual(utc_test, utc, 15)
+
     def test_dut_from_utc(self):
         """
         Test our calculation of UT1-UTC from utc by just checking
