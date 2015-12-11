@@ -157,8 +157,8 @@ class TimeTest(unittest.TestCase):
 
     def test_boundary_values(self):
         """
-        Because utcFromTai relies on interpolating results of
-        taiFromUtc, we will test the round-trip on some boundary values.
+        Test the round trip from UTC to TAI and back on values where
+        leap seconds are added
 
         Data taken from
 
