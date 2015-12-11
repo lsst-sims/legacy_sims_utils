@@ -168,7 +168,7 @@ class TimeTest(unittest.TestCase):
             self.assertAlmostEqual(utc_test, utc, 23, msg=msg)
 
 
-    def test_boundary_values(self):
+    def test_roundtrip_boundary_values(self):
         """
         Test the round trip from UTC to TAI and back on values where
         leap seconds are added
