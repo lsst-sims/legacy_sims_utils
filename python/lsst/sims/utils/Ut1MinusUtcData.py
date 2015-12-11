@@ -54,7 +54,9 @@ class Ut1MinusUtcData(object):
         if min_dex in cls._leap_second_indices:
             min_dex -= 1
 
-        return np.interp(utc, cls._utc_arr[min_dex:min_dex+2], cls._dut_arr[min_dex:min_dex+2])
+        return cls._dut_arr[min_dex] + \
+              (utc-cls._utc_arr[min_dex])*(cls._dut_arr[min_dex]-cls._dut_arr[min_dex+1])/(cls._utc_arr[min_dex]-cls._utc_arr[min_dex+1])
+
 
 
     @classmethod
@@ -84,4 +86,5 @@ class Ut1MinusUtcData(object):
         if min_dex in cls._leap_second_indices:
             min_dex -= 1
 
-        return np.interp(ut1, cls._ut1_arr[min_dex:min_dex+2], cls._dut_arr[min_dex:min_dex+2])
+        return cls._dut_arr[min_dex] + \
+               (ut1-cls._ut1_arr[min_dex])*(cls._dut_arr[min_dex]-cls._dut_arr[min_dex+1])/(cls._ut1_arr[min_dex]-cls._ut1_arr[min_dex+1])
