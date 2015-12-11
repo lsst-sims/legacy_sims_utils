@@ -281,6 +281,8 @@ class TimeTest(unittest.TestCase):
             dut = dut_data[ix]
             ut1 = utils.ut1FromUtc(utc)
             self.assertAlmostEqual(ut1, utc+dut/86400.0, 15)
+            utc_test = utils.utcFromUt1(ut1)
+            self.assertAlmostEqual(utc_test, utc, 15)
 
             # consider values just to the left of the leap second
             utc = utc_data[ix+1]-1.0e-6
@@ -291,6 +293,8 @@ class TimeTest(unittest.TestCase):
             # make sure that ut1 is more like the values to the left of the leap second
             # than the values to the right
             self.assertGreater(np.abs(dut-dut_data[ix+1]), np.abs(dut-dut_data[ix-1]))
+            utc_test = utils.utcFromUt1(ut1)
+            self.assertAlmostEqual(utc_test, utc, 15)
 
             # consider values just to the right of the leap second
             utc = utc_data[ix+1]+1.0e-6
@@ -301,6 +305,8 @@ class TimeTest(unittest.TestCase):
             # make sure that ut1 is more like the values to the right of the leap second
             # than the values to the left
             self.assertGreater(np.abs(dut-dut_data[ix]), np.abs(dut-dut_data[ix+1]))
+            utc_test = utils.utcFromUt1(ut1)
+            self.assertAlmostEqual(utc_test, utc, 15)
 
 
     def test_dtt_from_utc(self):
