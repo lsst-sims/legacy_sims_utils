@@ -59,7 +59,7 @@ class TaiMinusUtcData(object):
         @param [out] TAI-UTC (in seconds)
         """
 
-        if tai<_tai_arr[0]:
+        if tai<cls._tai_arr[0]:
             return 0.0
 
         # the index of the larges value in _tai_arr that
