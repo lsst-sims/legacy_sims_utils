@@ -1,9 +1,11 @@
 from __future__ import with_statement
 import numpy as np
+import os
 import palpy as pal
 import warnings
 import unittest
 import lsst.utils.tests as utilsTests
+from lsst.utils import getPackageDir
 import lsst.sims.utils as utils
 
 
@@ -261,6 +263,44 @@ class TimeTest(unittest.TestCase):
         self.assertEqual(ut1, 57711.5)
         self.assertIn("We will return UT1-UTC = 0, for lack of a better idea",
                       str(context[-1].message))
+
+
+    def test_ut1_from_utc_leap_seconds(self):
+        """
+        Test ut1FromUtc and utcFromUt1 at and near points
+        where discontinuous jumps in UT1-UTC occur in the data
+        """
+        data_dir = os.path.join(getPackageDir('sims_data'), 'lookUpTables')
+        data_file = os.path.join(data_dir, 'dut1_table.txt')
+        data = np.genfromtxt(data_file).transpose()
+        utc_data = data[0]
+        dut_data = data[1]
+        leap_second_indices = np.where(np.diff(dut_data)>0.1)[0]
+        for ix in leap_second_indices:
+            utc = utc_data[ix]
+            dut = dut_data[ix]
+            ut1 = utils.ut1FromUtc(utc)
+            self.assertAlmostEqual(ut1, utc+dut/86400.0, 15)
+
+            # consider values just to the left of the leap second
+            utc = utc_data[ix+1]-1.0e-6
+            slope = (dut_data[ix]-dut_data[ix-1])/(utc_data[ix]-utc_data[ix-1])
+            dut = dut_data[ix] + slope*(utc-utc_data[ix])
+            ut1 = utils.ut1FromUtc(utc)
+            self.assertAlmostEqual(ut1, utc+dut/86400.0, 15)
+            # make sure that ut1 is more like the values to the left of the leap second
+            # than the values to the right
+            self.assertGreater(np.abs(dut-dut_data[ix+1]), np.abs(dut-dut_data[ix-1]))
+
+            # consider values just to the right of the leap second
+            utc = utc_data[ix+1]+1.0e-6
+            slope = (dut_data[ix+1]-dut_data[ix+2])/(utc_data[ix+1]-utc_data[ix+2])
+            dut = dut_data[ix+1] + slope*(utc-utc_data[ix+1])
+            ut1 = utils.ut1FromUtc(utc)
+            self.assertAlmostEqual(ut1, utc+dut/86400.0, 15)
+            # make sure that ut1 is more like the values to the right of the leap second
+            # than the values to the left
+            self.assertGreater(np.abs(dut-dut_data[ix]), np.abs(dut-dut_data[ix+1]))
 
 
     def test_dtt_from_utc(self):
