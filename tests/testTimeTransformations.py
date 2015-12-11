@@ -208,46 +208,6 @@ class TimeTest(unittest.TestCase):
             utc_test = utils.utcFromTai(tai)
             self.assertAlmostEqual(utc_test, utc, 15)
 
-    def test_dut_from_utc(self):
-        """
-        Test our calculation of UT1-UTC from utc by just checking
-        that the values from our lookup table are properly applied.
-        """
-
-        utc_control = [48622.0, 48638.0, 49528.0, 51638.0,
-                       53933.0]
-
-        dt_control = [-0.12516880, -0.16103330, -0.20954640, 0.27327980,
-                      0.18471120]
-
-        for utc, dt in zip(utc_control, dt_control):
-            dt_test = utils.dutFromUtc(utc)
-            self.assertAlmostEqual(dt, dt_test, 7)
-
-
-    def test_dut_warnings(self):
-        """
-        Test that a warning is raised if you ask dutFromUTC to calculate
-        UT1-UTC for a UTC value that is outside the span of our data.
-        """
-
-        # Note: the values fed to dutFromUtc in this unit test must be
-        # distinct from the values passed into test_ut1_warnings,
-        # otherwise, warnings will suppress the warning as already
-        # having been raised
-
-        with warnings.catch_warnings(record=True) as context:
-            ut1 = utils.dutFromUtc(48619.5)
-        self.assertEqual(ut1, 0.0)
-        self.assertIn("We will return UT1-UTC = 0, for lack of a better idea",
-                      str(context[-1].message))
-
-        with warnings.catch_warnings(record=True) as context:
-            ut1 = utils.dutFromUtc(57712.5)
-        self.assertEqual(ut1, 0.0)
-        self.assertIn("We will return UT1-UTC = 0, for lack of a better idea",
-                      str(context[-1].message))
-
 
     def test_ut1_from_utc(self):
         """
@@ -289,11 +249,6 @@ class TimeTest(unittest.TestCase):
         Test that a warning is raised if you ask ut1FromUtc to calculate
         UT1 for a UTC value that is outside the span of our data.
         """
-
-        # Note: the values fed to ut1FromUtc in this unit test must be
-        # distinct from the values passed into test_dut_warnings,
-        # otherwise, warnings will suppress the warning as already
-        # having been raised
 
         with warnings.catch_warnings(record=True) as context:
             ut1 = utils.ut1FromUtc(48621.5)

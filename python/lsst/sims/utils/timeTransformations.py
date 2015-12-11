@@ -12,7 +12,6 @@ from lsst.sims.utils import TT_from_TAI_Data
 from lsst.sims.utils import TaiMinusUtcData
 
 __all__ = ["taiFromUtc", "utcFromTai",
-           "dutFromUtc",
            "ut1FromUtc", "utcFromUt1",
            "dttFromUtc", "ttFromTai",
            "tdbFromTt"]
@@ -52,31 +51,6 @@ def utcFromTai(tai):
     return tai - dt*sec_to_day
 
 
-def dutFromUtc(utc):
-    """
-    Use data downloaded from
-
-    ftp://cddis.gsfc.nasa.gov/pub/products/iers/
-
-    to return UT1-UTC as a function of UTC
-
-    @param [in] UTC as an MJD
-
-    @param [out] UT1-UTC in seconds
-    """
-
-    if utc<Ut1MinusUtcData._mjd_arr[0] or utc>Ut1MinusUtcData._mjd_arr[-1]:
-        msg = "UTC = %e is outside of the the bounds " % utc \
-               + "for which we have UT1-UTC "\
-               + "data (%e <= utc <= %e)\n" % (Ut1MinusUtcData._mjd_arr[0], Ut1MinusUtcData._mjd_arr[-1]) \
-               + "We will return UT1-UTC = 0, for lack of a better idea"
-        warnings.warn(msg)
-
-        return 0.0
-
-    return np.interp(utc, Ut1MinusUtcData._mjd_arr, Ut1MinusUtcData._dut_arr)
-
-
 def ut1FromUtc(utc):
     """
     Use data downloaded from
@@ -91,13 +65,13 @@ def ut1FromUtc(utc):
     """
 
     sec_to_days = 1.0/86400.0
-    dt = dutFromUtc(utc)
+    dt = Ut1MinusUtcData.d_ut1_from_utc(utc)
     return utc + dt*sec_to_days
 
 
 def utcFromUt1(ut1):
     """
-   Use data downloaded from
+    Use data downloaded from
 
     ftp://cddis.gsfc.nasa.gov/pub/products/iers/
 
@@ -106,15 +80,11 @@ def utcFromUt1(ut1):
     @param [in] UT1 as an MJD
 
     @param [out] UTC as an MJD
-
-    Note: because we only have data for UT1-UTC as a function
-    of UTC, this method operates by creating arrays of UT1 and UTC
-    from ut1FromUtc() and interpolating them.
     """
 
-    utc_arr = np.arange(ut1-1.0, ut1+1.0, 0.25)
-    ut1_arr = np.array([ut1FromUtc(utc) for utc in utc_arr])
-    return np.interp(ut1, ut1_arr, utc_arr)
+    sec_to_days = 1.0/86400.0
+    dt = Ut1MinusUtcData.d_ut1_from_ut1(ut1)
+    return ut1 - dt*sec_to_days
 
 
 def dttFromUtc(utc):

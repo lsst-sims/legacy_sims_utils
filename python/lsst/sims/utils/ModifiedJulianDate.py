@@ -1,6 +1,7 @@
-from lsst.sims.utils import taiFromUtc, utcFromTai, dutFromUtc
+from lsst.sims.utils import taiFromUtc, utcFromTai
 from lsst.sims.utils import ut1FromUtc, utcFromUt1
 from lsst.sims.utils import dttFromUtc, ttFromTai, tdbFromTt
+from lsst.sims.utils import Ut1MinusUtcData
 
 __all__ = ["ModifiedJulianDate"]
 
@@ -28,7 +29,7 @@ class ModifiedJulianDate(object):
             self._utc = UTC
             self._tai = taiFromUtc(self._utc)
 
-        self._dut = dutFromUtc(self._utc)
+        self._dut = Ut1MinusUtcData.d_ut1_from_utc(self._utc)
         self._ut1 = ut1FromUtc(self._utc)
         self._tt = ttFromTai(self._tai)
         self._tdb = tdbFromTt(self._tt)
