@@ -218,8 +218,8 @@ class TimeTest(unittest.TestCase):
         utc_control = [48622.0, 48638.0, 49528.0, 51638.0,
                        53933.0]
 
-        dt_control = [-0.12516880, -0.16103330, -0.20954640, 0.27327980,
-                      0.18471120]
+        dt_control = [-0.1253, -0.16114, -0.20968, 0.2732930,
+                      0.184717]
 
         sec_to_day = 1.0/86400.0
         for utc, dt in zip(utc_control, dt_control):
