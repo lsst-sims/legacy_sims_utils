@@ -17,12 +17,10 @@ class Ut1MinusUtcData(object):
     file_name = os.path.join(getPackageDir('sims_data'), 'lookUpTables',
                              'dut1_table.txt')
 
-    dtype = np.dtype([('utc', np.float), ('dut', np.float)])
-
-    arr = np.genfromtxt(file_name, dtype=dtype).transpose()
-    _utc_arr = arr['utc']
-    _dut_arr = arr['dut']
-    _ut1_arr = arr['utc']+arr['dut']/86400.0
+    arr = np.genfromtxt(file_name).transpose()
+    _utc_arr = arr[0]
+    _dut_arr = arr[1]
+    _ut1_arr = arr[0]+arr[1]/86400.0
     _leap_second_indices = np.where(np.diff(_dut_arr)>0.1)[0]
 
 
