@@ -142,6 +142,19 @@ class TimeTest(unittest.TestCase):
         tai_test = np.array([utils.taiFromUtc(uu) for uu in utc_list])
         np.testing.assert_array_almost_equal(tai_control, tai_test, 15)
 
+        # test times from before the first leap second
+        utc_list = np.random.random_sample(10)*(57204.0-37300.0) + 100.0
+        tai_control = np.array([uu + pal.dat(uu)/86400.0 for uu in utc_list])
+        tai_test = np.array([utils.taiFromUtc(uu) for uu in utc_list])
+        np.testing.assert_array_almost_equal(tai_control, tai_test, 15)
+
+        # test times from after the last leap second
+        utc_list = np.random.random_sample(10)*(57204.0-37300.0) + 57204.0
+        tai_control = np.array([uu + pal.dat(uu)/86400.0 for uu in utc_list])
+        tai_test = np.array([utils.taiFromUtc(uu) for uu in utc_list])
+        np.testing.assert_array_almost_equal(tai_control, tai_test, 15)
+
+
 
     def test_utc_from_tai(self):
         """

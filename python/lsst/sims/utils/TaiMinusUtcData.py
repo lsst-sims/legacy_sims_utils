@@ -34,6 +34,9 @@ class TaiMinusUtcData(object):
         @param [out] TAI-UTC (in seconds)
         """
 
+        if utc<cls._utc_arr[0]:
+            return 0.0
+
         # the index of the largest value in _utc_arr that
         # is less than utc
         min_dex = np.searchsorted(cls._utc_arr, utc, side='right')-1
@@ -55,6 +58,9 @@ class TaiMinusUtcData(object):
 
         @param [out] TAI-UTC (in seconds)
         """
+
+        if tai<_tai_arr[0]:
+            return 0.0
 
         # the index of the larges value in _tai_arr that
         # is less than tai
