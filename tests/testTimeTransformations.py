@@ -241,7 +241,7 @@ class TimeTest(unittest.TestCase):
         utc_arr = 48622.0 + (57711.0-48622.0)*np.random.random_sample(1000)
         ut1_arr = np.array([utils.ut1FromUtc(utc) for utc in utc_arr])
         utc_test = np.array([utils.utcFromUt1(ut1) for ut1 in ut1_arr])
-        np.testing.assert_array_almost_equal(utc_arr, utc_test, 6)
+        np.testing.assert_array_almost_equal(utc_arr, utc_test, 15)
 
 
     def test_ut1_warnings(self):
