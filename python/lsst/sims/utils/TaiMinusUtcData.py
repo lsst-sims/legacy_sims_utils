@@ -16,11 +16,13 @@ class TaiMinusUtcData(object):
 
 
     arr = np.genfromtxt(file_name).transpose()
-    _mjd_arr = arr[0] - 2400000.5
+    _utc_arr = arr[0] - 2400000.5
     _leap_second_arr = arr[1]
     _zero_pt_arr = arr[2]
     _coeff_arr = arr[3]
-    _tai_boundary_arr = _mjd_arr + (_leap_second_arr + (_mjd_arr-_zero_pt_arr)*_coeff_arr)/86400.0
+
+    # calculate the values of TAI at the UTC where leap seconds are added
+    _tai_arr = _utc_arr + (_leap_second_arr + (_utc_arr-_zero_pt_arr)*_coeff_arr)/86400.0
 
     @classmethod
     def d_tai_from_utc(cls, utc):
@@ -32,16 +34,9 @@ class TaiMinusUtcData(object):
         @param [out] TAI-UTC (in seconds)
         """
 
-        # the index of the largest value in _mjd_arr that
+        # the index of the largest value in _utc_arr that
         # is less than utc
-        min_dex = np.searchsorted(cls._mjd_arr, utc)-1
-
-        if min_dex >= len(cls._leap_second_arr):
-            min_dex = len(cls._leap_second_arr)-1
-
-        #if min_dex<len(cls._leap_second_arr)-1 and cls._mjd_arr[min_dex+1]-utc < 1.0e-30:
-        #    # just in case we are literally right on the leap second point
-        #    min_dex += 1
+        min_dex = np.searchsorted(cls._utc_arr, utc, side='right')-1
 
         if min_dex>12:
             # we are in the regime where TAI-UTC is an integer number
@@ -61,8 +56,9 @@ class TaiMinusUtcData(object):
         @param [out] TAI-UTC (in seconds)
         """
 
-        keep_iterating = True
-        min_dex = np.searchsorted(cls._tai_boundary_arr, tai)-1
+        # the index of the larges value in _tai_arr that
+        # is less than tai
+        min_dex = np.searchsorted(cls._tai_arr, tai, side='right')-1
 
         if min_dex >= len(cls._leap_second_arr):
             min_dex = len(cls._leap_second_arr)-1
