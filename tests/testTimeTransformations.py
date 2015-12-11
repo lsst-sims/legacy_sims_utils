@@ -253,14 +253,14 @@ class TimeTest(unittest.TestCase):
         """
 
         with warnings.catch_warnings(record=True) as context:
-            ut1 = utils.ut1FromUtc(48621.5)
-        self.assertEqual(ut1, 48621.5)
+            ut1 = utils.ut1FromUtc(40621.5)
+        self.assertEqual(ut1, 40621.5)
         self.assertIn("We will return UT1-UTC = 0, for lack of a better idea",
                       str(context[-1].message))
 
         with warnings.catch_warnings(record=True) as context:
-            ut1 = utils.ut1FromUtc(57711.5)
-        self.assertEqual(ut1, 57711.5)
+            ut1 = utils.ut1FromUtc(67711.5)
+        self.assertEqual(ut1, 67711.5)
         self.assertIn("We will return UT1-UTC = 0, for lack of a better idea",
                       str(context[-1].message))
 
