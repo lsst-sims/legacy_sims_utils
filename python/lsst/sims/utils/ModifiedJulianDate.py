@@ -1,7 +1,4 @@
-from lsst.sims.utils import taiFromUtc, utcFromTai
-from lsst.sims.utils import ut1FromUtc, utcFromUt1
-from lsst.sims.utils import dttFromUtc, ttFromTai, tdbFromTt
-from lsst.sims.utils import Ut1MinusUtcData
+from astropy.time import Time
 
 __all__ = ["ModifiedJulianDate"]
 
@@ -23,27 +20,22 @@ class ModifiedJulianDate(object):
                                "instantiate ModifiedJulianDate")
 
         if TAI is not None:
+            self._time = Time(TAI, scale='tai', format='mjd')
             self._tai = TAI
-            self._utc = utcFromTai(self._tai)
+            self._utc = None
         else:
+            self._time = Time(UTC, scale='utc', format='mjd')
             self._utc = UTC
-            self._tai = taiFromUtc(self._utc)
+            self._tai = None
 
-        self._dut = Ut1MinusUtcData.d_ut1_from_utc(self._utc)
-        self._ut1 = ut1FromUtc(self._utc)
-        self._tt = ttFromTai(self._tai)
-        self._tdb = tdbFromTt(self._tt)
-        self._dtt = dttFromUtc(self._utc)
+        self._tt = None
+        self._tdb = None
+        self._ut1 = None
+        self._dut = None
 
 
     def __eq__(self, other):
-        return (self._tai == other._tai) \
-               and (self._utc == other._utc) \
-               and (self._ut1 == other._ut1) \
-               and (self._dut == other._dut) \
-               and (self._tt == other._tt) \
-               and (self._tdb == other._tdb) \
-               and (self._dtt == other._dtt)
+        return self._time == other._time
 
 
     @property
@@ -51,6 +43,9 @@ class ModifiedJulianDate(object):
         """
         International Atomic Time as an MJD
         """
+        if self._tai is None:
+            self._tai = self._time.tai.value
+
         return self._tai
 
 
@@ -59,6 +54,9 @@ class ModifiedJulianDate(object):
         """
         Universal Coordinate Time as an MJD
         """
+        if self._utc is None:
+            self._utc = self._time.utc.value
+
         return self._utc
 
 
@@ -68,6 +66,9 @@ class ModifiedJulianDate(object):
         """
         Universal Time as an MJD
         """
+        if self._ut1 is None:
+            self._ut1 = self._time.ut1.value
+
         return self._ut1
 
 
@@ -76,6 +77,9 @@ class ModifiedJulianDate(object):
         """
         UT1-UTC in seconds
         """
+        if self._dut is None:
+            self._dut = self._time.get_delta_ut1_utc().value
+
         return self._dut
 
 
@@ -84,6 +88,9 @@ class ModifiedJulianDate(object):
         """
         Terrestrial Time (aka Terrestrial Dynamical Time) as an MJD
         """
+        if self._tt is None:
+            self._tt = self._time.tt.value
+
         return self._tt
 
 
@@ -92,15 +99,8 @@ class ModifiedJulianDate(object):
         """
         Barycentric Dynamical Time as an MJD
         """
+        if self._tdb is None:
+            self._tdb = self._time.tdb.value
+
         return self._tdb
 
-
-    @property
-    def dtt(self):
-        """
-        TT - TAI in seconds
-
-        where TT is Terrestrial Time
-        and TAI is International Atomic Time
-        """
-        return self._dtt
