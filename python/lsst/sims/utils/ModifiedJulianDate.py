@@ -1,5 +1,4 @@
 from astropy.time import Time
-from astropy.utils.iers import IERSRangeError
 import warnings
 
 __all__ = ["ModifiedJulianDate"]
@@ -71,7 +70,7 @@ class ModifiedJulianDate(object):
         if self._ut1 is None:
             try:
                 self._ut1 = self._time.ut1.value
-            except IERSRangeError:
+            except:
                 warnings.warn("UTC %e is outside of IERS table for UT1-UTC.\n" % self.UTC
                               + "Returning UT1 = UTC for lack of a better idea")
                 self._ut1 = self.UTC
@@ -87,7 +86,7 @@ class ModifiedJulianDate(object):
         if self._dut is None:
             try:
                 self._dut = self._time.get_delta_ut1_utc().value
-            except IERSRangeError:
+            except:
                 warnings.warn("UTC %e is outside of IERS table for UT1-UTC.\n" % self.UTC
                               + "Returning UT1 = UTC for lack of a better idea")
                 self._dut = 0.0
