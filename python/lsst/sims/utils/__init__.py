@@ -1,3 +1,4 @@
+from .version import *
 from .coordinateTransformations import *
 from .AstrometryUtils import *
 from .WcsUtils import *
