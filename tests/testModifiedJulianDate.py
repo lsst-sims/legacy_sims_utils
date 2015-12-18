@@ -61,6 +61,29 @@ class MjdTest(unittest.TestCase):
             self.assertAlmostEqual(mjd.TT, tai+32.184/86400.0, 15)
 
 
+    def test_tdb(self):
+        """
+        Verify that TDB is within a few tens of microseconds of the value given
+        by the approximation given by equation 2.222-1 of
+
+        Explanatory Supplement to the Astrnomical Almanac
+        ed. Seidelmann, Kenneth P.
+        1992, University Science Books
+
+        Mostly, this test exists to catch any major API
+        changes in astropy.time
+        """
+
+        np.random.seed(117)
+        tai_list = np.random.random_sample(1000)*10000.0 + 46000.0
+        for tai in tai_list:
+            mjd = ModifiedJulianDate(TAI=tai)
+            g = np.radians(357.53 + 0.9856003*(np.round(tai-51544.5)))
+            tdb_test = mjd.TT + (0.001658*np.sin(g) + 0.000014*np.sin(2.0*g))/86400.0
+            dt = np.abs(tdb_test-mjd.TDB)*8.64*1.0e10 # convert to microseconds
+            self.assertLess(dt, 50)
+
+
     def test_eq(self):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
