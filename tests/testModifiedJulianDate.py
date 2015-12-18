@@ -103,6 +103,8 @@ class MjdTest(unittest.TestCase):
 
             # first, test the self-consistency of ModifiedJulianData.dut1
             # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+            #
+            # this only works for days on which a leap second is not applied
             dt = (mjd.UT1-mjd.UTC)*86400.0
 
             self.assertAlmostEqual(dt, mjd.dut1, 6)
