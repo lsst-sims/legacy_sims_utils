@@ -84,6 +84,41 @@ class MjdTest(unittest.TestCase):
             self.assertLess(dt, 50)
 
 
+    def test_dut1(self):
+        """
+        Test that UT1 is within 0.9 seconds of UTC.
+
+        (Because calculating UT1-UTC requires loading a lookup
+        table, we will just do this somewhat gross unit test to
+        make sure that the astropy.time API doesn't change out
+        from under us in some weird way... for instance, returning
+        dut in units of days rather than seconds, etc.)
+        """
+
+        np.random.seed(117)
+
+        # first test it on leap-second days (days with length
+        # 86401 seconds in UTC)
+        leap_second_file = os.path.join(getPackageDir('sims_utils'), 'python', 'lsst')
+        leap_second_file = os.path.join(leap_second_file, 'sims', 'utils', 'data', 'leap_seconds.dat')
+        leap_second_data = np.genfromtxt(leap_second_file).transpose()
+        leap_second_utc = leap_second_data[0]-2400000.5 - np.random.random_sample(len(leap_second_data[0]))*0.5
+                       # subtract an extra half-ish day so that we are in the middle of the day with the leap second
+
+        for ix, utc in enumerate(leap_second_utc):
+            mjd = ModifiedJulianDate(UTC=utc)
+
+            # first, test the self-consistency of ModifiedJulianData.dut1
+            # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+            dt = (mjd.UT1-mjd.UTC)*mjd._ls_length_of_day[ix]
+            self.assertLess(np.abs(dt), 0.9)
+            msg = 'UT1-UTC failure\nUTC = %.3f; ut1-utc %.8f (s); dut1 %.8f (s); length of day %.3f (s)' \
+                   % (utc, dt, mjd.dut1, mjd._ls_length_of_day[ix])
+            self.assertAlmostEqual(dt, mjd.dut1, 6, msg=msg)
+
+            self.assertLess(np.abs(mjd.dut1), 0.9)
+
+
     def test_eq(self):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
