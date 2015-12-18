@@ -75,7 +75,7 @@ class ObservationMetaData(object):
 
         The convention for rotSkyPos is as follows:
 
-        rotSkyPos = 0 means north is in the +y direction on the camera and east is -x
+        rotSkyPos = 0 means north is in the +y direction on the focal plane and east is -x
 
         rotSkyPos = 90 means north is -x and east is -y
 
