@@ -41,6 +41,23 @@ class MjdTest(unittest.TestCase):
             self.assertAlmostEqual(mjd.TAI, tt, 15)
 
 
+    def test_tt(self):
+        """
+        Verify that Terrestrial Time is TAI + 32.184 seconds
+        as in equation 2.223-6 of
+
+        Explanatory Supplement to the Astrnomical Almanac
+        ed. Seidelmann, Kenneth P.
+        1992, University Science Books
+        """
+
+        np.random.seed(115)
+        tai_list = np.random.random_sample(1000)*7000.0+50000.0
+        for tai in tai_list:
+            mjd = ModifiedJulianDate(TAI=tai)
+            self.assertAlmostEqual(mjd.TT, tai+32.184/86400.0, 15)
+
+
     def test_eq(self):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
