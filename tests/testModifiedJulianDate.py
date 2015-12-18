@@ -49,6 +49,9 @@ class MjdTest(unittest.TestCase):
         Explanatory Supplement to the Astrnomical Almanac
         ed. Seidelmann, Kenneth P.
         1992, University Science Books
+
+        Mostly, this test exists to catch any major API
+        changes in astropy.time
         """
 
         np.random.seed(115)
