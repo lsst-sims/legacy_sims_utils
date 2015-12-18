@@ -597,7 +597,7 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
     #the UTC time expressed as an MJD.  It is not clear to me
     #how to actually calculate that.
     if (includeRefraction == True):
-        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut,
+        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
                           obs_metadata.site.longitude,
                           obs_metadata.site.latitude,
                           obs_metadata.site.height,
@@ -610,7 +610,7 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
                           obs_metadata.site.lapseRate)
     else:
         #we can discard refraction by setting pressure and humidity to zero
-        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut,
+        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
                           obs_metadata.site.longitude,
                           obs_metadata.site.latitude,
                           obs_metadata.site.height,
