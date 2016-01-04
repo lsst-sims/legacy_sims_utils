@@ -32,7 +32,7 @@ from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
                             raDecFromAltAz, haversine,ModifiedJulianDate
 
-from lsst.sims.utils import distanceToSun
+from lsst.sims.utils import _distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
 from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
@@ -126,7 +126,7 @@ class astrometryUnitTest(unittest.TestCase):
 
     def testDistanceToSun(self):
         """
-        Test distanceToSun using solar RA, Dec calculated from
+        Test _distanceToSun using solar RA, Dec calculated from
 
         http://aa.usno.navy.mil/data/docs/JulianDate.php
         http://aa.usno.navy.mil/data/docs/geocentric.php
@@ -147,7 +147,7 @@ class astrometryUnitTest(unittest.TestCase):
         for raS, decS, mjd in zip(sun_ra_list, sun_dec_list, mjd_list):
 
             # first, verify that the Sun is where we think it is to within 5 arc seconds
-            self.assertLess(arcsecFromRadians(distanceToSun(raS, decS, mjd)), 5.0)
+            self.assertLess(arcsecFromRadians(_distanceToSun(raS, decS, mjd)), 5.0)
 
             # find Sun's Cartesian coordinates
             sun_x = numpy.cos(decS)*numpy.cos(raS)
@@ -155,7 +155,7 @@ class astrometryUnitTest(unittest.TestCase):
             sun_z = numpy.sin(decS)
 
             # now choose positions that are a set distance away from the Sun, and make sure
-            # that distanceToSun returns the expected result
+            # that _distanceToSun returns the expected result
             for theta in (numpy.pi/2.0, numpy.pi/4.0, -numpy.pi/3.0):
 
                 # displace by rotating about z axis
@@ -166,7 +166,7 @@ class astrometryUnitTest(unittest.TestCase):
                 new_ra = numpy.arctan2(new_y, new_x)
                 new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
 
-                dd = distanceToSun(new_ra, new_dec, mjd)
+                dd = _distanceToSun(new_ra, new_dec, mjd)
                 hh = haversine(raS, decS, new_ra, new_dec)
                 self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
 
@@ -177,7 +177,7 @@ class astrometryUnitTest(unittest.TestCase):
 
                 new_ra = numpy.arctan2(new_y, new_x)
                 new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
-                dd = distanceToSun(new_ra, new_dec, mjd)
+                dd = _distanceToSun(new_ra, new_dec, mjd)
                 hh = haversine(raS, decS, new_ra, new_dec)
                 self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
 
@@ -188,7 +188,7 @@ class astrometryUnitTest(unittest.TestCase):
 
                 new_ra = numpy.arctan2(new_y, new_x)
                 new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
-                dd = distanceToSun(new_ra, new_dec, mjd)
+                dd = _distanceToSun(new_ra, new_dec, mjd)
                 hh = haversine(raS, decS, new_ra, new_dec)
                 self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
 

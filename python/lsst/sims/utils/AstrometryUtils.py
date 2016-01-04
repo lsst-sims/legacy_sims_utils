@@ -4,7 +4,8 @@ from lsst.sims.utils import arcsecFromRadians, cartesianFromSpherical, spherical
 from lsst.sims.utils import radiansFromArcsec
 from lsst.sims.utils import haversine
 
-__all__ = ["distanceToSun",
+__all__ = ["_solarRaDec",
+           "_distanceToSun",
            "applyRefraction", "refractionCoefficients",
            "_applyPrecession", "applyPrecession",
            "_applyProperMotion", "applyProperMotion",
@@ -16,13 +17,34 @@ __all__ = ["distanceToSun",
            "_icrsFromObserved", "icrsFromObserved"]
 
 
-def distanceToSun(ra, dec, mjd, epoch=2000.0):
+def _solarRaDec(mjd, epoch=2000.0):
+    """
+    Return the RA and Dec of the Sun in radians
+
+    @param [in] mjd is the date in question as an MJD
+
+    @param [in] epoch is the mean epoch of the coordinate system
+    (default is 2000.0)
+
+    @param [out] RA of Sun in radians
+
+    @param [out] Dec of Sun in radians
+    """
+
+    params = palpy.mappa(epoch, mjd)
+    # params[4:7] is a unit vector pointing from the Sun
+    # to the Earth (see the docstring for palpy.mappa)
+
+    return palpy.dcc2s(-1.0*params[4:7])
+
+
+def _distanceToSun(ra, dec, mjd, epoch=2000.0):
     """
     Calculate the distance from an (ra, dec) point to the Sun (in radians).
 
-    @param [in] ra in radians (assumes ICRS)
+    @param [in] ra in radians
 
-    @param [in] dec in radians (assumes ICRS)
+    @param [in] dec in radians
 
     @param [in] mjd is the date in question as an MJD
 
@@ -32,11 +54,7 @@ def distanceToSun(ra, dec, mjd, epoch=2000.0):
     @param [out] distance on the sky to the Sun in radians
     """
 
-    params = palpy.mappa(epoch, mjd)
-    # params[4:7] is a unit vector pointing from the Sun
-    # to the Earth (see the docstring for palpy.mappa)
-
-    sunRa, sunDec = palpy.dcc2s(-1.0*params[4:7])
+    sunRa, sunDec = _solarRaDec(mjd, epoch=epoch)
     return haversine(ra, dec,sunRa, sunDec)
 
 
