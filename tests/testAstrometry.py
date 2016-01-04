@@ -660,18 +660,11 @@ class astrometryUnitTest(unittest.TestCase):
 
         for mjd in (53000.0, 53241.6, 58504.6):
 
-            params = pal.mappa(2000.0, mjd)
-            sunToEarth = params[4:7] # unit vector pointing from Sun to Earth
-
             ra_in = numpy.random.random_sample(nSamples)*2.0*numpy.pi
             dec_in = (numpy.random.random_sample(nSamples)-0.5)*numpy.pi
 
-            earthToStar = pal.dcs2cVector(ra_in, dec_in) # each row is a unit vector pointing to the star
 
-            solarDotProduct = numpy.array([(-1.0*sunToEarth*earthToStar[ii]).sum()
-                                           for ii in range(earthToStar.shape[0])])
-
-            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=ModifiedJulianDate(TAI=mjd))
+            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=ModifiedJulainDate(TAI=mjd))
 
             ra_icrs, dec_icrs = _icrsFromAppGeo(ra_app, dec_app,
                                                 epoch=2000.0, mjd=ModifiedJulianDate(TAI=mjd))
@@ -679,7 +672,8 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertFalse(numpy.isnan(ra_icrs).any())
             self.assertFalse(numpy.isnan(dec_icrs).any())
 
-            valid_pts = numpy.where(solarDotProduct<numpy.cos(0.25*numpy.pi))[0]
+            valid_pts = numpy.where(_distanceToSun(ra_in, dec_in, mjd)>0.25*numpy.pi)[0]
+
             self.assertGreater(len(valid_pts), 0)
 
             distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
@@ -715,20 +709,11 @@ class astrometryUnitTest(unittest.TestCase):
                         obs = ObservationMetaData(pointingRA=raPointing, pointingDec=decPointing,
                                                   mjd=mjd, site=site)
 
-                        params = pal.mappa(2000.0, mjd)
-                        sunToEarth = params[4:7] # unit vector pointing from Sun to Earth
-
                         rr = numpy.random.random_sample(nSamples)*numpy.radians(50.0)
                         theta = numpy.random.random_sample(nSamples)*2.0*numpy.pi
 
                         ra_in = raZenith + rr*numpy.cos(theta)
                         dec_in = decZenith + rr*numpy.sin(theta)
-
-                        earthToStar = pal.dcs2cVector(ra_in, dec_in) # each row is a unit vector pointing to the star
-
-                        solarDotProduct = numpy.array([(-1.0*sunToEarth*earthToStar[ii]).sum()
-                                                       for ii in range(earthToStar.shape[0])])
-
 
                         # test a round-trip between observedFromICRS and icrsFromObserved
                         ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in, obs_metadata=obs,
@@ -739,7 +724,8 @@ class astrometryUnitTest(unittest.TestCase):
                                                               includeRefraction=includeRefraction,
                                                               epoch=2000.0)
 
-                        valid_pts = numpy.where(solarDotProduct<numpy.cos(0.25*numpy.pi))[0]
+                        valid_pts = numpy.where(_distanceToSun(ra_in, dec_in, mjd)>0.25*numpy.pi)[0]
+
                         self.assertGreater(len(valid_pts), 0)
 
                         distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
@@ -753,9 +739,6 @@ class astrometryUnitTest(unittest.TestCase):
                                                               includeRefraction=includeRefraction)
                         ra_app, dec_app = _appGeoFromObserved(ra_obs, dec_obs, obs_metadata=obs,
                                                                 includeRefraction=includeRefraction)
-
-                        valid_pts = numpy.where(solarDotProduct<numpy.cos(0.25*numpy.pi))[0]
-                        self.assertGreater(len(valid_pts), 0)
 
                         distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
                                                      ra_app[valid_pts], dec_app[valid_pts]))
