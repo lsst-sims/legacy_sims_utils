@@ -32,7 +32,7 @@ from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
                             raDecFromAltAz, haversine,ModifiedJulianDate
 
-from lsst.sims.utils import _distanceToSun
+from lsst.sims.utils import solarRaDec, _solarRaDec, distanceToSun, _distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
 from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
@@ -192,6 +192,28 @@ class astrometryUnitTest(unittest.TestCase):
                 hh = haversine(raS, decS, new_ra, new_dec)
                 self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
 
+
+    def testDistanceToSunDeg(self):
+        """
+        Test that distanceToSun is consistent with _distanceToSun
+        """
+
+        for mjd, ra, dec in zip((57632.1, 45623.4, 55682.3), (112.0, 24.0, 231.2), (-25.0, 23.4, -60.0)):
+             dd_deg = distanceToSun(ra, dec, mjd)
+             dd_rad = _distanceToSun(numpy.radians(ra), numpy.radians(dec), mjd)
+             self.assertAlmostEqual(numpy.radians(dd_deg), dd_rad, 10)
+
+
+    def testSolarRaDecDeg(self):
+        """
+        Test that solarRaDec is consistent with _solarRaDec
+        """
+
+        for mjd in (57664.2, 53478.9, 45672.1):
+            ra_deg, dec_deg = solarRaDec(mjd)
+            ra_rad, dec_rad = _solarRaDec(mjd)
+            self.assertAlmostEqual(numpy.radians(ra_deg), ra_rad, 10)
+            self.assertAlmostEqual(numpy.radians(dec_deg), dec_rad, 10)
 
 
     def testAstrometryExceptions(self):

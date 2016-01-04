@@ -4,8 +4,8 @@ from lsst.sims.utils import arcsecFromRadians, cartesianFromSpherical, spherical
 from lsst.sims.utils import radiansFromArcsec
 from lsst.sims.utils import haversine
 
-__all__ = ["_solarRaDec",
-           "_distanceToSun",
+__all__ = ["_solarRaDec", "solarRaDec",
+           "_distanceToSun", "distanceToSun",
            "applyRefraction", "refractionCoefficients",
            "_applyPrecession", "applyPrecession",
            "_applyProperMotion", "applyProperMotion",
@@ -38,6 +38,24 @@ def _solarRaDec(mjd, epoch=2000.0):
     return palpy.dcc2s(-1.0*params[4:7])
 
 
+def solarRaDec(mjd, epoch=2000.0):
+    """
+    Return the RA and Dec of the Sun in degrees
+
+    @param [in] mjd is the date in question as an MJD
+
+    @param [in] epoch is the mean epoch of the coordinate system
+    (default is 2000.0)
+
+    @param [out] RA of Sun in degrees
+
+    @param [out] Dec of Sun in degress
+    """
+
+    solarRA, solarDec = _solarRaDec(mjd, epoch=epoch)
+    return numpy.degrees(solarRA), numpy.degrees(solarDec)
+
+
 def _distanceToSun(ra, dec, mjd, epoch=2000.0):
     """
     Calculate the distance from an (ra, dec) point to the Sun (in radians).
@@ -57,6 +75,25 @@ def _distanceToSun(ra, dec, mjd, epoch=2000.0):
     sunRa, sunDec = _solarRaDec(mjd, epoch=epoch)
     return haversine(ra, dec,sunRa, sunDec)
 
+
+def distanceToSun(ra, dec, mjd, epoch=2000.0):
+    """
+    Calculate the distance from an (ra, dec) point to the Sun (in degrees).
+
+    @param [in] ra in degrees
+
+    @param [in] dec in degrees
+
+    @param [in] mjd is the date in question as an MJD
+
+    @param [in] epoch is the epoch of the coordinate system
+    (default is 2000.0)
+
+    @param [out] distance on the sky to the Sun in degrees
+    """
+
+    return numpy.degrees(_distanceToSun(numpy.radians(ra), numpy.radians(dec),
+                                        mjd, epoch=epoch))
 
 
 def refractionCoefficients(wavelength=0.5, site=None):
