@@ -165,7 +165,10 @@ class astrometryUnitTest(unittest.TestCase):
 
                 new_ra = numpy.arctan2(new_y, new_x)
                 new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
-                self.assertLess(arcsecFromRadians(distanceToSun(new_ra, new_dec, mjd)-numpy.abs(theta)), 5.0)
+
+                dd = distanceToSun(new_ra, new_dec, mjd)
+                hh = haversine(raS, decS, new_ra, new_dec)
+                self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
 
                 # displace by rotating about y axis
                 new_x = sun_x*numpy.cos(theta)+sun_z*numpy.sin(theta)
@@ -174,7 +177,9 @@ class astrometryUnitTest(unittest.TestCase):
 
                 new_ra = numpy.arctan2(new_y, new_x)
                 new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
-                self.assertLess(arcsecFromRadians(distanceToSun(new_ra, new_dec, mjd)-numpy.abs(theta)), 5.0)
+                dd = distanceToSun(new_ra, new_dec, mjd)
+                hh = haversine(raS, decS, new_ra, new_dec)
+                self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
 
                 # displace by rotating about x axis
                 new_x = sun_x
@@ -183,7 +188,9 @@ class astrometryUnitTest(unittest.TestCase):
 
                 new_ra = numpy.arctan2(new_y, new_x)
                 new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
-                self.assertLess(arcsecFromRadians(distanceToSun(new_ra, new_dec, mjd)-numpy.abs(theta)), 5.0)
+                dd = distanceToSun(new_ra, new_dec, mjd)
+                hh = haversine(raS, decS, new_ra, new_dec)
+                self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
 
 
 
