@@ -73,6 +73,12 @@ def _distanceToSun(ra, dec, mjd, epoch=2000.0):
     """
 
     sunRa, sunDec = _solarRaDec(mjd, epoch=epoch)
+
+    if hasattr(ra, '__len__'):
+        return haversine(ra, dec,
+                         numpy.array([sunRa]*len(ra)),
+                         numpy.array([sunDec]*len(ra)))
+
     return haversine(ra, dec,sunRa, sunDec)
 
 

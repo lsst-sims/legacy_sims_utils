@@ -216,6 +216,38 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertAlmostEqual(numpy.radians(dec_deg), dec_rad, 10)
 
 
+    def testDistanceToSunArray(self):
+        """
+        Test _distanceToSun on numpy arrays of RA, Dec using solar RA, Dec calculated from
+
+        http://aa.usno.navy.mil/data/docs/JulianDate.php
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+        """
+
+        numpy.random.seed(77)
+        nStars = 100
+
+        hour = numpy.radians(360.0/24.0)
+        minute = hour/60.0
+        second = minute/60.0
+
+        mjd_list = [57026.0, 57543.625]
+
+        sun_ra_list = [18.0*hour + 56.0*minute + 51.022*second,
+                       4.0*hour + 51.0*minute + 22.776*second,]
+
+        sun_dec_list = [numpy.radians(-22.0-47.0/60.0-40.27/3600.0),
+                        numpy.radians(22.0+30.0/60.0+0.73/3600.0)]
+
+        for mjd, raS, decS in zip(mjd_list, sun_ra_list, sun_dec_list):
+
+            ra_list = numpy.random.random_sample(nStars)*2.0*numpy.pi
+            dec_list =(numpy.random.random_sample(nStars)-0.5)*numpy.pi
+            distance_list = _distanceToSun(ra_list, dec_list, mjd)
+            distance_control = haversine(ra_list, dec_list, numpy.array([raS]*nStars), numpy.array([decS]*nStars))
+            numpy.testing.assert_array_almost_equal(distance_list, distance_control, 5)
+
+
     def testAstrometryExceptions(self):
         """
         Test to make sure that stand-alone astrometry methods raise an exception when they are called without
