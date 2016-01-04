@@ -4,7 +4,8 @@ from lsst.sims.utils import arcsecFromRadians, cartesianFromSpherical, spherical
 from lsst.sims.utils import radiansFromArcsec
 from lsst.sims.utils import haversine
 
-__all__ = ["applyRefraction", "refractionCoefficients",
+__all__ = ["distanceToSun",
+           "applyRefraction", "refractionCoefficients",
            "_applyPrecession", "applyPrecession",
            "_applyProperMotion", "applyProperMotion",
            "_appGeoFromICRS", "appGeoFromICRS",
@@ -13,6 +14,30 @@ __all__ = ["applyRefraction", "refractionCoefficients",
            "_appGeoFromObserved", "appGeoFromObserved",
            "_observedFromICRS", "observedFromICRS",
            "_icrsFromObserved", "icrsFromObserved"]
+
+
+def distanceToSun(ra, dec, mjd, epoch=2000.0):
+    """
+    Calculate the distance from an (ra, dec) point to the Sun (in radians).
+
+    @param [in] ra in radians (assumes ICRS)
+
+    @param [in] dec in radians (assumes ICRS)
+
+    @param [in] mjd is the date in question as an MJD
+
+    @param [in] epoch is the epoch of the coordinate system
+    (default is 2000.0)
+
+    @param [out] distance on the sky to the Sun in radians
+    """
+
+    params = palpy.mappa(epoch, mjd)
+    # params[4:7] is a unit vector pointing from the Sun
+    # to the Earth (see the docstring for palpy.mappa)
+
+    sunRa, sunDec = palpy.dcc2s(-1.0*params[4:7])
+    return haversine(ra, dec,sunRa, sunDec)
 
 
 

@@ -32,6 +32,7 @@ from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
                             raDecFromAltAz, haversine,ModifiedJulianDate
 
+from lsst.sims.utils import distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
 from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
@@ -121,6 +122,69 @@ class astrometryUnitTest(unittest.TestCase):
         del self.obs_metadata
         del self.metadata
         del self.tol
+
+
+    def testDistanceToSun(self):
+        """
+        Test distanceToSun using solar RA, Dec calculated from
+
+        http://aa.usno.navy.mil/data/docs/JulianDate.php
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+        """
+
+        hour = numpy.radians(360.0/24.0)
+        minute = hour/60.0
+        second = minute/60.0
+
+        mjd_list = [57026.0, 57543.625]
+
+        sun_ra_list = [18.0*hour + 56.0*minute + 51.022*second,
+                       4.0*hour + 51.0*minute + 22.776*second,]
+
+        sun_dec_list = [numpy.radians(-22.0-47.0/60.0-40.27/3600.0),
+                        numpy.radians(22.0+30.0/60.0+0.73/3600.0)]
+
+        for raS, decS, mjd in zip(sun_ra_list, sun_dec_list, mjd_list):
+
+            # first, verify that the Sun is where we think it is to within 5 arc seconds
+            self.assertLess(arcsecFromRadians(distanceToSun(raS, decS, mjd)), 5.0)
+
+            # find Sun's Cartesian coordinates
+            sun_x = numpy.cos(decS)*numpy.cos(raS)
+            sun_y = numpy.cos(decS)*numpy.sin(raS)
+            sun_z = numpy.sin(decS)
+
+            # now choose positions that are a set distance away from the Sun, and make sure
+            # that distanceToSun returns the expected result
+            for theta in (numpy.pi/2.0, numpy.pi/4.0, -numpy.pi/3.0):
+
+                # displace by rotating about z axis
+                new_x = sun_x*numpy.cos(theta)+sun_y*numpy.sin(theta)
+                new_y = -sun_x*numpy.sin(theta)+sun_y*numpy.cos(theta)
+                new_z = sun_z
+
+                new_ra = numpy.arctan2(new_y, new_x)
+                new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
+                self.assertLess(arcsecFromRadians(distanceToSun(new_ra, new_dec, mjd)-numpy.abs(theta)), 5.0)
+
+                # displace by rotating about y axis
+                new_x = sun_x*numpy.cos(theta)+sun_z*numpy.sin(theta)
+                new_y = sun_y
+                new_z = -sun_x*numpy.sin(theta)+sun_z*numpy.cos(theta)
+
+                new_ra = numpy.arctan2(new_y, new_x)
+                new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
+                self.assertLess(arcsecFromRadians(distanceToSun(new_ra, new_dec, mjd)-numpy.abs(theta)), 5.0)
+
+                # displace by rotating about x axis
+                new_x = sun_x
+                new_y = sun_y*numpy.cos(theta)+sun_z*numpy.sin(theta)
+                new_z = -sun_y*numpy.sin(theta)+sun_z*numpy.cos(theta)
+
+                new_ra = numpy.arctan2(new_y, new_x)
+                new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
+                self.assertLess(arcsecFromRadians(distanceToSun(new_ra, new_dec, mjd)-numpy.abs(theta)), 5.0)
+
 
 
     def testAstrometryExceptions(self):
