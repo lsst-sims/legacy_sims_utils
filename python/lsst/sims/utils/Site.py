@@ -33,6 +33,9 @@ class LSST_site_parameters(object):
         self.pressure=750.0 # in millibars
         self.humidity=0.4 # scale 0-1
         self.lapseRate=0.0065 # in Kelvin per meter
+        # the lapse rate was not specified by LSE-30;
+        # 0.0065 K/m appears to be the "standard" value
+        # see, for example http://mnras.oxfordjournals.org/content/365/4/1235.full
 
 
 class Site (object):
