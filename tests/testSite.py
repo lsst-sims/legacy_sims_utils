@@ -32,6 +32,7 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.pressure, self.pressure)
         self.assertEqual(site.humidity, self.humidity)
         self.assertEqual(site.lapseRate, self.lapseRate)
+        self.assertEqual(site.height, self.height)
 
 
     def testNoDefaults(self):
@@ -49,6 +50,26 @@ class SiteTest(unittest.TestCase):
         self.assertIsNone(site.pressure)
         self.assertIsNone(site.humidity)
         self.assertIsNone(site.lapseRate)
+        self.assertIsNone(site.height)
+
+
+    def testOverrideLSSTdefaults(self):
+        """
+        Test that, even if LSST is specified, we are capable of overriding
+        defaults
+        """
+        site = Site(name='LSST', longitude=26.0)
+        self.assertEqual(site.name, 'LSST')
+        self.assertEqual(site.longitude, 26.0)
+        self.assertEqual(site.longitude_rad, np.radians(26.0))
+        self.assertEqual(site.latitude, self.latitude)
+        self.assertEqual(site.latitude_rad, np.radians(self.latitude))
+        self.assertEqual(site.temperature, self.temperature)
+        self.assertEqual(site.pressure, self.pressure)
+        self.assertEqual(site.humidity, self.humidity)
+        self.assertEqual(site.lapseRate, self.lapseRate)
+        self.assertEqual(site.height, self.height)
+
 
 
 def suite():
