@@ -115,9 +115,7 @@ class astrometryUnitTest(unittest.TestCase):
                             temperature=11.505,
                             pressure=749.3,
                             lapseRate=0.0065,
-                            humidity=0.4,
-                            xPolar=0.0,
-                            yPolar=0.0)
+                            humidity=0.4)
 
         self.obs_metadata=ObservationMetaData(mjd=50984.371741,
                                      boundType='circle',

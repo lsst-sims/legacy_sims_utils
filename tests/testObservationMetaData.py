@@ -154,8 +154,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.site.longitude, -70.7494, 10)
         self.assertAlmostEqual(testObsMD.site.latitude, -30.2444, 10)
         self.assertAlmostEqual(testObsMD.site.height, 2650, 10)
-        self.assertAlmostEqual(testObsMD.site.xPolar, 0, 10)
-        self.assertAlmostEqual(testObsMD.site.yPolar, 0, 10)
         self.assertAlmostEqual(testObsMD.site.temperature_kelvin, 284.65, 10)
         self.assertAlmostEqual(testObsMD.site.temperature, 11.5, 10)
         self.assertAlmostEqual(testObsMD.site.pressure, 750.0, 10)
@@ -167,8 +165,8 @@ class ObservationMetaDataTest(unittest.TestCase):
         Test that site data gets passed correctly when it is not default
         """
         testSite = Site(longitude=20.0, latitude=-71.0, height=4.0,
-            xPolar=0.5, yPolar=-0.5, temperature=100.0,
-            pressure=500.0, humidity=0.1, lapseRate=0.1)
+                        temperature=100.0, pressure=500.0, humidity=0.1,
+                        lapseRate=0.1)
 
         testObsMD = ObservationMetaData(site=testSite)
 
@@ -177,8 +175,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.site.latitude, -71.0, 10)
         self.assertAlmostEqual(testObsMD.site.latitude_rad, numpy.radians(-71.0), 10)
         self.assertAlmostEqual(testObsMD.site.height, 4.0, 10)
-        self.assertAlmostEqual(testObsMD.site.xPolar, numpy.radians(0.5), 10)
-        self.assertAlmostEqual(testObsMD.site.yPolar, numpy.radians(-0.5), 10)
         self.assertAlmostEqual(testObsMD.site.temperature, 100.0, 10)
         self.assertAlmostEqual(testObsMD.site.temperature_kelvin, 373.15, 10)
         self.assertAlmostEqual(testObsMD.site.pressure, 500.0, 10)

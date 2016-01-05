@@ -662,14 +662,16 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
 
     # Correct site longitude for polar motion slaPolmo
     #
-    #17 October 2014
+    # 5 January 2016
     #  palAop.c (which calls Aoppa and Aopqk, as we do here) says
     #  *     - The azimuths etc produced by the present routine are with
     #  *       respect to the celestial pole.  Corrections to the terrestrial
     #  *       pole can be computed using palPolmo.
     #
-    #currently, palPolmo is not implemented in PAL
-    #I have filed an issue with the PAL team to change that.
+    # As a future issue, we should figure out how to incorporate polar motion
+    # into these calculations.  For now, we will set polar motion to zero.
+    xPolar = 0.0
+    yPolar = 0.0
 
     #
     #palpy.aoppa computes star-independent parameters necessary for
@@ -685,8 +687,8 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
                           obs_metadata.site.longitude_rad,
                           obs_metadata.site.latitude_rad,
                           obs_metadata.site.height,
-                          obs_metadata.site.xPolar,
-                          obs_metadata.site.yPolar,
+                          xPolar,
+                          yPolar,
                           obs_metadata.site.temperature_kelvin,
                           obs_metadata.site.pressure,
                           obs_metadata.site.humidity,
@@ -698,8 +700,8 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
                           obs_metadata.site.longitude_rad,
                           obs_metadata.site.latitude_rad,
                           obs_metadata.site.height,
-                          obs_metadata.site.xPolar,
-                          obs_metadata.site.yPolar,
+                          xPolar,
+                          yPolar,
                           obs_metadata.site.temperature,
                           0.0,
                           0.0,

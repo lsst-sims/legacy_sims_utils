@@ -33,9 +33,6 @@ class LSST_site_parameters(object):
         self.pressure=750.0 # in millibars
         self.humidity=0.4 # scale 0-1
         self.lapseRate=0.0065 # in Kelvin per meter
-        self.xPolar=0 # x polarmotion component in degrees
-        self.yPolar=0 # y polar motion component
-
 
 
 class Site (object):
@@ -69,10 +66,6 @@ class Site (object):
     @param [in] humidity range 0-1
 
     @param [in] lapseRate in Kelvin per meter
-
-    @param [in] xPolar is the polar motion x coordinate in degrees
-
-    @param [in] yPolar is the polar motion y coordinate in degress
     """
 
     def __init__(self,
@@ -83,9 +76,7 @@ class Site (object):
                  temperature=None,
                  pressure=None,
                  humidity=None,
-                 lapseRate=None,
-                 xPolar=None,
-                 yPolar=None):
+                 lapseRate=None):
 
         default_params = None
         self._name = name
@@ -114,12 +105,6 @@ class Site (object):
             if lapseRate is None:
                 lapseRate = default_params.lapseRate
 
-            if xPolar is None:
-                xPolar = default_params.xPolar
-
-            if yPolar is None:
-                yPolar = default_params.yPolar
-
 
         if longitude is not None:
             self._longitude_rad = np.radians(longitude)
@@ -136,15 +121,6 @@ class Site (object):
         self._height = height
         self._pressure = pressure
 
-        if xPolar is not None:
-            self._xPolar = np.radians(xPolar)
-        else:
-            self._xPolar = None
-
-        if yPolar is not None:
-            self._yPolar= np.radians(yPolar)
-        else:
-            self._yPolar = None
 
         if temperature is not None:
             self._temperature_kelvin = temperature+273.15 # in Kelvin
@@ -242,19 +218,3 @@ class Site (object):
         temperature lapse rate (in Kelvin per meter)
         """
         return self._lapseRate
-
-
-    @property
-    def xPolar(self):
-        """
-        x polar motion component in radians
-        """
-        return self._xPolar
-
-
-    @property
-    def yPolar(self):
-        """
-        y polar motion component in radians
-        """
-        return self._yPolar
