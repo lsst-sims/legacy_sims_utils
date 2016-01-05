@@ -243,12 +243,14 @@ class Site (object):
         """
         return self._lapseRate
 
+
     @property
     def xPolar(self):
         """
         x polar motion component in radians
         """
         return self._xPolar
+
 
     @property
     def yPolar(self):
