@@ -28,7 +28,7 @@ class LSST_site_parameters(object):
     def __init__(self):
         self.longitude=-70.7494 # in degrees
         self.latitude=-30.2444 # in degrees
-        self.height=2650 # in meters
+        self.height=2650.0 # in meters
         self.temperature=11.5 # in centigrade
         self.pressure=750.0 # in millibars
         self.humidity=0.4 # scale 0-1
