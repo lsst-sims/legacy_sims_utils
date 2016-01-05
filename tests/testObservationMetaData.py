@@ -151,34 +151,38 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.bandpass, 'r')
         self.assertEqual(testObsMD.m5, None)
         self.assertEqual(testObsMD.seeing, None)
-        self.assertAlmostEqual(testObsMD.site.longitude, -1.2320792,10)
-        self.assertAlmostEqual(testObsMD.site.latitude, -0.517781017,10)
+        self.assertAlmostEqual(testObsMD.site.longitude, -70.7494, 10)
+        self.assertAlmostEqual(testObsMD.site.latitude, -30.2444, 10)
         self.assertAlmostEqual(testObsMD.site.height, 2650, 10)
         self.assertAlmostEqual(testObsMD.site.xPolar, 0, 10)
         self.assertAlmostEqual(testObsMD.site.yPolar, 0, 10)
-        self.assertAlmostEqual(testObsMD.site.meanTemperature, 284.655, 10)
-        self.assertAlmostEqual(testObsMD.site.meanPressure, 749.3, 10)
-        self.assertAlmostEqual(testObsMD.site.meanHumidity, 0.4, 10)
+        self.assertAlmostEqual(testObsMD.site.temperature_kelvin, 284.65, 10)
+        self.assertAlmostEqual(testObsMD.site.temperature, 11.5, 10)
+        self.assertAlmostEqual(testObsMD.site.pressure, 750.0, 10)
+        self.assertAlmostEqual(testObsMD.site.humidity, 0.4, 10)
         self.assertAlmostEqual(testObsMD.site.lapseRate, 0.0065, 10)
 
     def testSite(self):
         """
         Test that site data gets passed correctly when it is not default
         """
-        testSite = Site(longitude=2.0, latitude=-1.0, height=4.0,
-            xPolar=0.5, yPolar=-0.5, meanTemperature=100.0,
-            meanPressure=500.0, meanHumidity=0.1, lapseRate=0.1)
+        testSite = Site(longitude=20.0, latitude=-71.0, height=4.0,
+            xPolar=0.5, yPolar=-0.5, temperature=100.0,
+            pressure=500.0, humidity=0.1, lapseRate=0.1)
 
         testObsMD = ObservationMetaData(site=testSite)
 
-        self.assertAlmostEqual(testObsMD.site.longitude, 2.0, 10)
-        self.assertAlmostEqual(testObsMD.site.latitude, -1.0, 10)
+        self.assertAlmostEqual(testObsMD.site.longitude, 20.0, 10)
+        self.assertAlmostEqual(testObsMD.site.longitude_rad, numpy.radians(20.0), 10)
+        self.assertAlmostEqual(testObsMD.site.latitude, -71.0, 10)
+        self.assertAlmostEqual(testObsMD.site.latitude_rad, numpy.radians(-71.0), 10)
         self.assertAlmostEqual(testObsMD.site.height, 4.0, 10)
-        self.assertAlmostEqual(testObsMD.site.xPolar, 0.5, 10)
-        self.assertAlmostEqual(testObsMD.site.yPolar, -0.5, 10)
-        self.assertAlmostEqual(testObsMD.site.meanTemperature, 100.0, 10)
-        self.assertAlmostEqual(testObsMD.site.meanPressure, 500.0, 10)
-        self.assertAlmostEqual(testObsMD.site.meanHumidity, 0.1, 10)
+        self.assertAlmostEqual(testObsMD.site.xPolar, numpy.radians(0.5), 10)
+        self.assertAlmostEqual(testObsMD.site.yPolar, numpy.radians(-0.5), 10)
+        self.assertAlmostEqual(testObsMD.site.temperature, 100.0, 10)
+        self.assertAlmostEqual(testObsMD.site.temperature_kelvin, 373.15, 10)
+        self.assertAlmostEqual(testObsMD.site.pressure, 500.0, 10)
+        self.assertAlmostEqual(testObsMD.site.humidity, 0.1, 10)
         self.assertAlmostEqual(testObsMD.site.lapseRate, 0.1, 10)
 
     def testAssignment(self):
