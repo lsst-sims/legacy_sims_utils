@@ -34,6 +34,23 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.lapseRate, self.lapseRate)
 
 
+    def testNoDefaults(self):
+        """
+        Test that, if name is not 'LSST', values are set to None
+        """
+        site = Site(name='bob')
+        self.assertEqual(site.name, 'bob')
+        self.assertIsNone(site.longitude)
+        self.assertIsNone(site.longitude_rad)
+        self.assertIsNone(site.latitude)
+        self.assertIsNone(site.latitude_rad)
+        self.assertIsNone(site.temperature)
+        self.assertIsNone(site.temperature_kelvin)
+        self.assertIsNone(site.pressure)
+        self.assertIsNone(site.humidity)
+        self.assertIsNone(site.lapseRate)
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
