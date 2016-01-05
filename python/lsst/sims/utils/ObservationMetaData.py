@@ -92,7 +92,7 @@ class ObservationMetaData(object):
     """
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, pointingRA=None, pointingDec=None, rotSkyPos=None,
-                 bandpassName=None, phoSimMetaData=None, site=Site(), m5=None, skyBrightness=None,
+                 bandpassName=None, phoSimMetaData=None, site=Site(name='LSST'), m5=None, skyBrightness=None,
                  seeing=None, epoch=2000.0):
 
         self._bounds = None

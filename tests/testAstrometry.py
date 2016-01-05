@@ -387,14 +387,14 @@ class astrometryUnitTest(unittest.TestCase):
         #test without mjd
         dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
                                   pointingDec=obs_metadata.pointingDec,
-                                  site=Site())
+                                  site=Site(name='LSST'))
         self.assertRaises(RuntimeError, _observedFromAppGeo, ra, dec, obs_metadata=dummy)
 
         #test mismatches
         dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
                                   pointingDec=obs_metadata.pointingDec,
                                   mjd=obs_metadata.mjd,
-                                  site=Site())
+                                  site=Site(name='LSST'))
 
         self.assertRaises(RuntimeError, _observedFromAppGeo, ra, decShort, obs_metadata=dummy)
         self.assertRaises(RuntimeError, _observedFromAppGeo, raShort, dec, obs_metadata=dummy)
@@ -704,7 +704,7 @@ class astrometryUnitTest(unittest.TestCase):
 
         mjd2000 = pal.epb(2000.0) # convert epoch to mjd
 
-        site = Site()
+        site = Site(name='LSST')
 
         for mjd in (53000.0, 53241.6, 58504.6):
             for includeRefraction in (True, False):
@@ -791,7 +791,7 @@ class astrometryUnitTest(unittest.TestCase):
         Test that _appGeoFromObserved really does invert _observedFromAppGeo
         """
         mjd = 58350.0
-        site = Site(longitude=numpy.degrees(0.235), latitude=numpy.degrees(-1.2))
+        site = Site(longitude=numpy.degrees(0.235), latitude=numpy.degrees(-1.2), name='LSST')
         raCenter, decCenter = raDecFromAltAz(90.0, 0.0,
                                              ObservationMetaData(mjd=mjd, site=site))
 
