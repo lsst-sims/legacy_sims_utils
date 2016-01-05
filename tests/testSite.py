@@ -149,6 +149,23 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.lapseRate, 3.2)
         self.assertEqual(site.height, self.height)
 
+    def testPartialParams(self):
+        """
+        test that unspecified parameters get set to None
+        """
+        site = Site(longitude=45.0, temperature=20.0)
+        self.assertIsNone(site.name)
+        self.assertIsNone(site.latitude)
+        self.assertIsNone(site.latitude_rad)
+        self.assertIsNone(site.height)
+        self.assertIsNone(site.pressure)
+        self.assertIsNone(site.humidity)
+        self.assertIsNone(site.lapseRate)
+        self.assertEqual(site.longitude, 45.0)
+        self.assertEqual(site.longitude_rad, np.pi/4.0)
+        self.assertEqual(site.temperature, 20.0)
+        self.assertEqual(site.temperature_kelvin, 293.15)
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
