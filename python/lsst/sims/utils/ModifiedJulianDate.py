@@ -92,7 +92,11 @@ class ModifiedJulianDate(object):
 
         if self._dut1 is None:
             try:
-                self._dut1 = self._time.get_delta_ut1_utc().value
+                intermediate_value = self._time.get_delta_ut1_utc()
+                try:
+                    self._dut1 = intermediate_value.value
+                except:
+                    self._dut1 = intermediate_value
             except:
                 warnings.warn("UTC %e is outside of IERS table for UT1-UTC.\n" % self.UTC
                               + "Returning UT1 = UTC for lack of a better idea")
