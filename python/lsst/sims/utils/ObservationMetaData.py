@@ -103,7 +103,7 @@ class ObservationMetaData(object):
         self._epoch = epoch
 
         if mjd is not None:
-            if isinstance(mjd, float):
+            if isinstance(mjd, float) or isinstance(mjd, int):
                 self._mjd = ModifiedJulianDate(TAI=mjd)
             elif isinstance(mjd, ModifiedJulianDate):
                 self._mjd = mjd
