@@ -3,6 +3,7 @@ import inspect
 from .SpatialBounds import SpatialBounds
 from lsst.sims.utils import haversine, Site, _icrsFromObserved, _observedFromICRS
 from lsst.sims.utils import _raDecFromNativeLonLat
+from lsst.sims.utils import ModifiedJulianDate
 
 __all__ = ["ObservationMetaData"]
 
@@ -35,8 +36,10 @@ class ObservationMetaData(object):
           slightly larger so that queries can be reasonably expected to return all of the
           objects within the desired field of view once those corrections have been applied.
 
-        * mjd : float (optional)
-          The MJD of the observation
+        * mjd : (optional)
+          Either a float (in which case, it will be assumed to be in International
+          Atomic Time), or an instnatiation of the ModifiedJulianDate class representing
+          the date of the observation
 
         * bandpassName : a char (e.g. 'u') or list (e.g. ['u', 'g', 'z'])
           denoting the bandpasses used for this particular observation
@@ -94,11 +97,21 @@ class ObservationMetaData(object):
 
         self._bounds = None
         self._boundType = boundType
-        self._mjd = mjd
         self._bandpass = bandpassName
         self._skyBrightness = skyBrightness
         self._site = site
         self._epoch = epoch
+
+        if mjd is not None:
+            if isinstance(mjd, float) or isinstance(mjd, int):
+                self._mjd = ModifiedJulianDate(TAI=mjd)
+            elif isinstance(mjd, ModifiedJulianDate):
+                self._mjd = mjd
+            else:
+                raise RuntimeError("You must pass either a float or a ModifiedJulianDate "
+                                   "as the kwarg mjd to ObservationMetaData")
+        else:
+            self._mjd = None
 
         if rotSkyPos is not None:
             self._rotSkyPos = numpy.radians(rotSkyPos)
@@ -153,7 +166,11 @@ class ObservationMetaData(object):
         mydict['pointingDec'] = self.pointingDec
         mydict['rotSkyPos'] = self.rotSkyPos
 
-        mydict['mjd'] = self.mjd
+        if self.mjd is None:
+            mydict['mjd'] = None
+        else:
+            mydict['mjd'] = self.mjd.TAI
+
         mydict['bandpass'] = self.bandpass
         mydict['skyBrightness'] = self.skyBrightness
         # mydict['m5'] = self.m5
@@ -391,7 +408,7 @@ class ObservationMetaData(object):
                 if self._mjd is not None:
                     raise RuntimeError('WARNING in ObservationMetaData trying to overwrite mjd with phoSimMetaData')
 
-                self._mjd = self._phoSimMetaData['Opsim_expmjd'][0]
+                self._mjd = ModifiedJulianDate(TAI=self._phoSimMetaData['Opsim_expmjd'][0])
 
             if 'Opsim_rotskypos' in self._phoSimMetaData:
                 if self._rotSkyPos is not None:
@@ -489,6 +506,9 @@ class ObservationMetaData(object):
         the length should be in degrees.  The present class converts
         from degrees to radians before passing to SpatialBounds.
         """
+        if self._boundLength is None:
+            return None
+
         return numpy.degrees(self._boundLength)
 
     @boundLength.setter
@@ -592,12 +612,22 @@ class ObservationMetaData(object):
 
     @mjd.setter
     def mjd(self, value):
+        """
+        Either a float or a ModifiedJulianDate.  If a float, this setter
+        assumes that you are passing in International Atomic Time
+        """
         if self._phoSimMetaData is not None:
             if 'Opsim_expmjd' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting mjd ' +
                                    'which was set by phoSimMetaData')
 
-        self._mjd = value
+        if isinstance(value, float):
+            self._mjd = ModifiedJulianDate(TAI=value)
+        elif isinstance(value, ModifiedJulianDate):
+            self._mjd = value
+        else:
+            raise RuntimeError("You can only set mjd to either a float or a ModifiedJulianDate")
+
 
     @property
     def bandpass(self):

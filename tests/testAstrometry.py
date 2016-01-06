@@ -30,7 +30,7 @@ from lsst.utils import getPackageDir
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
-                            raDecFromAltAz, haversine
+                            raDecFromAltAz, haversine,ModifiedJulianDate
 
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
 from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
@@ -151,11 +151,13 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertRaises(RuntimeError, _applyPrecession, ra, dec)
 
         #test mismatches
-        self.assertRaises(RuntimeError, _applyPrecession, raShort, dec, mjd=52000.0)
-        self.assertRaises(RuntimeError, _applyPrecession, ra, decShort, mjd=52000.0)
+        self.assertRaises(RuntimeError, _applyPrecession, raShort, dec,
+                          mjd=ModifiedJulianDate(TAI=52000.0))
+        self.assertRaises(RuntimeError, _applyPrecession, ra, decShort,
+                          mjd=ModifiedJulianDate(TAI=52000.0))
 
         #test that it runs
-        _applyPrecession(ra, dec, mjd=52000.0)
+        _applyPrecession(ra, dec, mjd=ModifiedJulianDate(TAI=52000.0))
 
         ##########test _applyProperMotion
         raList = list(ra)
@@ -177,55 +179,58 @@ class astrometryUnitTest(unittest.TestCase):
         #test passing lists
         self.assertRaises(RuntimeError, _applyProperMotion,
                           raList, dec, pm_ra, pm_dec, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, decList, pm_ra, pm_dec, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_raList, pm_dec, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_ra, pm_decList, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_ra, pm_dec, parallaxList, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_ra, pm_dec, parallax, v_radList,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
 
         #test mismatches
         self.assertRaises(RuntimeError, _applyProperMotion,
                           raShort, dec, pm_ra, pm_dec, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, decShort, pm_ra, pm_dec, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_raShort, pm_dec, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_ra, pm_decShort, parallax, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_ra, pm_dec, parallaxShort, v_rad,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
         self.assertRaises(RuntimeError, _applyProperMotion,
                           ra, dec, pm_ra, pm_dec, parallax, v_radShort,
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
 
         #test that it actually runs
-        _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, mjd=52000.0)
+        _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad,
+                           mjd=ModifiedJulianDate(TAI=52000.0))
         _applyProperMotion(ra[0], dec[0], pm_ra[0], pm_dec[0], parallax[0], v_rad[0],
-                          mjd=52000.0)
+                          mjd=ModifiedJulianDate(TAI=52000.0))
 
         ##########test _appGeoFromICRS
         #test without mjd
         self.assertRaises(RuntimeError, _appGeoFromICRS, ra, dec)
 
         #test with mismatched ra, dec
-        self.assertRaises(RuntimeError, _appGeoFromICRS, ra, decShort, mjd=52000.0)
-        self.assertRaises(RuntimeError, _appGeoFromICRS, raShort, dec, mjd=52000.0)
+        self.assertRaises(RuntimeError, _appGeoFromICRS, ra, decShort,
+                          mjd=ModifiedJulianDate(TAI=52000.0))
+        self.assertRaises(RuntimeError, _appGeoFromICRS, raShort, dec,
+                          mjd=ModifiedJulianDate(TAI=52000.0))
 
         #test that it actually urns
         test=_appGeoFromICRS(ra, dec, mjd=obs_metadata.mjd)
@@ -302,7 +307,7 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertRaises(RuntimeError, _applyPrecession, ra, dec)
 
         #just make sure it runs
-        output=_applyPrecession(ra,dec, mjd=pal.epj(2000.0))
+        output=_applyPrecession(ra,dec, mjd=ModifiedJulianDate(TAI=57388.0))
 
 
     def test_applyProperMotion(self):
@@ -390,7 +395,7 @@ class astrometryUnitTest(unittest.TestCase):
         #SLALIB data was made.
         output=_appGeoFromICRS(ra,dec,pm_ra=pm_ra*numpy.cos(dec), pm_dec=pm_dec/numpy.cos(dec),
                               parallax=radiansFromArcsec(parallax),v_rad=v_rad, epoch=ep,
-                              mjd=mjd)
+                              mjd=ModifiedJulianDate(TAI=mjd))
 
         self.assertAlmostEqual(output[0][0],2.525858337335585180e+00,6)
         self.assertAlmostEqual(output[1][0],5.309044018653210628e-01,6)
@@ -432,9 +437,10 @@ class astrometryUnitTest(unittest.TestCase):
             solarDotProduct = numpy.array([(-1.0*sunToEarth*earthToStar[ii]).sum()
                                            for ii in range(earthToStar.shape[0])])
 
-            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=mjd)
+            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=ModifiedJulianDate(TAI=mjd))
 
-            ra_icrs, dec_icrs = _icrsFromAppGeo(ra_app, dec_app, epoch=2000.0, mjd=mjd)
+            ra_icrs, dec_icrs = _icrsFromAppGeo(ra_app, dec_app,
+                                                epoch=2000.0, mjd=ModifiedJulianDate(TAI=mjd))
 
             self.assertFalse(numpy.isnan(ra_icrs).any())
             self.assertFalse(numpy.isnan(dec_icrs).any())
@@ -533,7 +539,8 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertEqual(context.exception.args[0],
                          "cannot call icrsFromObserved; obs_metadata.mjd is None")
 
-        obs = ObservationMetaData(pointingRA=23.0, pointingDec=-19.0, mjd=52344.0)
+        obs = ObservationMetaData(pointingRA=23.0, pointingDec=-19.0,
+                                  mjd=ModifiedJulianDate(TAI=52344.0))
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _icrsFromObserved(ra_in, dec_in, obs_metadata=obs)
         self.assertEqual(context.exception.args[0],
@@ -543,124 +550,6 @@ class astrometryUnitTest(unittest.TestCase):
             ra_out, dec_out = _icrsFromObserved(ra_in[:3], dec_in, obs_metadata=obs, epoch=2000.0)
         self.assertEqual(context.exception.args[0],
                          "You passed 3 RAs but 10 Decs to icrsFromObserved")
-
-
-    def test_observedFromAppGeo(self):
-        """
-        Note: this routine depends on Aopqk which fails if zenith distance
-        is too great (or, at least, it won't warn you if the zenith distance
-        is greater than pi/2, in which case answers won't make sense)
-        """
-
-        ra=numpy.zeros((3),dtype=float)
-        dec=numpy.zeros((3),dtype=float)
-
-        #we need to pass wv as the effective wavelength for methods that
-        #calculate refraction because, when the control SLALIB runs were
-        #done we misinterpreted the units of wavelength to be Angstroms
-        #rather than microns.
-        wv = 5000.0
-
-        ra[0]=2.549091039839124218e+00
-        dec[0]=5.198752733024248895e-01
-        ra[1]=4.346687836824714712e-01
-        dec[1]=-5.190430828211490821e-01
-        ra[2]=7.740864769302191473e-01
-        dec[2]=2.758053025017753179e-01
-
-        mjd=2.018749109074271473e+03
-        obs_metadata=ObservationMetaData(mjd=mjd,
-                                     boundType='circle',
-                                     boundLength=0.05,
-                                     phoSimMetaData=self.metadata)
-
-        output=_observedFromAppGeo(ra,dec, wavelength=wv, obs_metadata=obs_metadata)
-
-        self.assertAlmostEqual(output[0][0],2.547475965605183745e+00,6)
-        self.assertAlmostEqual(output[1][0],5.187045152602967057e-01,6)
-
-        self.assertAlmostEqual(output[0][1],4.349858626308809040e-01,6)
-        self.assertAlmostEqual(output[1][1],-5.191213875880701378e-01,6)
-
-        self.assertAlmostEqual(output[0][2],7.743528611421227614e-01,6)
-        self.assertAlmostEqual(output[1][2],2.755070101670137328e-01,6)
-
-        output=_observedFromAppGeo(ra,dec,altAzHr=True, wavelength=wv, obs_metadata=obs_metadata)
-
-        self.assertAlmostEqual(output[0][0][0],2.547475965605183745e+00,6)
-        self.assertAlmostEqual(output[0][1][0],5.187045152602967057e-01,6)
-        self.assertAlmostEqual(output[1][0][0],1.168920017932007643e-01,6)
-        self.assertAlmostEqual(output[1][1][0],8.745379535264000692e-01,6)
-
-        self.assertAlmostEqual(output[0][0][1],4.349858626308809040e-01,6)
-        self.assertAlmostEqual(output[0][1][1],-5.191213875880701378e-01,6)
-        self.assertAlmostEqual(output[1][0][1],6.766119585479937193e-01,6)
-        self.assertAlmostEqual(output[1][1][1],4.433969998336554141e+00,6)
-
-        self.assertAlmostEqual(output[0][0][2],7.743528611421227614e-01,6)
-        self.assertAlmostEqual(output[0][1][2],2.755070101670137328e-01,6)
-        self.assertAlmostEqual(output[1][0][2],5.275840601437552513e-01,6)
-        self.assertAlmostEqual(output[1][1][2],5.479759580847959555e+00,6)
-
-        output=_observedFromAppGeo(ra,dec,includeRefraction=False,
-                                  wavelength=wv, obs_metadata=obs_metadata)
-
-        self.assertAlmostEqual(output[0][0],2.549091783674975353e+00,6)
-        self.assertAlmostEqual(output[1][0],5.198746844679964507e-01,6)
-
-        self.assertAlmostEqual(output[0][1],4.346695674418772359e-01,6)
-        self.assertAlmostEqual(output[1][1],-5.190436610150490626e-01,6)
-
-        self.assertAlmostEqual(output[0][2],7.740875471580924705e-01,6)
-        self.assertAlmostEqual(output[1][2],2.758055401087299296e-01,6)
-
-        output=_observedFromAppGeo(ra,dec,includeRefraction=False,
-                                  altAzHr=True, wavelength=wv, obs_metadata=obs_metadata)
-
-        self.assertAlmostEqual(output[0][0][0],2.549091783674975353e+00,6)
-        self.assertAlmostEqual(output[0][1][0],5.198746844679964507e-01,6)
-        self.assertAlmostEqual(output[1][0][0],1.150652107618796299e-01,6)
-        self.assertAlmostEqual(output[1][1][0],8.745379535264000692e-01,6)
-
-        self.assertAlmostEqual(output[0][0][1],4.346695674418772359e-01,6)
-        self.assertAlmostEqual(output[0][1][1],-5.190436610150490626e-01,6)
-        self.assertAlmostEqual(output[1][0][1],6.763265401447272618e-01,6)
-        self.assertAlmostEqual(output[1][1][1],4.433969998336554141e+00,6)
-
-        self.assertAlmostEqual(output[0][0][2],7.740875471580924705e-01,6)
-        self.assertAlmostEqual(output[0][1][2],2.758055401087299296e-01,6)
-        self.assertAlmostEqual(output[1][0][2],5.271912536356709866e-01,6)
-        self.assertAlmostEqual(output[1][1][2],5.479759580847959555e+00,6)
-
-    def test_observedFromAppGeo_NoRefraction(self):
-
-        ra=numpy.zeros((3),dtype=float)
-        dec=numpy.zeros((3),dtype=float)
-
-        ra[0]=2.549091039839124218e+00
-        dec[0]=5.198752733024248895e-01
-        ra[1]=4.346687836824714712e-01
-        dec[1]=-5.190430828211490821e-01
-        ra[2]=7.740864769302191473e-01
-        dec[2]=2.758053025017753179e-01
-
-        mjd=2.018749109074271473e+03
-        obs_metadata=ObservationMetaData(mjd=mjd,
-                                     boundType='circle',
-                                     boundLength=0.05,
-                                     phoSimMetaData=self.metadata)
-
-        output=_observedFromAppGeo(ra,dec,altAzHr=True,
-                                  includeRefraction=False, obs_metadata=obs_metadata)
-
-        self.assertAlmostEqual(output[0][0][0],2.549091783674975353e+00,6)
-        self.assertAlmostEqual(output[0][1][0],5.198746844679964507e-01,6)
-        self.assertAlmostEqual(output[0][0][1],4.346695674418772359e-01,6)
-        self.assertAlmostEqual(output[0][1][1],-5.190436610150490626e-01,6)
-        self.assertAlmostEqual(output[0][0][2],7.740875471580924705e-01,6)
-        self.assertAlmostEqual(output[0][1][2],2.758055401087299296e-01,6)
-        self.assertAlmostEqual(output[1][0][2],5.271914342095551653e-01,6)
-        self.assertAlmostEqual(output[1][1][2],5.479759402150099490e+00,6)
 
 
     def test_appGeoFromObserved(self):
@@ -675,7 +564,7 @@ class astrometryUnitTest(unittest.TestCase):
                                              mjd)
 
         obs = ObservationMetaData(pointingRA=raCenter, pointingDec=decCenter,
-                                  mjd=58350.0,
+                                  mjd=ModifiedJulianDate(TAI=58350.0),
                                   site=site)
 
         numpy.random.seed(125543)
@@ -730,7 +619,7 @@ class astrometryUnitTest(unittest.TestCase):
                          "Cannot call appGeoFromObserved without an obs_metadata")
 
         obs = ObservationMetaData(pointingRA=25.0, pointingDec=-12.0,
-                                  site=None, mjd=52000.0)
+                                  site=None, mjd=ModifiedJulianDate(TAI=52000.0))
 
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _appGeoFromObserved(ra_in, dec_in, obs_metadata=obs)
@@ -743,7 +632,8 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertEqual(context.exception.args[0],
                          "Cannot call appGeoFromObserved: obs_metadata has no mjd")
 
-        obs = ObservationMetaData(pointingRA=25.0, pointingDec=-12.0, mjd=52000.0)
+        obs = ObservationMetaData(pointingRA=25.0, pointingDec=-12.0,
+                                  mjd=ModifiedJulianDate(TAI=52000.0))
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _appGeoFromObserved(ra_in[:2], dec_in, obs_metadata=obs)
         self.assertEqual(context.exception.args[0],
