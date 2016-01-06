@@ -322,6 +322,15 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.pointingRA, 15.0, 10)
         self.assertAlmostEqual(testObsMD.pointingDec, 0.0, 10)
 
+
+    def testSummary(self):
+        """
+        Make sure summary is safe even when no parameters have been set
+        """
+        obs = ObservationMetaData()
+        obs.summary
+
+
 def suite():
     """Returns a suite containing all the test cases in this module."""
     utilsTests.init()
