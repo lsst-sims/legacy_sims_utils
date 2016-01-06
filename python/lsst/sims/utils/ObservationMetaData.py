@@ -166,7 +166,11 @@ class ObservationMetaData(object):
         mydict['pointingDec'] = self.pointingDec
         mydict['rotSkyPos'] = self.rotSkyPos
 
-        mydict['mjd'] = self.mjd.TAI
+        if self.mjd is None:
+            mydict['mjd'] = None
+        else:
+            mydict['mjd'] = self.mjd.TAI
+
         mydict['bandpass'] = self.bandpass
         mydict['skyBrightness'] = self.skyBrightness
         # mydict['m5'] = self.m5
@@ -502,6 +506,9 @@ class ObservationMetaData(object):
         the length should be in degrees.  The present class converts
         from degrees to radians before passing to SpatialBounds.
         """
+        if self._boundLength is None:
+            return None
+
         return numpy.degrees(self._boundLength)
 
     @boundLength.setter
