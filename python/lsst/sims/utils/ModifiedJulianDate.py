@@ -51,13 +51,7 @@ class ModifiedJulianDate(object):
         International Atomic Time as an MJD
         """
         if self._tai is None:
-            intermediate_value = self._time.tai
-
-            try:
-                self._tai = intermediate_value.value
-            except:
-                self._tai = intermediate_value
-
+            self._tai = self._time.tai.mjd
 
         return self._tai
 
@@ -68,12 +62,7 @@ class ModifiedJulianDate(object):
         Universal Coordinate Time as an MJD
         """
         if self._utc is None:
-            intermediate_value = self._time.utc
-
-            try:
-                self._utc = intermediate_value.value
-            except:
-                self._utc = intermediate_value
+            self._utc = self._time.utc.mjd
 
         return self._utc
 
@@ -86,17 +75,11 @@ class ModifiedJulianDate(object):
         """
         if self._ut1 is None:
             try:
-                intermediate_value = self._time.ut1
+                self._ut1 = self._time.ut1.mjd
             except:
                 warnings.warn("UTC %e is outside of IERS table for UT1-UTC.\n" % self.UTC
                               + "Returning UT1 = UTC for lack of a better idea")
-                intermediate_value = self.UTC
-
-            try:
-                self._ut1 = intermediate_value.value
-            except:
-                self._ut1 = intermediate_value
-
+                self._ut1 = self.UTC
 
         return self._ut1
 
@@ -109,17 +92,11 @@ class ModifiedJulianDate(object):
 
         if self._dut1 is None:
             try:
-                intermediate_value = self._time.get_delta_ut1_utc()
+                self._dut1 = self._time.get_delta_ut1_utc().value
             except:
                 warnings.warn("UTC %e is outside of IERS table for UT1-UTC.\n" % self.UTC
                               + "Returning UT1 = UTC for lack of a better idea")
-                intermediate_value = 0.0
-
-            try:
-                self._dut1 = intermediate_value.value
-            except:
-                self._dut1 = intermediate_value
-
+                self._dut1 = 0.0
 
         return self._dut1
 
@@ -130,12 +107,7 @@ class ModifiedJulianDate(object):
         Terrestrial Time (aka Terrestrial Dynamical Time) as an MJD
         """
         if self._tt is None:
-            intermediate_value = self._time.tt
-
-            try:
-                self._tt = intermediate_value.value
-            except:
-                self._tt = intermediate_value
+            self._tt = self._time.tt.mjd
 
         return self._tt
 
@@ -146,12 +118,7 @@ class ModifiedJulianDate(object):
         Barycentric Dynamical Time as an MJD
         """
         if self._tdb is None:
-            intermediate_value = self._time.tdb
-
-            try:
-                self._tdb = intermediate_value.value
-            except:
-                self._tdb = intermediate_value
+            self._tdb = self._time.tdb.mjd
 
         return self._tdb
 
