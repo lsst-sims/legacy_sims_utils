@@ -28,7 +28,7 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
 
     see: http://www.stargazing.net/kepler/altaz.html#twig04
     """
-    obs = utils.ObservationMetaData(mjd=mjd, site=utils.Site(longitude=longRad, latitude=latRad))
+    obs = utils.ObservationMetaData(mjd=utils.ModifiedJulianDate(UTC=mjd), site=utils.Site(longitude=longRad, latitude=latRad))
 
     if hasattr(raRad_in, '__len__'):
         raRad, decRad = utils._observedFromICRS(raRad_in, decRad_in, obs_metadata=obs,
@@ -164,7 +164,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
             obs = utils.ObservationMetaData(site=utils.Site(longitude=longitude,
                                                             latitude=latitude),
-                                            mjd=mjd)
+                                            mjd=utils.ModifiedJulianDate(UTC=mjd))
 
 
             ra_icrs, dec_icrs = utils._raDecFromAltAz(alt, az, obs)
@@ -231,7 +231,8 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
                                                     longitude, latitude, \
                                                     self.mjd)
 
-        obs = utils.ObservationMetaData(mjd=self.mjd, site=utils.Site(longitude=longitude, latitude=latitude))
+        obs = utils.ObservationMetaData(mjd=utils.ModifiedJulianDate(UTC=self.mjd),
+                                        site=utils.Site(longitude=longitude, latitude=latitude))
 
         #verify parallactic angle against an expression from
         #http://www.astro.washington.edu/groups/APO/Mirror.Motions/Feb.2000.Image.Jumps/report.html#Image%20motion%20directions
