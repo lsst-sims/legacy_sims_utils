@@ -245,7 +245,7 @@ class AstrometryDegreesTest(unittest.TestCase):
 
             raDeg, decDeg = utils.applyPrecession(np.degrees(self.raList),
                                                        np.degrees(self.decList),
-                                                       mjd=ModifiedJulianData(TAI=mjd))
+                                                       mjd=ModifiedJulianDate(TAI=mjd))
 
             dRa = utils.arcsecFromRadians(raRad-np.radians(raDeg))
             np.testing.assert_array_almost_equal(dRa, np.zeros(self.nStars), 9)
