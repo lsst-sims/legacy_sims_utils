@@ -472,7 +472,7 @@ class astrometryUnitTest(unittest.TestCase):
 
             ra_list_pm, dec_list_pm = _applyProperMotion(raList_icrs, decList_icrs,
                                                          pm_ra*numpy.cos(decList_icrs),
-                                                         pm_dec, px, v_rad, mjd=mjd)
+                                                         pm_dec, px, v_rad, mjd=ModifiedJulianDate(TAI=mjd))
 
             # stars' Cartesian position after proper motion is applied
             x_list_pm = numpy.cos(dec_list_pm)*numpy.cos(ra_list_pm)
@@ -664,7 +664,7 @@ class astrometryUnitTest(unittest.TestCase):
             dec_in = (numpy.random.random_sample(nSamples)-0.5)*numpy.pi
 
 
-            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=ModifiedJulainDate(TAI=mjd))
+            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=ModifiedJulianDate(TAI=mjd))
 
             ra_icrs, dec_icrs = _icrsFromAppGeo(ra_app, dec_app,
                                                 epoch=2000.0, mjd=ModifiedJulianDate(TAI=mjd))

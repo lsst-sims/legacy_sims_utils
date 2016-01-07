@@ -21,7 +21,7 @@ def calcLmstLast(mjd, longRad):
     """
     calculates local mean sidereal time and local apparent sidereal time
 
-    @param [in] mjd is the universal time expressed as an MJD.
+    @param [in] mjd is the universal time (UT1) expressed as an MJD.
     This can be a numpy array or a single value.
 
     @param [in] longRad is the longitude in radians (positive east of the prime meridian)

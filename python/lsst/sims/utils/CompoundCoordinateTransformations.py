@@ -100,7 +100,7 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     else:
         raObs, decObs = _observedFromICRS(raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
-    lst = calcLmstLast(obs.mjd, obs.site.longitude)
+    lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude)
     last = lst[1]
     haRad = np.radians(last*15.0) - raObs
 
@@ -178,7 +178,7 @@ def _raDecFromAltAz(altRad, azRad, obs):
     if azIsArray and altIsArray and len(altRad)!=len(azRad):
         raise RuntimeError('in raDecFromAltAz, length of alt numpy array does not match length of az numpy array')
 
-    lst = calcLmstLast(obs.mjd, obs.site.longitude)
+    lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude)
     last = lst[1]
     sinAlt = np.sin(altRad)
     cosLat = np.cos(obs.site.latitude)
