@@ -50,7 +50,8 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     delta: float, mandatory, radians
     size: int, mandatory
         number of samples
-
+    seed : int, optional, defaults to 1
+        random Seed used for generating values
     Returns
     -------
     tuple of (phivals, thetavals) where phivals and thetavals are arrays of 
