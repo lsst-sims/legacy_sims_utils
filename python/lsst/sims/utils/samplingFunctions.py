@@ -3,7 +3,7 @@ from lsst.sims.utils import ObservationMetaData
 
 __all__ = ['sample_obsmetadata', 'samplePatchOnSphere']
 
-def sample_obsmetadata(obsmetadata, size=1):
+def sample_obsmetadata(obsmetadata, size=1, seed=1):
     """
     Sample a square patch on the sphere overlapping obsmetadata
     field of view by picking the area enclosed in
@@ -17,6 +17,8 @@ def sample_obsmetadata(obsmetadata, size=1):
     size: integer, optional, defaults to 1
         number of samples
 
+    seed: integer, optional, defaults to 1
+        Random Seed used in generating random values 
     Returns
     -------
     tuple of ravals, decvalues
@@ -29,7 +31,8 @@ def sample_obsmetadata(obsmetadata, size=1):
     ravals, thetavals = samplePatchOnSphere(phi=phi,
 					    theta=theta,
 					    delta=equalrange,
-					    size=size)
+					    size=size,
+                                            seed=seed)
     return ravals, thetavals
 
 
