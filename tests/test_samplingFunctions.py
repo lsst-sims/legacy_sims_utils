@@ -36,6 +36,20 @@ class SamplingTests(unittest.TestCase):
     def setUp(self):
         pass
 
+    def test_checkWithinBounds(self):
+
+
+        delta = self.obsMetaDataforCat.summary['boundLength']
+        #delta = np.radians(delta)
+        minPhi = 0.13 - delta
+        maxPhi = 0.13 + delta
+        minTheta =  -1.2 - delta
+        maxTheta = -1.2  + delta
+
+        assert all(self.samples[0] <= maxPhi)
+        assert all(self.samples[0] >= minPhi)
+        assert all(self.samples[1] >= minTheta)
+        assert all(self.samples[1] <= maxTheta)
 
     def test_samplePatchOnSphere(self):
         
@@ -60,6 +74,7 @@ class SamplingTests(unittest.TestCase):
 
         assert all(resids < 0.3)
         
+
 
 def suite():
     utilsTests.init()
