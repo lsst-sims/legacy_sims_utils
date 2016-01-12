@@ -18,11 +18,13 @@ class SpecMap(object):
         self.D[key] = val
 
     def __getitem__(self, item):
-        item = item.rstrip()
+        item = item.rstrip().lstrip()
         if self.D.has_key(item):
             return self.D[item]
         for key, val in sorted(self.subdir_map.iteritems()):
             if re.match(key, item):
+                if item[-3:] == '.gz':
+                    return '{0}/{1}'.format(val, item)
                 return '{0}/{1}.gz'.format(val, item)
         raise KeyError("No path found for spectrum name: %s"%(item))
 
