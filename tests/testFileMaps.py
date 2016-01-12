@@ -23,6 +23,24 @@ class FileMapTest(unittest.TestCase):
         msg = '%s should map to %s; it actually maps to %s' % (file_name, control_name, test_name)
         self.assertEqual(test_name, control_name, msg=msg)
 
+        add_space = file_name+' '
+        self.assertNotEqual(add_space, file_name)
+        test_name = defaultSpecMap[add_space]
+        msg = '%s should map to %s; it actually maps to %s' % (add_space, control_name, test_name)
+        self.assertEqual(test_name, control_name, msg=msg)
+
+        add_space = ' '+file_name
+        self.assertNotEqual(add_space, file_name)
+        test_name = defaultSpecMap[add_space]
+        msg = '%s should map to %s; it actually maps to %s' % (add_space, control_name, test_name)
+        self.assertEqual(test_name, control_name, msg=msg)
+
+        add_gz = file_name+'.gz'
+        self.assertNotEqual(add_gz, file_name)
+        test_name = defaultSpecMap[add_gz]
+        msg = '%s should map to %s; it actually maps to %s' % (add_gz, control_name, test_name)
+        self.assertEqual(test_name, control_name, msg=msg)
+
         if self.root_dir is not None:
             full_path = os.path.join(self.root_dir, test_name)
             msg = '%s does not exist; it should' % full_path
