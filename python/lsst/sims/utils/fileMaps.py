@@ -5,7 +5,8 @@ __all__ = ["SpecMap", "defaultSpecMap"]
 class SpecMap(object):
     subdir_map = {'(^km)|(^kp)':'starSED/kurucz',
                   '(^bergeron)':'starSED/wDs',
-                  '(^burrows)|(^(m|L|l)[0-9])':'starSED/mlt',
+                  '(^burrows)|(^(m|L|l)[0-9])':'starSED/old_mlt',
+                  '(^lte)':'starSED/mlt',
                   '^(Exp|Inst|Burst|Const)':'galaxySED'}
     def __init__(self, D=None):
         if D:
