@@ -2,16 +2,9 @@ import os
 import unittest
 import lsst.utils.tests as utilsTests
 
-from lsst.utils import getPackageDir
 from lsst.sims.utils import defaultSpecMap
 
 class FileMapTest(unittest.TestCase):
-
-    def setUp(self):
-        try:
-            self.root_dir = getPackageDir('sims_sed_library')
-        except:
-            self.root_dir = None
 
 
     def verifyFile(self, file_name, dir_name):
@@ -40,11 +33,6 @@ class FileMapTest(unittest.TestCase):
         test_name = defaultSpecMap[add_gz]
         msg = '%s should map to %s; it actually maps to %s' % (add_gz, control_name, test_name)
         self.assertEqual(test_name, control_name, msg=msg)
-
-        if self.root_dir is not None:
-            full_path = os.path.join(self.root_dir, test_name)
-            msg = '%s does not exist; it should' % full_path
-            self.assertTrue(os.path.exists(full_path), msg=msg)
 
 
     def testMLT(self):
