@@ -139,7 +139,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     x *= -1.0
 
     #rotate the result by rotskypos (rotskypos being "the angle of the sky relative to
-    #camera cooridnates" according to phoSim documentation) to account for
+    #camera coordinates" according to phoSim documentation) to account for
     #the rotation of the focal plane about the telescope pointing
 
 
