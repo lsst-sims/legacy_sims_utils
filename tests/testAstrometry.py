@@ -46,7 +46,7 @@ def makeObservationMetaData():
     az = 0.0
     band = 'r'
     testSite = Site(latitude=numpy.degrees(0.5), longitude=numpy.degrees(1.1), height=3000,
-                    temperature=260.0, pressure=725.0, lapseRate=0.005)
+                    temperature=260.0, pressure=725.0, lapseRate=0.005, humidity=0.4)
     obsTemp = ObservationMetaData(site=testSite, mjd=mjd)
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
@@ -61,6 +61,8 @@ def makeObservationMetaData():
 
     obs_metadata = ObservationMetaData(boundType='circle', boundLength=2.0*radius,
                                        phoSimMetaData=phoSimMetaData, site=testSite)
+
+
 
     return obs_metadata
 
