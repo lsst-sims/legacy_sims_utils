@@ -406,7 +406,7 @@ def makeObservationMetadata(metaData):
 
 def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.2320792, latRad=-0.517781017, **kwargs):
     '''
-    Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
+    Calculate a minimal set of observing parameters give the azimuth, altitude, and time of the observation.
     altRad -- Altitude of the boresite of the observation in radians
     azRad -- Azimuth of the boresite of the observation in radians
     mjd -- MJD of the observation
@@ -427,7 +427,7 @@ def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.232
 
 def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=np.pi, longRad=-1.2320792, latRad=-0.517781017, **kwargs):
     '''
-    Calculate a minimal set of observing parameters give the ra, dec, and time of the observation.
+    Calculate a minimal set of observing parameters give the azimuth, altitude, and time of the observation.
     altRad -- Altitude of the boresite of the observation in radians
     azRad -- Azimuth of the boresite of the observation in radians
     mjd -- MJD of the observation
