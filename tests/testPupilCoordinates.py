@@ -6,7 +6,7 @@ from lsst.sims.utils import ObservationMetaData, _nativeLonLatFromRaDec
 from lsst.sims.utils import _pupilCoordsFromRaDec
 from lsst.sims.utils import _raDecFromPupilCoords
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
-from lsst.sims.utils import haversine, arcsecFromRadians
+from lsst.sims.utils import haversine, arcsecFromRadians, solarRaDec, ModifiedJulianDate, distanceToSun
 
 class PupilCoordinateUnitTest(unittest.TestCase):
 
@@ -164,14 +164,21 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         """
         Test conversion from pupil coordinates back to Ra, Dec
         """
-        raCenter = 25.0
-        decCenter = -10.0
+
+        mjd = ModifiedJulianDate(TAI=52000.0)
+        solarRA, solarDec = solarRaDec(mjd.TDB)
+
+        # to make sure that we are more than 45 degrees from the Sun as required
+        # for _icrsFromObserved to be at all accurate
+        raCenter = solarRA + 100.0
+        decCenter = solarDec - 30.0
+
         obs = ObservationMetaData(pointingRA=raCenter,
                                   pointingDec=decCenter,
                                   boundType='circle',
                                   boundLength=0.1,
                                   rotSkyPos=23.0,
-                                  mjd=52000.0)
+                                  mjd=mjd)
 
         nSamples = 1000
         numpy.random.seed(42)
@@ -180,8 +187,11 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         xp, yp = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs, epoch=2000.0)
         raTest, decTest = _raDecFromPupilCoords(xp, yp, obs_metadata=obs, epoch=2000.0)
         distance = arcsecFromRadians(haversine(ra, dec, raTest, decTest))
-        self.assertLess(distance.max(), 1.0) # because of the imprecision in _icrsFromObserved,
-                                             # the best we can hope for is sub-arcsecond accuracy
+        dex = numpy.argmax(distance)
+        worstSolarDistance = distanceToSun(numpy.degrees(ra[dex]), numpy.degrees(dec[dex]), mjd.TDB)
+        msg = "_raDecFromPupilCoords off by %e arcsec at distance to Sun of %e degrees" % \
+        (distance.max(), worstSolarDistance)
+        self.assertLess(distance.max(), 0.005, msg=msg)
 
 
     def testNaNs(self):
