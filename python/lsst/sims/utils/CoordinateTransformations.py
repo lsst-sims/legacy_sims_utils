@@ -253,7 +253,7 @@ def calcGmstGast(mjd):
     Compute Greenwich mean sidereal time and Greenwich apparent sidereal time
     see: From http://aa.usno.navy.mil/faq/docs/GAST.php
 
-    @param [in] mjd is the universal time expressed as an MJD
+    @param [in] mjd is the universal time (UT1) expressed as an MJD
 
     @param [out] gmst Greenwich mean sidereal time in hours
 

@@ -39,8 +39,6 @@ def altAzPaFromRaDec(ra, dec, obs):
     @param [out] parallactic angle in degrees
     """
 
-    # TODO time This should be passing around Universal Time
-
     alt, az, pa = _altAzPaFromRaDec(np.radians(ra), np.radians(dec),
                                     obs)
 
@@ -68,8 +66,6 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
 
     @param [out] parallactic angle in radians
     """
-
-    # TODO time this should be passing around Universal Time
 
     raIsArray = False
     decIsArray = False
@@ -103,9 +99,6 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude)
     last = lst[1]
     haRad = np.radians(last*15.0) - raObs
-
-
-    #sfd time This should be passing around Universal Time
 
     if isinstance(haRad, np.ndarray):
         az, azd, azdd, \
