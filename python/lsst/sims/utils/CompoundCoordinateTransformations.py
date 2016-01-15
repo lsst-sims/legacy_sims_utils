@@ -339,7 +339,7 @@ def _getRotTelPos(raRad, decRad, obs, rotSkyRad):
 
 def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad):
     """
-    Fromats input data into a dict of metadata that PhoSim expect.
+    Formats input data into a dict of metadata that PhoSim expect.
 
     Users should probably not be calling this by hand, as it makes no effort to ensure that
     the input values are self-consistent.  This method is called by
