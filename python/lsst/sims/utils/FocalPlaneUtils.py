@@ -26,7 +26,7 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     @param [in] ra_in is a numpy array of RAs in degrees
     (in the International Celestial Reference System)
 
-    @param [in] dec_in in degrees
+    @param [in] dec_in is a numpy array of Decs in degrees
     (in the International Celestial Reference System)
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
@@ -64,7 +64,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     @param [in] ra_in is a numpy array of RAs in radians
     (in the International Celestial Reference System)
 
-    @param [in] dec_in in radians
+    @param [in] dec_in is a numpy array of Decs in radians
     (in the International Celestial Reference System)
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
