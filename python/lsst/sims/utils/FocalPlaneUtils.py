@@ -158,7 +158,7 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     the state of the telescope
 
     @param [in] epoch -- julian epoch of the mean equinox used for the coordinate
-    transforations (in years)
+    transformations (in years)
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
     row is Dec (both in degrees; both in the International Celestial Reference System)
@@ -180,7 +180,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     the state of the telescope
 
     @param [in] epoch -- julian epoch of the mean equinox used for the coordinate
-    transforations (in years)
+    transformations (in years)
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
     row is Dec (both in radians; both in the International Celestial Reference System)
