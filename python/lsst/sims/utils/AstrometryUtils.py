@@ -21,7 +21,7 @@ def _solarRaDec(mjd, epoch=2000.0):
     """
     Return the RA and Dec of the Sun in radians
 
-    @param [in] mjd is the date in question as an MJD
+    @param [in] mjd is the date (TDB) in question as an MJD
 
     @param [in] epoch is the mean epoch of the coordinate system
     (default is 2000.0)
@@ -42,7 +42,7 @@ def solarRaDec(mjd, epoch=2000.0):
     """
     Return the RA and Dec of the Sun in degrees
 
-    @param [in] mjd is the date in question as an MJD
+    @param [in] mjd is the date (TDB) in question as an MJD
 
     @param [in] epoch is the mean epoch of the coordinate system
     (default is 2000.0)
@@ -64,7 +64,7 @@ def _distanceToSun(ra, dec, mjd, epoch=2000.0):
 
     @param [in] dec in radians
 
-    @param [in] mjd is the date in question as an MJD
+    @param [in] mjd is the date (TDB) in question as an MJD
 
     @param [in] epoch is the epoch of the coordinate system
     (default is 2000.0)
@@ -90,7 +90,7 @@ def distanceToSun(ra, dec, mjd, epoch=2000.0):
 
     @param [in] dec in degrees
 
-    @param [in] mjd is the date in question as an MJD
+    @param [in] mjd is the date (TDB) in question as an MJD
 
     @param [in] epoch is the epoch of the coordinate system
     (default is 2000.0)
