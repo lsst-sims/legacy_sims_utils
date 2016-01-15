@@ -11,7 +11,7 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     Take an input RA and dec from the sky and convert it to coordinates
     on the focal plane.
 
-    This uses PAL's gnonomonic projection routine which assumes that the focal
+    This uses PAL's gnomonic projection routine which assumes that the focal
     plane is perfectly flat.  The output is in Cartesian coordinates, assuming
     that the Celestial Sphere is a unit sphere.
 
@@ -49,7 +49,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     Take an input RA and dec from the sky and convert it to coordinates
     on the focal plane.
 
-    This uses PAL's gnonomonic projection routine which assumes that the focal
+    This uses PAL's gnomonic projection routine which assumes that the focal
     plane is perfectly flat.  The output is in Cartesian coordinates, assuming
     that the Celestial Sphere is a unit sphere.
 
