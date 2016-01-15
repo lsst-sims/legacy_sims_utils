@@ -172,7 +172,8 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
                                                       mjd=obs.mjd)
 
             distance = np.degrees(utils.haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
-            self.assertLess(distance, 0.1) # since that is all the precision we have in alt az
+            self.assertLess(distance, 0.1) # since that is all the precision we have in the alt, az
+                                           # data taken from the USNO
             correction = np.degrees(utils.haversine(ra_test[0], dec_test[0], ra_icrs, dec_icrs))
             self.assertLess(distance, correction)
 
