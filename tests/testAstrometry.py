@@ -32,6 +32,7 @@ from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
                             raDecFromAltAz, haversine,ModifiedJulianDate
 
+from lsst.sims.utils import solarRaDec, _solarRaDec, distanceToSun, _distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
 from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
@@ -46,8 +47,12 @@ def makeObservationMetaData():
     band = 'r'
     testSite = Site(latitude=0.5, longitude=1.1, height=3000, meanTemperature=260.0,
                     meanPressure=725.0, lapseRate=0.005)
-    centerRA, centerDec = _raDecFromAltAz(alt,az,testSite.longitude,testSite.latitude,mjd)
-    rotTel = _getRotTelPos(centerRA, centerDec, testSite.longitude, testSite.latitude, mjd, 0.0)
+
+    obsTemp = ObservationMetaData(site=testSite, mjd=mjd)
+
+    centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
+
+    rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
 
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
                  testSite.longitude, testSite.latitude)
@@ -117,6 +122,130 @@ class astrometryUnitTest(unittest.TestCase):
         del self.obs_metadata
         del self.metadata
         del self.tol
+
+
+    def testDistanceToSun(self):
+        """
+        Test _distanceToSun using solar RA, Dec calculated from
+
+        http://aa.usno.navy.mil/data/docs/JulianDate.php
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+        """
+
+        hour = numpy.radians(360.0/24.0)
+        minute = hour/60.0
+        second = minute/60.0
+
+        mjd_list = [57026.0, 57543.625]
+
+        sun_ra_list = [18.0*hour + 56.0*minute + 51.022*second,
+                       4.0*hour + 51.0*minute + 22.776*second,]
+
+        sun_dec_list = [numpy.radians(-22.0-47.0/60.0-40.27/3600.0),
+                        numpy.radians(22.0+30.0/60.0+0.73/3600.0)]
+
+        for raS, decS, mjd in zip(sun_ra_list, sun_dec_list, mjd_list):
+
+            # first, verify that the Sun is where we think it is to within 5 arc seconds
+            self.assertLess(arcsecFromRadians(_distanceToSun(raS, decS, mjd)), 5.0)
+
+            # find Sun's Cartesian coordinates
+            sun_x = numpy.cos(decS)*numpy.cos(raS)
+            sun_y = numpy.cos(decS)*numpy.sin(raS)
+            sun_z = numpy.sin(decS)
+
+            # now choose positions that are a set distance away from the Sun, and make sure
+            # that _distanceToSun returns the expected result
+            for theta in (numpy.pi/2.0, numpy.pi/4.0, -numpy.pi/3.0):
+
+                # displace by rotating about z axis
+                new_x = sun_x*numpy.cos(theta)+sun_y*numpy.sin(theta)
+                new_y = -sun_x*numpy.sin(theta)+sun_y*numpy.cos(theta)
+                new_z = sun_z
+
+                new_ra = numpy.arctan2(new_y, new_x)
+                new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
+
+                dd = _distanceToSun(new_ra, new_dec, mjd)
+                hh = haversine(raS, decS, new_ra, new_dec)
+                self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
+
+                # displace by rotating about y axis
+                new_x = sun_x*numpy.cos(theta)+sun_z*numpy.sin(theta)
+                new_y = sun_y
+                new_z = -sun_x*numpy.sin(theta)+sun_z*numpy.cos(theta)
+
+                new_ra = numpy.arctan2(new_y, new_x)
+                new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
+                dd = _distanceToSun(new_ra, new_dec, mjd)
+                hh = haversine(raS, decS, new_ra, new_dec)
+                self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
+
+                # displace by rotating about x axis
+                new_x = sun_x
+                new_y = sun_y*numpy.cos(theta)+sun_z*numpy.sin(theta)
+                new_z = -sun_y*numpy.sin(theta)+sun_z*numpy.cos(theta)
+
+                new_ra = numpy.arctan2(new_y, new_x)
+                new_dec = numpy.arctan2(new_z, numpy.sqrt(new_x*new_x+new_y*new_y))
+                dd = _distanceToSun(new_ra, new_dec, mjd)
+                hh = haversine(raS, decS, new_ra, new_dec)
+                self.assertLess(numpy.abs(arcsecFromRadians(dd-hh)), 5.0)
+
+
+    def testDistanceToSunDeg(self):
+        """
+        Test that distanceToSun is consistent with _distanceToSun
+        """
+
+        for mjd, ra, dec in zip((57632.1, 45623.4, 55682.3), (112.0, 24.0, 231.2), (-25.0, 23.4, -60.0)):
+             dd_deg = distanceToSun(ra, dec, mjd)
+             dd_rad = _distanceToSun(numpy.radians(ra), numpy.radians(dec), mjd)
+             self.assertAlmostEqual(numpy.radians(dd_deg), dd_rad, 10)
+
+
+    def testSolarRaDecDeg(self):
+        """
+        Test that solarRaDec is consistent with _solarRaDec
+        """
+
+        for mjd in (57664.2, 53478.9, 45672.1):
+            ra_deg, dec_deg = solarRaDec(mjd)
+            ra_rad, dec_rad = _solarRaDec(mjd)
+            self.assertAlmostEqual(numpy.radians(ra_deg), ra_rad, 10)
+            self.assertAlmostEqual(numpy.radians(dec_deg), dec_rad, 10)
+
+
+    def testDistanceToSunArray(self):
+        """
+        Test _distanceToSun on numpy arrays of RA, Dec using solar RA, Dec calculated from
+
+        http://aa.usno.navy.mil/data/docs/JulianDate.php
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+        """
+
+        numpy.random.seed(77)
+        nStars = 100
+
+        hour = numpy.radians(360.0/24.0)
+        minute = hour/60.0
+        second = minute/60.0
+
+        mjd_list = [57026.0, 57543.625]
+
+        sun_ra_list = [18.0*hour + 56.0*minute + 51.022*second,
+                       4.0*hour + 51.0*minute + 22.776*second,]
+
+        sun_dec_list = [numpy.radians(-22.0-47.0/60.0-40.27/3600.0),
+                        numpy.radians(22.0+30.0/60.0+0.73/3600.0)]
+
+        for mjd, raS, decS in zip(mjd_list, sun_ra_list, sun_dec_list):
+
+            ra_list = numpy.random.random_sample(nStars)*2.0*numpy.pi
+            dec_list =(numpy.random.random_sample(nStars)-0.5)*numpy.pi
+            distance_list = _distanceToSun(ra_list, dec_list, mjd)
+            distance_control = haversine(ra_list, dec_list, numpy.array([raS]*nStars), numpy.array([decS]*nStars))
+            numpy.testing.assert_array_almost_equal(distance_list, distance_control, 5)
 
 
     def testAstrometryExceptions(self):
@@ -311,98 +440,203 @@ class astrometryUnitTest(unittest.TestCase):
 
 
     def test_applyProperMotion(self):
+        """
+        Compare the output of _applyProperMotion to control outputs
+        generated by recreating the 'space motion' section of code
+        from palMapqk.c in palpy/cextern/pal
+        """
+        VF=0.21094502
+        pal_das2r=4.8481368110953599358991410235794797595635330237270e-6;
 
-        ra=numpy.zeros((3),dtype=float)
-        dec=numpy.zeros((3),dtype=float)
-        pm_ra=numpy.zeros((3),dtype=float)
-        pm_dec=numpy.zeros((3),dtype=float)
-        parallax=numpy.zeros((3),dtype=float)
-        v_rad=numpy.zeros((3),dtype=float)
+        numpy.random.seed(18)
+        nSamples = 1000
 
-        ra[0]=2.549091039839124218e+00
-        dec[0]=5.198752733024248895e-01
-        pm_ra[0]=-8.472633255615005918e-05
-        pm_dec[0]=-5.618517146980475171e-07
-        parallax[0]=9.328946209650547383e-02
-        v_rad[0]=3.060308412186171267e+02
+        mjdList = numpy.random.random_sample(20)*20000.0 + 45000.0
 
-        ra[1]=8.693375673649429425e-01
-        dec[1]=1.038086165642298164e+00
-        pm_ra[1]=-5.848962163813087908e-05
-        pm_dec[1]=-3.000346282603337522e-05
-        parallax[1]=5.392364722571952457e-02
-        v_rad[1]=4.785834687356999098e+02
+        for mjd in mjdList:
 
-        ra[2]=7.740864769302191473e-01
-        dec[2]=2.758053025017753179e-01
-        pm_ra[2]=5.904070507320858615e-07
-        pm_dec[2]=-2.958381482198743105e-05
-        parallax[2]=2.172865273161764255e-02
-        v_rad[2]=-3.225459751425886452e+02
+            raList_icrs = numpy.random.random_sample(nSamples)*2.0*numpy.pi
+            decList_icrs = (numpy.random.random_sample(nSamples)-0.5)*numpy.pi
 
-        ep=2.001040286039033845e+03
+            # stars' original position in Cartesian space
+            x_list_icrs = numpy.cos(decList_icrs)*numpy.cos(raList_icrs)
+            y_list_icrs = numpy.cos(decList_icrs)*numpy.sin(raList_icrs)
+            z_list_icrs = numpy.sin(decList_icrs)
 
-        #The proper motion arguments in this function are weird
-        #because there was a misunderstanding when the baseline
-        #SLALIB data was made.
-        output=_applyProperMotion(ra,dec,pm_ra*numpy.cos(dec),pm_dec/numpy.cos(dec),
-                                 radiansFromArcsec(parallax),v_rad,epoch=ep,
-                                 mjd=self.obs_metadata.mjd)
 
-        self.assertAlmostEqual(output[0][0],2.549309127917495754e+00,6)
-        self.assertAlmostEqual(output[1][0],5.198769294314042888e-01,6)
-        self.assertAlmostEqual(output[0][1],8.694881589882680339e-01,6)
-        self.assertAlmostEqual(output[1][1],1.038238225568303363e+00,6)
-        self.assertAlmostEqual(output[0][2],7.740849573146946216e-01,6)
-        self.assertAlmostEqual(output[1][2],2.758844356561930278e-01,6)
+            pm_ra = (numpy.random.random_sample(nSamples)-0.5)*radiansFromArcsec(1.0)
+            pm_dec = (numpy.random.random_sample(nSamples)-0.5)*radiansFromArcsec(1.0)
+            px = numpy.random.random_sample(nSamples)*radiansFromArcsec(1.0)
+            v_rad = numpy.random.random_sample(nSamples)*200.0
+
+
+            ra_list_pm, dec_list_pm = _applyProperMotion(raList_icrs, decList_icrs,
+                                                         pm_ra*numpy.cos(decList_icrs),
+                                                         pm_dec, px, v_rad, mjd=ModifiedJulianDate(TAI=mjd))
+
+            # stars' Cartesian position after proper motion is applied
+            x_list_pm = numpy.cos(dec_list_pm)*numpy.cos(ra_list_pm)
+            y_list_pm = numpy.cos(dec_list_pm)*numpy.sin(ra_list_pm)
+            z_list_pm = numpy.sin(dec_list_pm)
+
+            ###############################################################
+            # The code below is copied from palMapqk.c in palpy/cextern/pal
+            params = pal.mappa(2000.0, mjd)
+            pmt = params[0]
+            eb = numpy.array([params[1], params[2], params[3]])
+
+            pxr = px*pal_das2r
+
+            w = VF*v_rad*pxr
+
+            motion_per_year = numpy.array([-1.0*pm_ra*y_list_icrs - pm_dec*numpy.cos(raList_icrs)*numpy.sin(decList_icrs) + w*x_list_icrs,
+                                     pm_ra*x_list_icrs - pm_dec*numpy.sin(raList_icrs)*numpy.sin(decList_icrs) + w*y_list_icrs,
+                                     pm_dec*numpy.cos(decList_icrs) + w*z_list_icrs])
+
+
+            xyz_control = numpy.array([
+                                      x_list_icrs + pmt*motion_per_year[0] - pxr*eb[0],
+                                      y_list_icrs + pmt*motion_per_year[1] - pxr*eb[1],
+                                      z_list_icrs + pmt*motion_per_year[2] - pxr*eb[2]
+                                      ])
+
+            xyz_norm = numpy.sqrt(numpy.power(xyz_control[0],2) + numpy.power(xyz_control[1],2) + numpy.power(xyz_control[2],2))
+
+            # stars' Cartesian position after applying the control proper motion method
+            xyz_control[0] = xyz_control[0]/xyz_norm
+            xyz_control[1] = xyz_control[1]/xyz_norm
+            xyz_control[2] = xyz_control[2]/xyz_norm
+
+            # this is the Cartesian distance between the stars' positions as found by _applyProperMotion
+            # and the distance as found by the control proper motion code above
+            distance = numpy.sqrt(numpy.power(x_list_pm-xyz_control[0],2) + numpy.power(y_list_pm-xyz_control[1],2) +
+                                  numpy.power(z_list_pm-xyz_control[2],2))
+
+            # this is the Cartesian distance between the stars' original positions on the celestial sphere
+            # and their positions after the control proper motion was applied
+            correction = numpy.sqrt(numpy.power(xyz_control[0]-x_list_icrs,2) + numpy.power(xyz_control[1]-y_list_icrs,2) +
+                                    numpy.power(xyz_control[2]-z_list_icrs,2))
+
+            dex = numpy.argmax(distance)
+            msg = 'pm %e %e vr %e px %e; time %e; err %e arcsec; corr %e' % \
+            (arcsecFromRadians(pm_ra[dex]), arcsecFromRadians(pm_dec[dex]),
+             v_rad[dex], arcsecFromRadians(px[dex]), pmt, arcsecFromRadians(distance[dex]),
+             arcsecFromRadians(correction[dex]))
+
+            self.assertLess((distance/correction).max(), 0.01, msg=msg)
+            # demand that the two methods agree on the stars' new positions to within one part in 100
 
 
     def test_appGeoFromICRS(self):
-        ra=numpy.zeros((3),dtype=float)
-        dec=numpy.zeros((3),dtype=float)
-        pm_ra=numpy.zeros((3),dtype=float)
-        pm_dec=numpy.zeros((3),dtype=float)
-        parallax=numpy.zeros((3),dtype=float)
-        v_rad=numpy.zeros((3),dtype=float)
+        """
+        Test conversion between ICRS RA, Dec and apparent geocentric ICRS.
+
+        Apparent, geocentric RA, Dec of objects will be taken from this website
+
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+
+        dates converted to JD using this website
+
+        http://aa.usno.navy.mil/data/docs/geocentric.php
+
+        """
+
+        hours = numpy.radians(360.0/24.0)
+        minutes = hours/60.0
+        seconds = minutes/60.0
+
+        # test on Arcturus
+        # data taken from
+        # http://aa.usno.navy.mil/data/docs/geocentric.php
+        ra_icrs = 14.0*hours + 15.0*minutes + 39.67207*seconds
+        dec_icrs = numpy.radians(19.0 + 10.0/60.0 + 56.673/3600.0)
+        pm_ra = radiansFromArcsec(-1.0939)
+        pm_dec = radiansFromArcsec(-2.00006)
+        v_rad = -5.19
+        px = radiansFromArcsec(0.08883)
+
+        mjd_list = []
+        ra_app_list = []
+        dec_app_list = []
+
+        #jd (UT)
+        jd = 2457000.375000
+        mjd = jd-2400000.5
+
+        mjd_list.append(mjd)
+        ra_app_list.append(14.0*hours + 16.0*minutes + 19.59*seconds)
+        dec_app_list.append(numpy.radians(19.0 + 6.0/60.0 + 19.56/3600.0))
+
+        jd = 2457187.208333
+        mjd = jd-2400000.5
+        mjd_list.append(mjd)
+        ra_app_list.append(14.0*hours + 16.0*minutes + 22.807*seconds)
+        dec_app_list.append(numpy.radians(19.0+6.0/60.0+18.12/3600.0))
+
+        jd = 2457472.625000
+        mjd = jd-2400000.5
+        mjd_list.append(mjd)
+        ra_app_list.append(14.0*hours + 16.0*minutes + 24.946*seconds)
+        dec_app_list.append(numpy.radians(19.0 + 5.0/60.0 + 49.65/3600.0))
+
+        for mjd, ra_app, dec_app in zip(mjd_list, ra_app_list, dec_app_list):
+            obs = ObservationMetaData(mjd=mjd)
+
+            ra_test, dec_test = _appGeoFromICRS(numpy.array([ra_icrs]), numpy.array([dec_icrs]),
+                                                mjd=obs.mjd,
+                                                pm_ra=numpy.array([pm_ra]),
+                                                pm_dec=numpy.array([pm_dec]),
+                                                v_rad=numpy.array([v_rad]),
+                                                parallax=numpy.array([px]),
+                                                epoch=2000.0)
+
+            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
+            self.assertLess(distance, 0.1)
 
 
-        ra[0]=2.549091039839124218e+00
-        dec[0]=5.198752733024248895e-01
-        pm_ra[0]=-8.472633255615005918e-05
-        pm_dec[0]=-5.618517146980475171e-07
-        parallax[0]=9.328946209650547383e-02
-        v_rad[0]=3.060308412186171267e+02
+        # test on Sirius
+        # data taken from
+        # http://simbad.u-strasbg.fr/simbad/sim-id?Ident=Sirius
+        ra_icrs = 6.0*hours + 45.0*minutes + 8.91728*seconds
+        dec_icrs = numpy.radians(-16.0 - 42.0/60.0 -58.0171/3600.0)
+        pm_ra = radiansFromArcsec(-0.54601)
+        pm_dec = radiansFromArcsec(-1.22307)
+        px = radiansFromArcsec(0.37921)
+        v_rad = -5.5
 
-        ra[1]=8.693375673649429425e-01
-        dec[1]=1.038086165642298164e+00
-        pm_ra[1]=-5.848962163813087908e-05
-        pm_dec[1]=-3.000346282603337522e-05
-        parallax[1]=5.392364722571952457e-02
-        v_rad[1]=4.785834687356999098e+02
+        mjd_list = []
+        ra_app_list = []
+        dec_app_list = []
 
-        ra[2]=7.740864769302191473e-01
-        dec[2]=2.758053025017753179e-01
-        pm_ra[2]=5.904070507320858615e-07
-        pm_dec[2]=-2.958381482198743105e-05
-        parallax[2]=2.172865273161764255e-02
-        v_rad[2]=-3.225459751425886452e+02
+        jd = 2457247.000000
+        mjd_list.append(jd-2400000.5)
+        ra_app_list.append(6.0*hours + 45.0*minutes + 49.276*seconds)
+        dec_app_list.append(numpy.radians(-16.0 - 44.0/60.0 - 18.69/3600.0))
 
-        ep=2.001040286039033845e+03
-        mjd=2.018749109074271473e+03
+        jd = 2456983.958333
+        mjd_list.append(jd-2400000.5)
+        ra_app_list.append(6.0*hours + 45.0*minutes + 49.635*seconds)
+        dec_app_list.append(numpy.radians(-16.0 - 44.0/60.0 - 17.04/3600.0))
 
-        #The proper motion arguments in this function are weird
-        #because there was a misunderstanding when the baseline
-        #SLALIB data was made.
-        output=_appGeoFromICRS(ra,dec,pm_ra=pm_ra*numpy.cos(dec), pm_dec=pm_dec/numpy.cos(dec),
-                              parallax=radiansFromArcsec(parallax),v_rad=v_rad, epoch=ep,
-                              mjd=ModifiedJulianDate(TAI=mjd))
+        jd = 2457523.958333
+        mjd_list.append(jd-2400000.5)
+        ra_app_list.append(6.0*hours + 45.0*minutes + 50.99*seconds)
+        dec_app_list.append(numpy.radians(-16.0 - 44.0/60.0 - 39.76/3600.0))
 
-        self.assertAlmostEqual(output[0][0],2.525858337335585180e+00,6)
-        self.assertAlmostEqual(output[1][0],5.309044018653210628e-01,6)
-        self.assertAlmostEqual(output[0][1],8.297492370691380570e-01,6)
-        self.assertAlmostEqual(output[1][1],1.037400063009288331e+00,6)
-        self.assertAlmostEqual(output[0][2],7.408639821342507537e-01,6)
-        self.assertAlmostEqual(output[1][2],2.703229189890907214e-01,6)
+        for mjd, ra_app, dec_app in zip(mjd_list, ra_app_list, dec_app_list):
+            obs = ObservationMetaData(mjd=mjd)
+
+            ra_test, dec_test = _appGeoFromICRS(numpy.array([ra_icrs]), numpy.array([dec_icrs]),
+                                                mjd=obs.mjd,
+                                                pm_ra=numpy.array([pm_ra]),
+                                                pm_dec=numpy.array([pm_dec]),
+                                                v_rad=numpy.array([v_rad]),
+                                                parallax=numpy.array([px]),
+                                                epoch=2000.0)
+
+            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
+            self.assertLess(distance, 0.1)
+
 
 
     def test_icrsFromAppGeo(self):
@@ -426,16 +660,9 @@ class astrometryUnitTest(unittest.TestCase):
 
         for mjd in (53000.0, 53241.6, 58504.6):
 
-            params = pal.mappa(2000.0, mjd)
-            sunToEarth = params[4:7] # unit vector pointing from Sun to Earth
-
             ra_in = numpy.random.random_sample(nSamples)*2.0*numpy.pi
             dec_in = (numpy.random.random_sample(nSamples)-0.5)*numpy.pi
 
-            earthToStar = pal.dcs2cVector(ra_in, dec_in) # each row is a unit vector pointing to the star
-
-            solarDotProduct = numpy.array([(-1.0*sunToEarth*earthToStar[ii]).sum()
-                                           for ii in range(earthToStar.shape[0])])
 
             ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=ModifiedJulianDate(TAI=mjd))
 
@@ -445,7 +672,8 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertFalse(numpy.isnan(ra_icrs).any())
             self.assertFalse(numpy.isnan(dec_icrs).any())
 
-            valid_pts = numpy.where(solarDotProduct<numpy.cos(0.25*numpy.pi))[0]
+            valid_pts = numpy.where(_distanceToSun(ra_in, dec_in, mjd)>0.25*numpy.pi)[0]
+
             self.assertGreater(len(valid_pts), 0)
 
             distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
@@ -474,16 +702,12 @@ class astrometryUnitTest(unittest.TestCase):
                 for raPointing in (23.5, 256.9, 100.0):
                     for decPointing in (-12.0, 45.0, 66.8):
 
-                        raZenith, decZenith = _raDecFromAltAz(0.5*numpy.pi, 0.0,
-                                                             site.longitude,
-                                                             site.latitude,
-                                                             mjd)
+                        obs = ObservationMetaData(mjd=mjd, site=site)
+
+                        raZenith, decZenith = _raDecFromAltAz(0.5*numpy.pi, 0.0, obs)
 
                         obs = ObservationMetaData(pointingRA=raPointing, pointingDec=decPointing,
                                                   mjd=mjd, site=site)
-
-                        params = pal.mappa(2000.0, mjd)
-                        sunToEarth = params[4:7] # unit vector pointing from Sun to Earth
 
                         rr = numpy.random.random_sample(nSamples)*numpy.radians(50.0)
                         theta = numpy.random.random_sample(nSamples)*2.0*numpy.pi
@@ -491,12 +715,7 @@ class astrometryUnitTest(unittest.TestCase):
                         ra_in = raZenith + rr*numpy.cos(theta)
                         dec_in = decZenith + rr*numpy.sin(theta)
 
-                        earthToStar = pal.dcs2cVector(ra_in, dec_in) # each row is a unit vector pointing to the star
-
-                        solarDotProduct = numpy.array([(-1.0*sunToEarth*earthToStar[ii]).sum()
-                                                       for ii in range(earthToStar.shape[0])])
-
-
+                        # test a round-trip between observedFromICRS and icrsFromObserved
                         ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in, obs_metadata=obs,
                                                             includeRefraction=includeRefraction,
                                                             epoch=2000.0)
@@ -505,18 +724,24 @@ class astrometryUnitTest(unittest.TestCase):
                                                               includeRefraction=includeRefraction,
                                                               epoch=2000.0)
 
+                        valid_pts = numpy.where(_distanceToSun(ra_in, dec_in, mjd)>0.25*numpy.pi)[0]
 
-
-                        ra_obs, dec_obs = _observedFromAppGeo(ra_in, dec_in, obs_metadata=obs,
-                                                              includeRefraction=includeRefraction)
-                        ra_icrs, dec_icrs = _appGeoFromObserved(ra_obs, dec_obs, obs_metadata=obs,
-                                                                includeRefraction=includeRefraction)
-
-                        valid_pts = numpy.where(solarDotProduct<numpy.cos(0.25*numpy.pi))[0]
                         self.assertGreater(len(valid_pts), 0)
 
                         distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
                                                      ra_icrs[valid_pts], dec_icrs[valid_pts]))
+
+                        self.assertLess(distance.max(), 0.01)
+
+
+                        # test a round-trip between observedFromAppGeo and appGeoFromObserved
+                        ra_obs, dec_obs = _observedFromAppGeo(ra_in, dec_in, obs_metadata=obs,
+                                                              includeRefraction=includeRefraction)
+                        ra_app, dec_app = _appGeoFromObserved(ra_obs, dec_obs, obs_metadata=obs,
+                                                                includeRefraction=includeRefraction)
+
+                        distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
+                                                     ra_app[valid_pts], dec_app[valid_pts]))
 
                         self.assertLess(distance.max(), 0.01)
 
@@ -559,9 +784,7 @@ class astrometryUnitTest(unittest.TestCase):
         mjd = 58350.0
         site = Site(longitude=0.235, latitude=-1.2)
         raCenter, decCenter = raDecFromAltAz(90.0, 0.0,
-                                             numpy.degrees(site.longitude),
-                                             numpy.degrees(site.latitude),
-                                             mjd)
+                                             ObservationMetaData(mjd=mjd, site=site))
 
         obs = ObservationMetaData(pointingRA=raCenter, pointingDec=decCenter,
                                   mjd=ModifiedJulianDate(TAI=58350.0),

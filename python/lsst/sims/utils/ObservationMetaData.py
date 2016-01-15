@@ -1,9 +1,8 @@
 import numpy
 import inspect
 from .SpatialBounds import SpatialBounds
-from lsst.sims.utils import haversine, Site, _icrsFromObserved, _observedFromICRS
-from lsst.sims.utils import _raDecFromNativeLonLat
 from lsst.sims.utils import ModifiedJulianDate
+from lsst.sims.utils import Site
 
 __all__ = ["ObservationMetaData"]
 
@@ -17,7 +16,8 @@ class ObservationMetaData(object):
     **Parameters**
 
         * pointing[RA,Dec] float
-          The coordinates of the pointing (in degrees)
+          The coordinates of the pointing (in degrees; in the International
+          Celestial Reference System)
 
         * boundType characterizes the shape of the field of view.  Current options
           are 'box, and 'circle'
@@ -75,7 +75,7 @@ class ObservationMetaData(object):
 
         The convention for rotSkyPos is as follows:
 
-        rotSkyPos = 0 means north is in the +y direction on the camera and east is -x
+        rotSkyPos = 0 means north is in the +y direction on the focal plane and east is -x
 
         rotSkyPos = 90 means north is -x and east is -y
 
@@ -242,114 +242,6 @@ class ObservationMetaData(object):
             return outputDict
 
 
-    def _findCircularBoundLength(self):
-        """
-        Find the boundLength parameter that must be passed to SpatialBounds
-        in the case of a circular field of view.
-
-        Because sources are stored in the database at mean ICRS position
-        but the ObservationMetaData pointingRA and pointingDec refer to
-        observed position (the difference being the application of precession,
-        nutation, aberration, and refraction), we must allow for the possibility
-        that, in order to truly find all of the objects in the field of view,
-        the boundLength passed to SpatialBounds is not strictly the
-        boundLength stored in self._boundLength
-        """
-        raICRS, decICRS = _icrsFromObserved(numpy.array([self._pointingRA]), numpy.array([self._pointingDec]),
-                                            obs_metadata=self, epoch=self._epoch)
-
-        # We now need to determine if an offset must be applied to boundLength
-        # to account for the transformation between mean and observed RA, Dec.
-        # We do this by considering points whose observed position are within
-        # the requested boundLength.  We will transform these points into ICRS
-        # and compare their distance (in ICRS) from raICRS, decICRS.  The maximum
-        # of these distances will be compared to boundLength.  If it is greater than
-        # boundLength, this value will be the new boundLength.
-
-        radius = self._boundLength
-
-        theta_list = numpy.arange(0.0, 2.0*numpy.pi+0.01, 0.02*numpy.pi)
-
-        ra_test_list = []
-        dec_test_list = []
-        for theta in theta_list:
-            ra_test, dec_test = _raDecFromNativeLonLat(theta, 0.5*numpy.pi-radius, self._pointingRA, self._pointingDec)
-            dd = haversine(ra_test, dec_test, self._pointingRA, self._pointingDec)
-            ra_test_list.append(ra_test)
-            dec_test_list.append(dec_test)
-
-        ra_test_icrs, dec_test_icrs = _icrsFromObserved(numpy.array(ra_test_list),
-                                                        numpy.array(dec_test_list),
-                                                        obs_metadata=self, epoch=self._epoch)
-
-
-        ddmax = haversine(ra_test_icrs, dec_test_icrs, raICRS[0], decICRS[0]).max()
-        if ddmax>self._boundLength:
-            return ddmax
-        else:
-            return self._boundLength
-
-
-    def _findRectangularBoundLength(self):
-        """
-        Find the boundLength parameter that must be passed to SpatialBounds
-        in the case of a rectangular field of view.
-
-        Because sources are stored in the database at mean ICRS position
-        but the ObservationMetaData pointingRA and pointingDec refer to
-        observed position (the difference being the application of precession,
-        nutation, aberration, and refraction), we must allow for the possibility
-        that, in order to truly find all of the objects in the field of view,
-        the boundLength passed to SpatialBounds is not strictly the
-        boundLength stored in self._boundLength
-        """
-        raICRS, decICRS = _icrsFromObserved(numpy.array([self._pointingRA]), numpy.array([self._pointingDec]),
-                                            obs_metadata=self, epoch=self._epoch)
-
-        if hasattr(self._boundLength, "__len__"):
-            raBound = self._boundLength[0]
-            decBound = self._boundLength[1]
-        else:
-            raBound = self._boundLength
-            decBound = self._boundLength
-
-
-        # Here we find a set of RA, Dec pairs that fall within the nominally requested
-        # field of view.  We transform those points from the Observed RA, Dec to ICRS.
-        # We then compare the maximum RA and Dec difference between these test points
-        # and the ICRS center of the field of view.  If those maximum difference
-        # are greater than the nominal boundLength, we update boundLength accordingly
-
-        dra = 0.1*raBound
-        ra_list = numpy.arange(self._pointingRA-raBound, self._pointingRA+raBound+0.1*dra, dra)
-        ddec = 0.1*decBound
-        dec_list = numpy.arange(self._pointingDec-decBound, self._pointingDec+decBound+0.1*ddec, ddec)
-
-        ra_test_list = []
-        dec_test_list = []
-        for rr in ra_list:
-            for dd in dec_list:
-                ra_test_list.append(rr)
-                dec_test_list.append(dd)
-
-        ra_test_icrs, dec_test_icrs = _icrsFromObserved(numpy.array(ra_test_list),
-                                                        numpy.array(dec_test_list),
-                                                        obs_metadata=self, epoch=self._epoch)
-
-        draMax = raBound
-        ddecMax = decBound
-
-        dra_test_max = numpy.abs(ra_test_icrs - raICRS[0]).max()
-        if dra_test_max>draMax:
-            draMax = dra_test_max
-
-        ddec_test_max = numpy.abs(dec_test_icrs - decICRS[0]).max()
-        if ddec_test_max>ddecMax:
-            ddecMax = ddec_test_max
-
-        return [draMax, ddecMax]
-
-
     def _buildBounds(self):
         """
         Set up the member variable self._bounds.
@@ -367,27 +259,8 @@ class ObservationMetaData(object):
         if self._pointingRA is None or self._pointingDec is None:
             return
 
-        if self._mjd is None:
-            raise RuntimeError("You cannot build spatial bounds with an ObservationMetaData that "
-                               "does not have an MJD")
-
-        if self._epoch is None:
-            raise RuntimeError("You cannot build spatial bounds with an ObservationMetaData that "
-                               "does not have an epoch")
-
-        raICRS, decICRS = _icrsFromObserved(numpy.array([self._pointingRA]), numpy.array([self._pointingDec]),
-                                            obs_metadata=self, epoch=self._epoch)
-
-        if self._boundType == 'circle':
-            trueBoundLength = self._findCircularBoundLength()
-        elif self._boundType == 'box':
-            trueBoundLength = self._findRectangularBoundLength()
-        else:
-            raise RuntimeError("ObservationMetaData does not know how to "
-                               "set the BoundLength for boundType %s" % self._boundType)
-
-        self._bounds = SpatialBounds.getSpatialBounds(self._boundType, raICRS[0], decICRS[0],
-                                                      trueBoundLength)
+        self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._pointingRA, self._pointingDec,
+                                                      self._boundLength)
 
 
     def _assignPhoSimMetaData(self, metaData):
@@ -456,7 +329,8 @@ class ObservationMetaData(object):
     @property
     def pointingRA(self):
         """
-        The RA of the telescope pointing in degrees.
+        The RA of the telescope pointing in degrees
+        (in the International Celestial Reference System).
         """
         if self._pointingRA is not None:
             return numpy.degrees(self._pointingRA)
@@ -476,7 +350,8 @@ class ObservationMetaData(object):
     @property
     def pointingDec(self):
         """
-        The Dec of the telescope pointing in degrees.
+        The Dec of the telescope pointing in degrees
+        (in the International Celestial Reference System).
         """
         if self._pointingDec is not None:
             return numpy.degrees(self._pointingDec)
@@ -503,8 +378,8 @@ class ObservationMetaData(object):
         details (specifically, the 'length' paramter).
 
         In degrees (Yes: the documentation in SpatialBounds says that
-        the length should be in degrees.  The present class converts
-        from degrees to radians before passing to SpatialBounds.
+        the length should be in radians.  The present class converts
+        from degrees to radians before passing to SpatialBounds).
         """
         if self._boundLength is None:
             return None

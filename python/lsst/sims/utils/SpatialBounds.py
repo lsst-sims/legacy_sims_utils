@@ -28,6 +28,7 @@ class SpatialBoundsMetaClass(type):
 
         return super(SpatialBoundsMetaClass, cls).__init__(name,bases,dct)
 
+
 class SpatialBounds(object):
     """
     Classes inheriting from this class define spatial bounds on the objects
@@ -88,6 +89,7 @@ class SpatialBounds(object):
         else:
             raise RuntimeError("There is no SpatialBounds class keyed to %s" % name)
 
+
 class CircleBounds(SpatialBounds):
 
     boundType = 'circle'
@@ -131,6 +133,17 @@ class CircleBounds(SpatialBounds):
         self.RAdeg = np.degrees(ra)
         self.DECdeg = np.degrees(dec)
         self.radiusdeg = np.degrees(radius)
+
+
+    def __eq__(self, other):
+        return (type(self) == type(other)) and \
+               (self.RA == other.RA) and \
+               (self.DEC == other.DEC) and \
+               (self.radius == other.radius) and \
+               (self.RAdeg == other.RAdeg) and \
+               (self.DECdeg == other.DECdeg) and \
+               (self.radiusdeg == other.radiusdeg)
+
 
     def to_SQL(self, RAname, DECname):
 
@@ -222,6 +235,19 @@ class BoxBounds(SpatialBounds):
 
         self.RAminDeg %= 360.0
         self.RAmaxDeg %= 360.0
+
+
+    def __eq__(self, other):
+        return (type(self) == type(other)) and \
+               (self.RA == other.RA) and \
+               (self.RAdeg == other.RAdeg) and \
+               (self.DEC == other.DEC) and \
+               (self.DECdeg == other.DECdeg) and \
+               (self.RAminDeg == other.RAminDeg) and \
+               (self.RAmaxDeg == other.RAmaxDeg) and \
+               (self.DECminDeg == other.DECminDeg) and \
+               (self.DECmaxDeg == other.DECmaxDeg)
+
 
     def to_SQL(self, RAname, DECname):
         #KSK:  I don't know exactly what we do here.  This is in code, but operating

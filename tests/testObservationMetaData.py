@@ -6,7 +6,7 @@ import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
 from lsst.sims.utils import ObservationMetaData, ModifiedJulianDate
-from lsst.sims.utils import Site
+from lsst.sims.utils import Site, BoxBounds, CircleBounds
 
 class ObservationMetaDataTest(unittest.TestCase):
     """
@@ -294,8 +294,16 @@ class ObservationMetaDataTest(unittest.TestCase):
         """
         boxBounds = [0.1, 0.3]
         circObs = ObservationMetaData(boundType='circle', pointingRA=0.0, pointingDec=0.0, boundLength=1.0, mjd=53580.0)
+        boundControl = CircleBounds(0.0, 0.0, numpy.radians(1.0))
+        self.assertEqual(circObs.bounds, boundControl)
+
         squareObs = ObservationMetaData(boundType = 'box', pointingRA=0.0, pointingDec=0.0, boundLength=1.0, mjd=53580.0)
+        boundControl = BoxBounds(0.0, 0.0, numpy.radians(1.0))
+        self.assertEqual(squareObs.bounds, boundControl)
+
         boxObs = ObservationMetaData(boundType = 'box', pointingRA=0.0, pointingDec=0.0, boundLength=boxBounds, mjd=53580.0)
+        boundControl = BoxBounds(0.0, 0.0, numpy.radians([0.1, 0.3]))
+        self.assertEqual(boxObs.bounds, boundControl)
 
     def testBounds(self):
         """
