@@ -270,9 +270,6 @@ def _getRotSkyPos(raRad, decRad, obs, rotTelRad):
     """
     altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, obs)
 
-    #20 March 2015
-    #I do not know where this expression comes from; we should validate it against
-    #the definitions of rotTelPos and rotSkyPos
     return (rotTelRad - paRad)%(2.*np.pi)
 
 
@@ -337,9 +334,6 @@ def _getRotTelPos(raRad, decRad, obs, rotSkyRad):
     """
     altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, obs)
 
-    #20 March 2015
-    #I do not know where this expression comes from; we should validate it against
-    #the definitions of rotTelPos and rotSkyPos
     return (rotSkyRad + paRad)%(2.*np.pi)
 
 
