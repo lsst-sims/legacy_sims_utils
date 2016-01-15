@@ -136,7 +136,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
         longitude_list.append(np.radians(-22.0-33.0/60.0))
         latitude_list.append(np.radians(11.0+45.0/60.0))
-        mjd_list.append(2457368.958333-2400000.5) # 12 Decemer 2015 11:00 UTC
+        mjd_list.append(2457368.958333-2400000.5) # 12 December 2015 11:00 UTC
         alt_list.append(np.radians(40.5))
         az_list.append(np.radians(134.7))
         ra_app_list.append(17.0*hours + 16.0*minutes +51.649*seconds)
