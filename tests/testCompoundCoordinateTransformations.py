@@ -111,7 +111,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
         This site converts calendar dates into Julian Dates
 
-        http://aa.usno.navy.mil/data/docs/geocentric.php
+        http://aa.usno.navy.mil/data/docs/JulianDate.php
         """
 
         hours = np.radians(360.0/24.0)
