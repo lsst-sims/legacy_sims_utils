@@ -377,7 +377,8 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
     """
     obsMd = {}
     #Defaults
-    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad, name='LSST'))
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=np.degrees(longRad),
+                                                     latitude=np.degrees(latRad), name='LSST'))
     moonra, moondec = _raDecFromAltAz(-np.pi/2., 0., obsTemp)
     sunalt = -np.pi/2.
     moonalt = -np.pi/2.
@@ -417,7 +418,8 @@ def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.232
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
 
-    obsTemp = ObservationMetaData(mjd, site=Site(longitude=longRad, latitude=latRad, name='LSST'))
+    obsTemp = ObservationMetaData(mjd, site=Site(longitude=np.degrees(longRad), latitude=np.degrees(latRad),
+                                                 name='LSST'))
 
     raRad, decRad = _raDecFromAltAz(altRad, azRad, obsTemp)
     obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
@@ -437,7 +439,8 @@ def makeObsParamsAzAltSky(azRad, altRad, mjd, band, rotSkyRad=np.pi, longRad=-1.
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad, name='LSST'))
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=np.degrees(longRad), latitude=np.degrees(latRad),
+                                                     name='LSST'))
     raRad, decRad = _raDecFromAltAz(altRad, azRad, obsTemp)
     rotTelRad = _getRotTelPos(raRad, decRad, longRad, latRad, mjd, rotSkyRad)
     return makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
@@ -455,7 +458,8 @@ def makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=0., longRad=-1.232
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad, name='LSST'))
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=np.degrees(longRad), latitude=np.degrees(latRad),
+                                                     name='LSST'))
     altRad, azRad, paRad = altAzPaFromRaDec(raRad, decRad, obsTemp)
     obsMd = calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad, latRad)
     obsMd.update(kwargs)
@@ -474,7 +478,8 @@ def makeObsParamsRaDecSky(raRad, decRad, mjd, band, rotSkyRad=np.pi, longRad=-1.
     latRad -- Latitude of the observatory in radians Default=-0.517781017
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
-    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=longRad, latitude=latRad, name='LSST'))
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=np.degrees(longRad), latitude=np.degrees(latRad),
+                                                     name='LSST'))
     rotTelRad = _getRotTelPos(raRad, decRad, obsTemp, rotSkyRad)
     return makeObsParamsRaDecTel(raRad, decRad, mjd, band, rotTelRad=rotTelRad, longRad=longRad, latRad=latRad, **kwargs)
 

@@ -15,8 +15,8 @@ class testDegrees(unittest.TestCase):
         np.random.seed(87334)
         self.raList = np.random.random_sample(100)*2.0*np.pi
         self.decList = (np.random.random_sample(100)-0.5)*np.pi
-        self.lon = np.random.random_sample(1)[0]*2.0*np.pi
-        self.lat = (np.random.random_sample(1)[0]-0.5)*np.pi
+        self.lon = np.random.random_sample(1)[0]*360.0
+        self.lat = (np.random.random_sample(1)[0]-0.5)*180.0
 
 
     def testUnitConversion(self):
@@ -79,7 +79,7 @@ class testDegrees(unittest.TestCase):
 
     def testAltAzPaFromRaDec(self):
         mjd = 57432.7
-        obs = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat))
+        obs = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat, name='LSST'))
 
         altRad, azRad, paRad = utils._altAzPaFromRaDec(self.raList, self.decList, obs)
 
@@ -120,7 +120,7 @@ class testDegrees(unittest.TestCase):
         azList = self.raList
         altList = self.decList
         mjd = 47895.6
-        obs = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat))
+        obs = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat, name='LSST'))
 
         raRad, decRad = utils._raDecFromAltAz(altList, azList, obs)
 
@@ -154,7 +154,7 @@ class testDegrees(unittest.TestCase):
         rotTelList = np.random.random_sample(len(self.raList))*2.0*np.pi
         mjd = 56321.8
 
-        obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat))
+        obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat, name='LSST'))
 
         rotSkyRad = utils._getRotSkyPos(self.raList, self.decList,
                                         obsTemp, rotTelList)
@@ -189,7 +189,7 @@ class testDegrees(unittest.TestCase):
     def testGetRotTelPos(self):
         rotSkyList = np.random.random_sample(len(self.raList))*2.0*np.pi
         mjd=56789.3
-        obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat))
+        obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat, name='LSST'))
 
         rotTelRad = utils._getRotTelPos(self.raList, self.decList,
                                         obsTemp, rotSkyList)
@@ -213,7 +213,7 @@ class testDegrees(unittest.TestCase):
         for ra, dec, rotSky in \
         zip(self.raList, self.decList, rotSkyList):
 
-            obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat))
+            obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon, latitude=self.lat, name='LSST'))
 
             rotTelRad = utils._getRotTelPos(ra, dec, obsTemp, rotSky)
 
