@@ -96,18 +96,18 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     else:
         raObs, decObs = _observedFromICRS(raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
-    lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude)
+    lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]
     haRad = np.radians(last*15.0) - raObs
 
     if isinstance(haRad, np.ndarray):
         az, azd, azdd, \
         alt, altd, altdd, \
-        pa, pad, padd = palpy.altazVector(haRad, decObs, obs.site.latitude)
+        pa, pad, padd = palpy.altazVector(haRad, decObs, obs.site.latitude_rad)
     else:
         az, azd, azdd, \
         alt, altd, altdd, \
-        pa, pad, padd = palpy.altaz(haRad, decObs, obs.site.latitude)
+        pa, pad, padd = palpy.altaz(haRad, decObs, obs.site.latitude_rad)
 
     return alt, az, pa
 
@@ -171,11 +171,11 @@ def _raDecFromAltAz(altRad, azRad, obs):
     if azIsArray and altIsArray and len(altRad)!=len(azRad):
         raise RuntimeError('in raDecFromAltAz, length of alt numpy array does not match length of az numpy array')
 
-    lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude)
+    lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]
     sinAlt = np.sin(altRad)
-    cosLat = np.cos(obs.site.latitude)
-    sinLat = np.sin(obs.site.latitude)
+    cosLat = np.cos(obs.site.latitude_rad)
+    sinLat = np.sin(obs.site.latitude_rad)
     decObs = np.arcsin(sinLat*sinAlt+ cosLat*np.cos(altRad)*np.cos(azRad))
     costheta = (sinAlt - np.sin(decObs)*sinLat)/(np.cos(decObs)*cosLat)
     if altIsArray:
