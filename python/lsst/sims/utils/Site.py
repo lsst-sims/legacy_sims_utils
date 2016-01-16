@@ -49,26 +49,41 @@ class Site (object):
 
     on 4 January 2016
 
-    @param [in] name is the name of the observatory (set to 'LSST' to default
-    all other parameters to LSST values defined in
+    Attributes
+    ----------
+    longitude: in degrees
 
-    https://docushare.lsstcorp.org/docushare/dsweb/ImageStoreViewer/LSE-30
+    longitude_rad: longitude in radians
 
-    as accessed on 4 January 2016
+    latitude: in degrees
 
-    @param [in] longitude in degrees
+    latitude_rad: latitude in radians
 
-    @param [in] latitude in degrees
+    height: in meters
 
-    @param [in] height (in meters)
+    temperature: mean temperature in Centigrade
 
-    @param [in] temperature in centigrade
+    temperature_kelvin: mean temperature in Kelvin
 
-    @param [in] pressure in millibars
+    pressure: in millibars
 
-    @param [in] humidity range 0-1
+    humidity: relative humidity (range 0-1)
 
-    @param [in] lapseRate in Kelvin per meter
+    lapseRate: change in temperature in Kelvins per meter
+
+    name: name of the observatory.  If set to 'LSST' any unspecified
+        values will default to LSST values as defined in
+
+        https://docushare.lsstcorp.org/docushare/dsweb/ImageStoreViewer/LSE-30
+
+        i.e.
+        longitude=-70.7494 degrees
+        latitude=-30.2444 degrees
+        height=2650.0 meters
+        temperature=11.5 centigrade
+        pressure=750.0 millibars
+        humidity=0.4
+        lapseRate=0.0065in Kelvin per meter
     """
 
     def __init__(self,
@@ -80,6 +95,34 @@ class Site (object):
                  pressure=None,
                  humidity=None,
                  lapseRate=None):
+        """
+        Parameters
+        ----------
+        name: a string denoting the name of the observator.  Set to 'LSST'
+            for other parameters to default to LSST values.
+
+            i.e.
+            longitude=-70.7494 degrees
+            latitude=-30.2444 degrees
+            height=2650.0 meters
+            temperature=11.5 centigrade
+            pressure=750.0 millibars
+            humidity=0.4
+            lapseRate=0.0065in Kelvin per meter
+            longitude: in degrees
+
+        latitude: in degrees
+
+        height: in meters
+
+        temperature: in Centigrade
+
+        pressure: in millibars
+
+        humidity: relative (range 0-1)
+
+        lapseRate: in Kelvin per meter
+        """
 
         default_params = None
         self._name = name
