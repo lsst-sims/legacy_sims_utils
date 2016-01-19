@@ -1,3 +1,4 @@
+import os
 import re
 
 __all__ = ["SpecMap", "defaultSpecMap"]
@@ -23,9 +24,9 @@ class SpecMap(object):
             return self.D[item]
         for key, val in sorted(self.subdir_map.iteritems()):
             if re.match(key, item):
-                if item[-3:] == '.gz':
-                    return '{0}/{1}'.format(val, item)
-                return '{0}/{1}.gz'.format(val, item)
+                full_name = item if item.endswith('.gz') else item + '.gz'
+                return os.path.join(val, full_name)
+
         raise KeyError("No path found for spectrum name: %s"%(item))
 
     def has_key(self, item):
