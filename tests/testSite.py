@@ -1,5 +1,7 @@
+from __future__ import with_statement
 import numpy as np
 import unittest
+import warnings
 import lsst.utils.tests as utilsTests
 
 from lsst.sims.utils import Site
@@ -39,7 +41,19 @@ class SiteTest(unittest.TestCase):
         """
         Test that, if name is not 'LSST', values are set to None
         """
-        site = Site(name='bob')
+        with warnings.catch_warnings(record=True) as ww:
+            site = Site(name='bob')
+
+        msg = str(ww[0].message)
+
+        self.assertIn('longitude', msg)
+        self.assertIn('latitude', msg)
+        self.assertIn('temperature', msg)
+        self.assertIn('pressure', msg)
+        self.assertIn('height', msg)
+        self.assertIn('lapseRate', msg)
+        self.assertIn('humidity', msg)
+
         self.assertEqual(site.name, 'bob')
         self.assertIsNone(site.longitude)
         self.assertIsNone(site.longitude_rad)
@@ -153,7 +167,18 @@ class SiteTest(unittest.TestCase):
         """
         test that unspecified parameters get set to None
         """
-        site = Site(longitude=45.0, temperature=20.0)
+        with warnings.catch_warnings(record=True) as ww:
+            site = Site(longitude=45.0, temperature=20.0)
+
+        msg = str(ww[0].message)
+        self.assertIn('latitude', msg)
+        self.assertIn('height', msg)
+        self.assertIn('pressure', msg)
+        self.assertIn('lapseRate', msg)
+        self.assertIn('humidity', msg)
+        self.assertNotIn('longitue', msg)
+        self.assertNotIn('temperature', msg)
+
         self.assertIsNone(site.name)
         self.assertIsNone(site.latitude)
         self.assertIsNone(site.latitude_rad)

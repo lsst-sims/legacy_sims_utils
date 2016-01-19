@@ -10,6 +10,7 @@
 """
 
 import numpy as np
+import warnings
 
 __all__ = ["Site"]
 
@@ -176,6 +177,54 @@ class Site (object):
         self._temperature_centigrade = temperature
         self._humidity = humidity
         self._lapseRate = lapseRate
+
+        # Go through all the attributes of this Site.
+        # Raise a warning if any are None so that the user
+        # is not surprised when some use of this Site fails
+        # because something that should have beena a float
+        # is NoneType
+        list_of_nones = []
+        if self.longitude is None or self.longitude_rad is None:
+            if self.longitude_rad is not None:
+                raise RuntimeError("in Site: longitude is None but longitude_rad is not")
+            if self.longitude is not None:
+                raise RuntimeError("in Site: longitude_rad is None but longitude is not")
+            list_of_nones.append('longitude')
+
+        if self.latitude is None or self.latitude_rad is None:
+            if self.latitude_rad is not None:
+                raise RuntimeError("in Site: latitude is None but latitude_rad is not")
+            if self.latitude is not None:
+                raise RuntimeError("in Site: latitude_rad is None but latitude is not")
+            list_of_nones.append('latitude')
+
+        if self.temperature is None or self.temperature_kelvin is None:
+            if self.temperature is not None:
+                raise RuntimeError("in Site: temperature_kelvin is None but temperature is not")
+            if self.temperature_kelvin is not None:
+                raise RuntimeError("in Site: temperature is None but temperature_kelvin is not")
+            list_of_nones.append('temperature')
+
+        if self.height is None:
+            list_of_nones.append('height')
+
+        if self.pressure is None:
+            list_of_nones.append('pressure')
+
+        if self.humidity is None:
+            list_of_nones.append('humidity')
+
+        if self.lapseRate is None:
+            list_of_nones.append('lapseRate')
+
+
+        if len(list_of_nones)!=0:
+            msg = "The following attributes of your Site were None:\n"
+            for name in list_of_nones:
+                msg += "%s\n" % name
+            msg += "If you want these to just default to LSST values,\n"
+            msg += "instantiate your Site with name='LSST'"
+            warnings.warn(msg)
 
 
     @property
