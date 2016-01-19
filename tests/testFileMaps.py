@@ -9,7 +9,7 @@ class FileMapTest(unittest.TestCase):
 
     def verifyFile(self, file_name, dir_name):
         """
-        Verify that specMape[file_name] results in a file in dir dir_name
+        Verify that specMap[file_name] results in os.path.join(dir_name, file_name+'.gz')
         """
         test_name = defaultSpecMap[file_name]
         control_name = os.path.join(dir_name, file_name+'.gz')
