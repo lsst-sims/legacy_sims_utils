@@ -39,7 +39,9 @@ def sample_obsmetadata(obsmetadata, size=1, seed=1):
 def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     """
     Uniformly distributes samples on a patch on a sphere between phi \pm delta,
-    and theta \pm delta on a sphere. Here, the coordinate system is the usual
+    and theta \pm delta on a sphere. Uniform distribution implies that the
+    number of points in a patch of sphere is proportional to the area of the
+    patch. Here, the coordinate system is the usual
     spherical coordinate system but with the azimuthal angle theta going from
     pi/2.0 at the North Pole, to - pi/2.0 at the South Pole, through 0. at the
     equator. This function does not work at the poles. The region must not go
