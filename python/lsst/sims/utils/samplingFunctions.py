@@ -75,7 +75,7 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     thetamax = theta + delta
     thetamin = theta - delta
 
-    # CDF is cos(thetamin) - cos(theta) / cos(thetamin) - cos(thetamax)
+    # Cumulative Density Function is cos(thetamin) - cos(theta) / cos(thetamin) - cos(thetamax)
     a = np.cos(thetamin) - np.cos(thetamax)
     thetavals = np.arccos(-v * a + np.cos(thetamin))
 
