@@ -124,11 +124,11 @@ def refractionCoefficients(wavelength=0.5, site=None):
     #TODO the latitude in refco needs to be astronomical latitude,
     #not geodetic latitude
     _refcoOutput=palpy.refco(site.height,
-                        site.meanTemperature,
-                        site.meanPressure,
-                        site.meanHumidity,
+                        site.temperature_kelvin,
+                        site.pressure,
+                        site.humidity,
                         wavelength ,
-                        site.latitude,
+                        site.latitude_rad,
                         site.lapseRate,
                         precision)
 
@@ -662,14 +662,16 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
 
     # Correct site longitude for polar motion slaPolmo
     #
-    #17 October 2014
+    # 5 January 2016
     #  palAop.c (which calls Aoppa and Aopqk, as we do here) says
     #  *     - The azimuths etc produced by the present routine are with
     #  *       respect to the celestial pole.  Corrections to the terrestrial
     #  *       pole can be computed using palPolmo.
     #
-    #currently, palPolmo is not implemented in PAL
-    #I have filed an issue with the PAL team to change that.
+    # As a future issue, we should figure out how to incorporate polar motion
+    # into these calculations.  For now, we will set polar motion to zero.
+    xPolar = 0.0
+    yPolar = 0.0
 
     #
     #palpy.aoppa computes star-independent parameters necessary for
@@ -682,25 +684,25 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
     #how to actually calculate that.
     if (includeRefraction == True):
         obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
-                          obs_metadata.site.longitude,
-                          obs_metadata.site.latitude,
+                          obs_metadata.site.longitude_rad,
+                          obs_metadata.site.latitude_rad,
                           obs_metadata.site.height,
-                          obs_metadata.site.xPolar,
-                          obs_metadata.site.yPolar,
-                          obs_metadata.site.meanTemperature,
-                          obs_metadata.site.meanPressure,
-                          obs_metadata.site.meanHumidity,
+                          xPolar,
+                          yPolar,
+                          obs_metadata.site.temperature_kelvin,
+                          obs_metadata.site.pressure,
+                          obs_metadata.site.humidity,
                           wavelength ,
                           obs_metadata.site.lapseRate)
     else:
         #we can discard refraction by setting pressure and humidity to zero
         obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
-                          obs_metadata.site.longitude,
-                          obs_metadata.site.latitude,
+                          obs_metadata.site.longitude_rad,
+                          obs_metadata.site.latitude_rad,
                           obs_metadata.site.height,
-                          obs_metadata.site.xPolar,
-                          obs_metadata.site.yPolar,
-                          obs_metadata.site.meanTemperature,
+                          xPolar,
+                          yPolar,
+                          obs_metadata.site.temperature,
                           0.0,
                           0.0,
                           wavelength ,
@@ -779,7 +781,7 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
         #
         #palpy.de2h converts equatorial to horizon coordinates
         #
-        az, alt = palpy.de2hVector(hourAngle,decOut,obs_metadata.site.latitude)
+        az, alt = palpy.de2hVector(hourAngle, decOut, obs_metadata.site.latitude_rad)
         return numpy.array([raOut, decOut]), numpy.array([alt, az])
     return numpy.array([raOut, decOut])
 

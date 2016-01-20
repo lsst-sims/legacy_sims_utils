@@ -175,7 +175,7 @@ class NativeLonLatTest(unittest.TestCase):
 
         for rrp, thetap, mjd in \
         zip(rrPointingList, thetaPointingList, mjdList):
-            site = Site()
+            site = Site(name='LSST')
             raZenith, decZenith = raDecFromAltAz(180.0, 0.0,
                                                  ObservationMetaData(mjd=mjd, site=site))
 

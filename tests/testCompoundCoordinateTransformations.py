@@ -28,7 +28,8 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
 
     see: http://www.stargazing.net/kepler/altaz.html#twig04
     """
-    obs = utils.ObservationMetaData(mjd=utils.ModifiedJulianDate(UTC=mjd), site=utils.Site(longitude=longRad, latitude=latRad))
+    obs = utils.ObservationMetaData(mjd=utils.ModifiedJulianDate(UTC=mjd),
+              site=utils.Site(longitude=np.degrees(longRad), latitude=np.degrees(latRad), name='LSST'))
 
     if hasattr(raRad_in, '__len__'):
         raRad, decRad = utils._observedFromICRS(raRad_in, decRad_in, obs_metadata=obs,
@@ -162,8 +163,8 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
             zip(longitude_list, latitude_list, mjd_list, alt_list, az_list,
                 ra_app_list, dec_app_list):
 
-            obs = utils.ObservationMetaData(site=utils.Site(longitude=longitude,
-                                                            latitude=latitude),
+            obs = utils.ObservationMetaData(site=utils.Site(longitude=np.degrees(longitude),
+                                                            latitude=np.degrees(latitude), name='LSST'),
                                             mjd=utils.ModifiedJulianDate(UTC=mjd))
 
 
@@ -200,7 +201,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         for lon in (0.0, 90.0, 135.0):
             for lat in (60.0, 30.0, -60.0, -30.0):
 
-                obs = utils.ObservationMetaData(mjd=mjd, site=utils.Site(longitude=np.radians(lon), latitude=np.radians(lat)))
+                obs = utils.ObservationMetaData(mjd=mjd, site=utils.Site(longitude=lon, latitude=lat, name='LSST'))
 
                 ra_in, dec_in = utils.raDecFromAltAz(alt_in, az_in, obs)
 
@@ -226,14 +227,14 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         nSamples = 100
         ra = np.random.sample(nSamples)*2.0*np.pi
         dec = (np.random.sample(nSamples)-0.5)*np.pi
-        longitude = 1.467
-        latitude = -0.234
+        lon_rad = 1.467
+        lat_rad = -0.234
         controlAlt, controlAz = controlAltAzFromRaDec(ra, dec, \
-                                                    longitude, latitude, \
-                                                    self.mjd)
+                                                     lon_rad, lat_rad, \
+                                                     self.mjd)
 
         obs = utils.ObservationMetaData(mjd=utils.ModifiedJulianDate(UTC=self.mjd),
-                                        site=utils.Site(longitude=longitude, latitude=latitude))
+                                        site=utils.Site(longitude=np.degrees(lon_rad), latitude=np.degrees(lat_rad), name='LSST'))
 
         #verify parallactic angle against an expression from
         #http://www.astro.washington.edu/groups/APO/Mirror.Motions/Feb.2000.Image.Jumps/report.html#Image%20motion%20directions
@@ -241,9 +242,9 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         ra_obs, dec_obs = utils._observedFromICRS(ra, dec, obs_metadata=obs, epoch=2000.0,
                                                   includeRefraction=True)
 
-        lmst, last = utils.calcLmstLast(self.mjd, longitude)
+        lmst, last = utils.calcLmstLast(self.mjd, lon_rad)
         hourAngle = np.radians(last*15.0) - ra_obs
-        controlSinPa = np.sin(hourAngle)*np.cos(latitude)/np.cos(controlAlt)
+        controlSinPa = np.sin(hourAngle)*np.cos(lat_rad)/np.cos(controlAlt)
 
         testAlt, testAz, testPa = utils._altAzPaFromRaDec(ra, dec, obs)
 
@@ -253,13 +254,13 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
         #test non-vectorized version
         for r,d in zip(ra, dec):
-            controlAlt, controlAz = controlAltAzFromRaDec(r, d, longitude, latitude, self.mjd)
+            controlAlt, controlAz = controlAltAzFromRaDec(r, d, lon_rad, lat_rad, self.mjd)
             testAlt, testAz, testPa = utils._altAzPaFromRaDec(r, d, obs)
-            lmst, last = utils.calcLmstLast(self.mjd, longitude)
+            lmst, last = utils.calcLmstLast(self.mjd, lon_rad)
             r_obs, dec_obs = utils._observedFromICRS(np.array([r]), np.array([d]), obs_metadata=obs,
                                                      epoch=2000.0, includeRefraction=True)
             hourAngle = np.radians(last*15.0) - r_obs[0]
-            controlSinPa = np.sin(hourAngle)*np.cos(latitude)/np.cos(controlAlt)
+            controlSinPa = np.sin(hourAngle)*np.cos(lat_rad)/np.cos(controlAlt)
             self.assertLess(np.abs(testAz - controlAz), self.tolerance)
             self.assertLess(np.abs(testAlt - controlAlt), self.tolerance)
             self.assertLess(np.abs(np.sin(testPa) - controlSinPa), self.tolerance)

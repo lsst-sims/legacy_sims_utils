@@ -45,17 +45,14 @@ def makeObservationMetaData():
     alt = numpy.pi/2.0
     az = 0.0
     band = 'r'
-    testSite = Site(latitude=0.5, longitude=1.1, height=3000, meanTemperature=260.0,
-                    meanPressure=725.0, lapseRate=0.005)
-
+    testSite = Site(latitude=numpy.degrees(0.5), longitude=numpy.degrees(1.1), height=3000,
+                    temperature=260.0, pressure=725.0, lapseRate=0.005, humidity=0.4)
     obsTemp = ObservationMetaData(site=testSite, mjd=mjd)
-
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
-
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
 
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
-                 testSite.longitude, testSite.latitude)
+                 testSite.longitude_rad, testSite.latitude_rad)
 
     obsDict['Opsim_expmjd'] = mjd
     radius = 0.1
@@ -64,6 +61,8 @@ def makeObservationMetaData():
 
     obs_metadata = ObservationMetaData(boundType='circle', boundLength=2.0*radius,
                                        phoSimMetaData=phoSimMetaData, site=testSite)
+
+
 
     return obs_metadata
 
@@ -111,10 +110,20 @@ class astrometryUnitTest(unittest.TestCase):
         self.metadata['pointingDec'] = (numpy.radians(-30.0), float)
         self.metadata['Opsim_rotskypos'] = (1.0, float)
 
+        # these were the LSST site parameters as coded when this unit test was written
+        self.test_site=Site(longitude=numpy.degrees(-1.2320792),
+                            latitude=numpy.degrees(-0.517781017),
+                            height=2650.0,
+                            temperature=11.505,
+                            pressure=749.3,
+                            lapseRate=0.0065,
+                            humidity=0.4)
+
         self.obs_metadata=ObservationMetaData(mjd=50984.371741,
                                      boundType='circle',
                                      boundLength=0.05,
-                                     phoSimMetaData=self.metadata)
+                                     phoSimMetaData=self.metadata,
+                                     site=self.test_site)
 
         self.tol=1.0e-5
 
@@ -378,14 +387,14 @@ class astrometryUnitTest(unittest.TestCase):
         #test without mjd
         dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
                                   pointingDec=obs_metadata.pointingDec,
-                                  site=Site())
+                                  site=Site(name='LSST'))
         self.assertRaises(RuntimeError, _observedFromAppGeo, ra, dec, obs_metadata=dummy)
 
         #test mismatches
         dummy=ObservationMetaData(pointingRA=obs_metadata.pointingRA,
                                   pointingDec=obs_metadata.pointingDec,
                                   mjd=obs_metadata.mjd,
-                                  site=Site())
+                                  site=Site(name='LSST'))
 
         self.assertRaises(RuntimeError, _observedFromAppGeo, ra, decShort, obs_metadata=dummy)
         self.assertRaises(RuntimeError, _observedFromAppGeo, raShort, dec, obs_metadata=dummy)
@@ -695,7 +704,7 @@ class astrometryUnitTest(unittest.TestCase):
 
         mjd2000 = pal.epb(2000.0) # convert epoch to mjd
 
-        site = Site()
+        site = Site(name='LSST')
 
         for mjd in (53000.0, 53241.6, 58504.6):
             for includeRefraction in (True, False):
@@ -782,7 +791,7 @@ class astrometryUnitTest(unittest.TestCase):
         Test that _appGeoFromObserved really does invert _observedFromAppGeo
         """
         mjd = 58350.0
-        site = Site(longitude=0.235, latitude=-1.2)
+        site = Site(longitude=numpy.degrees(0.235), latitude=numpy.degrees(-1.2), name='LSST')
         raCenter, decCenter = raDecFromAltAz(90.0, 0.0,
                                              ObservationMetaData(mjd=mjd, site=site))
 
