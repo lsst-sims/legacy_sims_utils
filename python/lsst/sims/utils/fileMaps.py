@@ -1,3 +1,4 @@
+import os
 import re
 
 __all__ = ["SpecMap", "defaultSpecMap"]
@@ -5,7 +6,8 @@ __all__ = ["SpecMap", "defaultSpecMap"]
 class SpecMap(object):
     subdir_map = {'(^km)|(^kp)':'starSED/kurucz',
                   '(^bergeron)':'starSED/wDs',
-                  '(^burrows)|(^(m|L|l)[0-9])':'starSED/mlt',
+                  '(^burrows)|(^(m|L|l)[0-9])':'starSED/old_mlt',
+                  '(^lte)':'starSED/mlt',
                   '^(Exp|Inst|Burst|Const)':'galaxySED'}
     def __init__(self, D=None):
         if D:
@@ -17,12 +19,14 @@ class SpecMap(object):
         self.D[key] = val
 
     def __getitem__(self, item):
-        item = item.rstrip()
+        item = item.strip()
         if self.D.has_key(item):
             return self.D[item]
         for key, val in sorted(self.subdir_map.iteritems()):
             if re.match(key, item):
-                return '{0}/{1}.gz'.format(val, item)
+                full_name = item if item.endswith('.gz') else item + '.gz'
+                return os.path.join(val, full_name)
+
         raise KeyError("No path found for spectrum name: %s"%(item))
 
     def has_key(self, item):
