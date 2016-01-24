@@ -21,19 +21,19 @@ def sample_obsmetadata(obsmetadata, size=1, seed=1):
         Random Seed used in generating random values 
     Returns
     -------
-    tuple of ravals, decvalues
+    tuple of ravals, decvalues in radians
     """
 
     mydict = obsmetadata.summary
-    phi = np.radians(mydict['pointingRA'])
-    theta = np.radians(mydict['pointingDec'])
-    equalrange = np.radians(mydict['boundLength'])
+    phi = mydict['pointingRA']
+    theta = mydict['pointingDec']
+    equalrange = mydict['boundLength']
     ravals, thetavals = samplePatchOnSphere(phi=phi,
 					    theta=theta,
 					    delta=equalrange,
 					    size=size,
                                             seed=seed)
-    return ravals, thetavals
+    return np.radians(ravals), np.radians(thetavals)
 
 
 def samplePatchOnSphere(phi, theta, delta, size, seed=1):
@@ -43,16 +43,18 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     number of points in a patch of sphere is proportional to the area of the
     patch. Here, the coordinate system is the usual
     spherical coordinate system but with the azimuthal angle theta going from
-    pi/2.0 at the North Pole, to - pi/2.0 at the South Pole, through 0. at the
-    equator. This function does not work at the poles. The region must not go
-    outside the range of theta due to delta.
+    90 degrees at the North Pole, to -90 degrees at the South Pole, through
+    0. at the equator. 
+    
+    This function is not equipped to handle wrap-around the ranges of theta
+    phi and therefore does not work at the poles.
  
     Parameters
     ----------
-    phi: float, mandatory, radians
+    phi: float, mandatory, degrees
 	center of the spherical patch in ra with range 
-    theta: float, mandatory, radians
-    delta: float, mandatory, radians
+    theta: float, mandatory, degrees
+    delta: float, mandatory, degrees
     size: int, mandatory
         number of samples
     seed : int, optional, defaults to 1
@@ -60,11 +62,15 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     Returns
     -------
     tuple of (phivals, thetavals) where phivals and thetavals are arrays of 
-        size size.
+        size size in degrees.
     """
     np.random.seed(seed)
     u = np.random.uniform(size=size)
     v = np.random.uniform(size=size)
+
+    phi = np.radians(phi)
+    theta = np.radians(theta)
+    delta = np.radians(delta)
 
     phivals = 2. * delta* u + (phi - delta)
     phivals = np.where ( phivals >= 0., phivals, phivals + 2. * np.pi)
@@ -81,4 +87,4 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
 
     # Get back to -pi/2 to pi/2 range of decs
     thetavals = np.pi/2.0 - thetavals 
-    return phivals, thetavals
+    return np.degrees(phivals) , np.degrees(thetavals)
