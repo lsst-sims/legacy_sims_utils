@@ -23,9 +23,9 @@ class SamplingTests(unittest.TestCase):
         ObsMetaData = cls.obsMetaDataforCat
         cls.samples = sample_obsmetadata(ObsMetaData, size=1000)
 
-        cls.theta_c = np.radians(-60.)
-        cls.phi_c = np.radians(30.)
-        cls.delta = np.radians(30.)
+        cls.theta_c = -60.
+        cls.phi_c = 30.
+        cls.delta = 30.
         cls.size = 1000000
 
         cls.dense_samples = samplePatchOnSphere(phi=cls.phi_c, theta=cls.theta_c,
@@ -39,7 +39,7 @@ class SamplingTests(unittest.TestCase):
     def test_checkWithinBounds(self):
 
 
-        delta = self.obsMetaDataforCat.summary['boundLength']
+        delta = self.obsMetaDataforCat.boundLength
         #delta = np.radians(delta)
         minPhi = 0.13 - delta
         maxPhi = 0.13 + delta

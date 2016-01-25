@@ -24,10 +24,13 @@ def sample_obsmetadata(obsmetadata, size=1, seed=1):
     tuple of ravals, decvalues in radians
     """
 
-    mydict = obsmetadata.summary
-    phi = mydict['pointingRA']
-    theta = mydict['pointingDec']
-    equalrange = mydict['boundLength']
+    # mydict = obsmetadata.summary
+    phi = obsmetadata.pointingRA
+    # phi = mydict['pointingRA']
+    # theta = mydict['pointingDec']
+    theta = obsmetadata.pointingDec
+    #equalrange = mydict['boundLength']
+    equalrange = obsmetadata.boundLength
     ravals, thetavals = samplePatchOnSphere(phi=phi,
 					    theta=theta,
 					    delta=equalrange,
