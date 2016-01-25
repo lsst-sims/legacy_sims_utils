@@ -4,23 +4,25 @@ import re
 __all__ = ["SpecMap", "defaultSpecMap"]
 
 class SpecMap(object):
+
     subdir_map = {'(^km)|(^kp)':'starSED/kurucz',
                   '(^bergeron)':'starSED/wDs',
                   '(^burrows)|(^(m|L|l)[0-9])':'starSED/old_mlt',
                   '(^lte)':'starSED/mlt',
                   '^(Exp|Inst|Burst|Const)':'galaxySED'}
-    def __init__(self, D=None):
-        if D:
-            self.D = D
+
+    def __init__(self, fileDict=None):
+        if fileDict:
+            self.fileDict = fileDict
         else:
-            self.D = {}
+            self.fileDict = {}
 
     def __setitem__(self, key, val):
-        self.D[key] = val
+        self.fileDict[key] = val
 
     def __getitem__(self, item):
         item = item.strip()
-        if self.D.has_key(item):
+        if self.fileDict.has_key(item):
             return self.D[item]
         for key, val in sorted(self.subdir_map.iteritems()):
             if re.match(key, item):
@@ -44,7 +46,7 @@ class SpecMap(object):
             return False
 
 defaultSpecMap = SpecMap(
-    {'A.dat':'ssmSED/A.dat.gz',
+    fileDict = {'A.dat':'ssmSED/A.dat.gz',
      'Sa.dat':'ssmSED/Sa.dat.gz',
      'O.dat':'ssmSED/O.dat.gz',
      'harris_V.dat':'ssmSED/harris_V.dat.gz',
