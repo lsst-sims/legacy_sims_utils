@@ -33,9 +33,8 @@ class SamplingTests(unittest.TestCase):
                                                 seed=42)
        
 
-    def setUp(self):
+    def test_raiseWraparoundError(self):
         pass
-
     def test_checkWithinBounds(self):
 
 
@@ -56,8 +55,12 @@ class SamplingTests(unittest.TestCase):
 
         A = lambda theta_min, theta_max: np.sin(theta_max) - np.sin(theta_min)
 
-        theta_min = self.theta_c - self.delta
-        theta_max = self.theta_c + self.delta
+
+        theta_c = np.radians(self.theta_c)
+        delta = np.radians(self.delta)
+
+        theta_min = theta_c - delta
+        theta_max = theta_c + delta
         tvals = np.arange(theta_min, theta_max, 0.001) 
         tvalsShifted = np.zeros(len(tvals))
         tvalsShifted[:-1] = tvals[1:]
@@ -68,11 +71,13 @@ class SamplingTests(unittest.TestCase):
         assert binsize.size == 1
         normval = np.sum(area) * binsize[0]
 
-        resids = area[:-2] / normval - np.histogram(self.dense_samples[1],
-                                                    bins=tvals[:-1],
-                                                    normed=True)[0]
 
-        assert all(resids < 0.3)
+        theta_samps = np.radians(self.dense_samples[1])
+        binnedvals = np.histogram(theta_samps, bins=tvals[:-1], normed=True)[0]
+        resids = area[:-2] / normval - binnedvals
+
+        fiveSigma = np.sqrt(binnedvals) * 5.0
+        assert all(resids < fiveSigma)
         
 
 

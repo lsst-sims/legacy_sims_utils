@@ -29,7 +29,7 @@ def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
     theta = obsmetadata.pointingDec
         
     if obsmetadata.boundType != 'box':
-        warnings.warn('sampling obsmetata with provided boundLen and'
+        warnings.warn('Warning: sampling obsmetata with provided boundLen and'
                       'boundType="box", despite diff boundType specified\n') 
     equalrange = obsmetadata.boundLength
     ravals, thetavals = samplePatchOnSphere(phi=phi,
@@ -76,7 +76,7 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     theta = np.radians(theta)
     delta = np.radians(delta)
 
-    phivals = 2. * delta* u + (phi - delta)
+    phivals = 2. * delta * u + (phi - delta)
     phivals = np.where ( phivals >= 0., phivals, phivals + 2. * np.pi)
     
     # use conventions in spherical coordinates
@@ -84,6 +84,9 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
  
     thetamax = theta + delta
     thetamin = theta - delta
+
+    if thetamax > np.pi or thetamin < 0. :
+        raise ValueError('Function not implemented to cover wrap around poles')
 
     # Cumulative Density Function is cos(thetamin) - cos(theta) / cos(thetamin) - cos(thetamax)
     a = np.cos(thetamin) - np.cos(thetamax)
