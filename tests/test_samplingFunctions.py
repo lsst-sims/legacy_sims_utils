@@ -1,3 +1,15 @@
+"""
+Tests for sims.utils.samplingFunctions.py 
+
+1.  test_raiseWraparoundError: The `samplePatchOnSphere` function  does not
+ wrap around theta values near the pole. Check if the approporiate error is
+ by such a call
+2. test_checkWithinBounds : Check that the samples are indeed within the bounds
+prescribed by ObsMetaData
+3. test_samplePatchOnSphere : Check functionality by showing that binning up in
+    dec results in numbers in dec bins changing with area.
+ """
+
 import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
@@ -34,7 +46,20 @@ class SamplingTests(unittest.TestCase):
        
 
     def test_raiseWraparoundError(self):
-        pass
+        """
+        Test that appropriate errors are raised when at the poles
+        """
+        # thetamax to be exceeded
+        deltamax = np.abs(self.theta_c - 0.05)
+        # to be lower than thetamin 
+        deltamin = 2.67
+        with self.assertRaises(ValueError):
+            samplePatchOnSphere(phi=self.phi_c, theta=self.theta_c,
+                                delta=deltamax, size=self.size, seed=42)
+            samplePatchOnSphere(phi=self.phi_c, theta=self.theta_c,
+                                delta=deltamin, size=self.size, seed=42)
+
+
     def test_checkWithinBounds(self):
 
 
