@@ -30,6 +30,8 @@ class SpecMap(object):
         beginning with 'bergeron' to files with the same names in the
         directory starSED/wDs
 
+        These dicts will take precedence over the subdir_map that is defined
+        as a class member variable of the SpecMap class.
         """
         if fileDict:
             self.fileDict = fileDict
