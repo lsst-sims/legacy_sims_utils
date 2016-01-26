@@ -11,19 +11,52 @@ class SpecMap(object):
                   '(^lte)':'starSED/mlt',
                   '^(Exp|Inst|Burst|Const)':'galaxySED'}
 
-    def __init__(self, fileDict=None):
+    def __init__(self, fileDict=None, dirDict=None):
+        """
+        @param [in] fileDict is a dict mapping the names of files to their
+        relative paths, one-to-one, e.g.
+
+            fileDict = {'A.dat':'ssmSED/A.dat.gz',
+                        'Sa.dat':'ssmSED/Sa.dat.gz'}
+
+        @param [in] dirDict is a dict mapping forms of names of file to their
+        sub directories using regular expressions, e.g.
+
+            dirDict = {'(^km)|(^kp)':'starSED/kurucz',
+                       '(^bergeron)':'starSED/wDs'}
+
+        which maps files begining in either 'km' or 'kp' to files with
+        the same names in the directory starSED/kurucz and maps files
+        beginning with 'bergeron' to files with the same names in the
+        directory starSED/wDs
+
+        """
         if fileDict:
             self.fileDict = fileDict
         else:
             self.fileDict = {}
 
+        if dirDict:
+            self.dirDict = dirDict
+        else:
+            self.dirDict = {}
+
+
     def __setitem__(self, key, val):
         self.fileDict[key] = val
 
     def __getitem__(self, item):
+
         item = item.strip()
+
         if self.fileDict.has_key(item):
-            return self.D[item]
+            return self.fileDict[item]
+
+        for key, val in sorted(self.dirDict.iteritems()):
+            if re.match(key, item):
+                full_name = item if item.endswith('.gz') else item + '.gz'
+                return os.path.join(val, full_name)
+
         for key, val in sorted(self.subdir_map.iteritems()):
             if re.match(key, item):
                 full_name = item if item.endswith('.gz') else item + '.gz'
