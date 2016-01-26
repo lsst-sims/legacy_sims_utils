@@ -5,7 +5,7 @@ import lsst.utils.tests as utilsTests
 
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import samplePatchOnSphere
-from lsst.sims.utils import sample_obsmetadata
+from lsst.sims.utils import spatiallySample_obsmetadata
 from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 
 class SamplingTests(unittest.TestCase):
@@ -21,7 +21,7 @@ class SamplingTests(unittest.TestCase):
                                           bandpassName=['r'],
 					  mjd=49350.)
         ObsMetaData = cls.obsMetaDataforCat
-        cls.samples = sample_obsmetadata(ObsMetaData, size=1000)
+        cls.samples = spatiallySample_obsmetadata(ObsMetaData, size=1000)
 
         cls.theta_c = -60.
         cls.phi_c = 30.

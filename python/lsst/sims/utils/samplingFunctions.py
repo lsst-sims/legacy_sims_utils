@@ -1,9 +1,9 @@
 import numpy as np
 from lsst.sims.utils import ObservationMetaData
 
-__all__ = ['sample_obsmetadata', 'samplePatchOnSphere']
+__all__ = ['spatiallySample_obsmetadata', 'samplePatchOnSphere']
 
-def sample_obsmetadata(obsmetadata, size=1, seed=1):
+def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
     """
     Sample a square patch on the sphere overlapping obsmetadata
     field of view by picking the area enclosed in
@@ -24,12 +24,9 @@ def sample_obsmetadata(obsmetadata, size=1, seed=1):
     tuple of ravals, decvalues in radians
     """
 
-    # mydict = obsmetadata.summary
     phi = obsmetadata.pointingRA
-    # phi = mydict['pointingRA']
-    # theta = mydict['pointingDec']
     theta = obsmetadata.pointingDec
-    #equalrange = mydict['boundLength']
+        
     equalrange = obsmetadata.boundLength
     ravals, thetavals = samplePatchOnSphere(phi=phi,
 					    theta=theta,
