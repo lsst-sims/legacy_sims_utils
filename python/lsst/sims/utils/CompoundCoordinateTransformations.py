@@ -419,7 +419,7 @@ def makeObsParamsAzAltTel(azRad, altRad, mjd, band, rotTelRad=0., longRad=-1.232
     **kwargs -- The kwargs will be put in the returned dictionary overriding the default value if it exists
     '''
 
-    obsTemp = ObservationMetaData(mjd, site=Site(longitude=np.degrees(longRad), latitude=np.degrees(latRad),
+    obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=np.degrees(longRad), latitude=np.degrees(latRad),
                                                  name='LSST'))
 
     raRad, decRad = _raDecFromAltAz(altRad, azRad, obsTemp)
