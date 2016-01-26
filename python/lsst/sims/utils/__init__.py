@@ -8,3 +8,4 @@ from .CompoundCoordinateTransformations import *
 from .FocalPlaneUtils import *
 from .WcsUtils import *
 from .fileMaps import *
+from .samplingFunctions import *
