@@ -70,10 +70,10 @@ class SamplingTests(unittest.TestCase):
         minTheta =  -1.2 - delta
         maxTheta = -1.2  + delta
 
-        assert all(self.samples[0] <= maxPhi)
-        assert all(self.samples[0] >= minPhi)
-        assert all(self.samples[1] >= minTheta)
-        assert all(self.samples[1] <= maxTheta)
+        assert all(np.radians(self.samples[0]) <= maxPhi)
+        assert all(np.radians(self.samples[0]) >= minPhi)
+        assert all(np.radians(self.samples[1]) >= minTheta)
+        assert all(np.radians(self.samples[1]) <= maxTheta)
 
     def test_samplePatchOnSphere(self):
         

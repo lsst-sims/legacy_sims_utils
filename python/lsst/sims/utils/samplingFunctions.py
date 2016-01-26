@@ -37,7 +37,7 @@ def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
 					    delta=equalrange,
 					    size=size,
                                             seed=seed)
-    return np.radians(ravals), np.radians(thetavals)
+    return ravals, thetavals
 
 
 def samplePatchOnSphere(phi, theta, delta, size, seed=1):
@@ -85,11 +85,7 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     thetamax = theta + delta
     thetamin = theta - delta
 
-    print theta, delta, thetamax, thetamin
-
-
     if thetamax > np.pi or thetamin < 0. :
-        print 'did not come'
         raise ValueError('Function not implemented to cover wrap around poles')
 
     # Cumulative Density Function is cos(thetamin) - cos(theta) / cos(thetamin) - cos(thetamax)
