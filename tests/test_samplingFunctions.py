@@ -18,7 +18,6 @@ import lsst.utils.tests as utilsTests
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import samplePatchOnSphere
 from lsst.sims.utils import spatiallySample_obsmetadata
-from lsst.sims.catUtils.utils import ObservationMetaDataGenerator
 
 class SamplingTests(unittest.TestCase):
 
