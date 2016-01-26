@@ -7,6 +7,7 @@ and ICRS RA, Dec)
 
 import numpy as np
 import palpy
+from collections import OrderedDict
 from lsst.sims.utils import _icrsFromObserved, _observedFromICRS, calcLmstLast, _observedFromAppGeo
 from lsst.sims.utils import ObservationMetaData, Site, haversine
 
