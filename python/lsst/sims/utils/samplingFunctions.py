@@ -1,5 +1,6 @@
 import numpy as np
 from lsst.sims.utils import ObservationMetaData
+import warnings
 
 __all__ = ['spatiallySample_obsmetadata', 'samplePatchOnSphere']
 
@@ -27,6 +28,9 @@ def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
     phi = obsmetadata.pointingRA
     theta = obsmetadata.pointingDec
         
+    if obsmetadata.boundType != 'box':
+        warnings.warn('sampling obsmetata with provided boundLen and'
+                      'boundType="box", despite diff boundType specified\n') 
     equalrange = obsmetadata.boundLength
     ravals, thetavals = samplePatchOnSphere(phi=phi,
 					    theta=theta,
