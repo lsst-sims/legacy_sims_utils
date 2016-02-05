@@ -1,6 +1,5 @@
 import numpy as np
 import healpy as hp
-from scipy.stats import binned_statistic
 
 __all__ = ['hpid2RaDec', 'raDec2Hpid', 'healbin']
 
@@ -54,7 +53,7 @@ def raDec2Hpid(nside, ra, dec):
     return hpids
 
 
-def healbin(ra, dec, values, nside=128, reduceFunc=np.mean):
+def healbin(ra, dec, values, nside=128, reduceFunc=np.mean, dtype=float):
     """
     Take arrays of ra's, dec's, and value and bin into healpixels. Like numpy.hexbin but for
     bins on a sphere.
@@ -71,6 +70,8 @@ def healbin(ra, dec, values, nside=128, reduceFunc=np.mean):
         Healpixel nside resolution. Must be a value of 2^N.
     reduceFunc : function (numpy.mean)
         A function that will return a single value given a subset of `values`.
+    dtype : dtype ('float')
+        Data type of the resulting mask
 
     Returns
     -------
@@ -79,9 +80,20 @@ def healbin(ra, dec, values, nside=128, reduceFunc=np.mean):
     """
 
     hpids = raDec2Hpid(nside, ra, dec)
-    # Bins centered on the healpixel int values
-    bins = np.arange(0, hp.nside2npix(nside)+1)-.5
-    mapVals, bin_edges, binnumber = binned_statistic(hpids, values, statistic=reduceFunc, bins=bins)
+
+    order = np.argsort(hpids)
+    hpids = hpids[order]
+    values = values[order]
+    pixids = np.unique(hpids)
+
+    left = np.searchsorted(hpids, pixids)
+    right = np.searchsorted(hpids, pixids, side='right')
+
+    mapVals = np.zeros(hp.nside2npix(nside), dtype=dtype)+hp.UNSEEN
+
+    # Wow, I thought histogram would be faster than the loop, but this has been faster!
+    for i, idx in enumerate(pixids):
+        mapVals[idx] = reduceFunc(values[left[i]:right[i]] )
 
     # Change any NaNs to healpy mask value
     mapVals[np.isnan(mapVals)] = hp.UNSEEN
