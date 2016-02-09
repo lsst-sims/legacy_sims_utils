@@ -2,5 +2,6 @@ setupRequired(utils)
 setupRequired(python)
 setupRequired(palpy)
 setupRequired(sims_data)
+setupRequired(healpy)
 
 envPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
