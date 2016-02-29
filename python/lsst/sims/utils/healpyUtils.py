@@ -122,7 +122,7 @@ def _healbin(ra, dec, values, nside=128, reduceFunc=np.mean, dtype=float):
         A numpy array that is a valid Healpixel map.
     """
 
-    hpids = raDec2Hpid(nside, ra, dec)
+    hpids = _raDec2Hpid(nside, ra, dec)
 
     order = np.argsort(hpids)
     hpids = hpids[order]
