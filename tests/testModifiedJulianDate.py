@@ -16,6 +16,8 @@ class MjdTest(unittest.TestCase):
     testTimeTransformations.py
     """
 
+    longMessage=True
+
     def test_tai_from_utc(self):
         """
         Load a table of UTC vs. TAI (as JD) generated directly
@@ -30,15 +32,18 @@ class MjdTest(unittest.TestCase):
         dtype = np.dtype([('utc', np.float), ('tai', np.float)])
         data = np.genfromtxt(file_name, dtype=dtype)
 
+        msg = "\n\nIt is possible you are using an out-of-date astropy.\n" + \
+              "Try running 'conda update astropy' and restarting the build."
+
         for uu, tt in zip(data['utc']-2400000.5, data['tai']-2400000.5):
             mjd = ModifiedJulianDate(UTC=uu)
             dd_sec = np.abs(mjd.TAI-tt)*86400.0
-            self.assertLess(dd_sec, 5.0e-5)
-            self.assertAlmostEqual(mjd.UTC, uu, 15)
+            self.assertLess(dd_sec, 5.0e-5, msg=msg)
+            self.assertAlmostEqual(mjd.UTC, uu, 15, msg=msg)
             mjd = ModifiedJulianDate(TAI=tt)
             dd_sec = np.abs(mjd.UTC-uu)*86400.0
-            self.assertLess(dd_sec, 5.0e-5)
-            self.assertAlmostEqual(mjd.TAI, tt, 15)
+            self.assertLess(dd_sec, 5.0e-5, msg=msg)
+            self.assertAlmostEqual(mjd.TAI, tt, 15, msg=msg)
 
 
     def test_tt(self):
