@@ -9,9 +9,12 @@ def calcWDColors():
     values need to be regenerated (different stars, bandpasses change, etc.)
     """
 
-    from lsst.utils import getPackageDir
-    import os
-    from lsst.sims.photUtils import Bandpass, Sed
+    try:
+        from lsst.utils import getPackageDir
+        import os
+        from lsst.sims.photUtils import Bandpass, Sed
+    except:
+        'Need to setup sims_photUtils to generate WD magnitudes.'
 
     names = ['WD_25000_80', 'HeWD_11000_80', 'WD_3050_80']
     fns = ['bergeron_25000_80.dat_25000.gz', 'bergeron_He_11000_80.dat_11000.gz', 
