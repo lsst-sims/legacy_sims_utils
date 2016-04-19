@@ -9,7 +9,7 @@ class StellarMagsTest(unittest.TestCase):
 
 	def testSM(self):
 		keys = ['O', 'B', 'A', 'F', 'G', 'K', 'M',
-		'WD_25000_80', 'HeWD_11000_80', 'WD_3050_80']
+				'HeWD_25200_80', 'WD_11000_85', 'WD_3000_85']
 		filterNames = ['u', 'g', 'r', 'i', 'z', 'y']
 
 		# Check each type returns the correct format

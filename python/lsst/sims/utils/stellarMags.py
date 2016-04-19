@@ -16,9 +16,8 @@ def calcWDColors():
     except:
         'Need to setup sims_photUtils to generate WD magnitudes.'
 
-    names = ['WD_25000_80', 'HeWD_11000_80', 'WD_3050_80']
-    fns = ['bergeron_25000_80.dat_25000.gz', 'bergeron_He_11000_80.dat_11000.gz', 
-             'bergeron_3000_80.dat_3050.gz']
+    names = ['HeWD_25200_80', 'WD_11000_85', 'WD_3000_85']
+    fns = ['bergeron_He_24000_80.dat_25200.gz', 'bergeron_10500_85.dat_11000.gz', 'bergeron_2750_85.dat_3000.gz']
     wdDir = os.path.join(getPackageDir('sims_sed_library'), 'starSED/wDs/')
     files = [os.path.join(wdDir, filename) for filename in fns]
 
@@ -60,7 +59,7 @@ def stellarMags(stellarType, rmag=19.):
     ----------
     stellarType : str
         Spectral type of a star (O,B,A,F,G,K,M), or for white dwarf colors,
-        one of 'WD_25000_80', 'HeWD_11000_80', 'WD_3050_80'
+        one of 'HeWD_25200_80, 'WD_11000_85', 'WD_3000_85'
     rmag : float
         The expected r-band magnitude of the star.
 
@@ -82,10 +81,10 @@ def stellarMags(stellarType, rmag=19.):
                 ['G','kp00_6000[g45]',1.198219095,0.3915608688,0.09129426676,0.002604263747,-0.004659443668],
                 ['K','kp00_5250[g45]',1.716635024,0.6081567546,0.1796910856,0.06492278686,0.0425155827],
                 ['M','kp00_3750[g45]',2.747842719,1.287599638,0.5375622482,0.4313486709,0.219308065],
-                ['WD_25000_80', 'bergeron_25000_80.dat_25000.gz', -0.178734, -0.417270, -0.350441, -0.276878, -0.258145],
-                ['HeWD_11000_80', 'bergeron_He_11000_80.dat_11000.gz', 0.041194, -0.135573, -0.181975, -0.170729, -0.189444],
-                ['WD_3050_80', 'bergeron_3000_80.dat_3050.gz', 3.153086, 1.401962, 0.286052, 0.160830, -0.312896]],
-                                            dtype=zip(names,types))
+                ['HeWD_25200_80', 'bergeron_He_24000_80.dat_25200.gz', -0.218959, -0.388374, -0.326946, -0.253573, -0.239460],
+                ['WD_11000_85', 'bergeron_10500_85.dat_11000.gz', 0.286146, -0.109115, -0.178500, -0.185833, -0.186913],
+                ['WD_3000_85', 'bergeron_2750_85.dat_3000.gz', 3.170620, 1.400062, 0.167195, 0.127024, -0.378069]],
+                dtype=zip(names,types))
         # Switch to a dict for faster look-up
         stellarMags.data={}
         for row in data:
