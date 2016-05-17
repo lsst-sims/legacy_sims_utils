@@ -6,7 +6,7 @@ __all__ = ["_pupilCoordsFromRaDec", "pupilCoordsFromRaDec",
            "_raDecFromPupilCoords", "raDecFromPupilCoords"]
 
 
-def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
+def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     """
     Take an input RA and dec from the sky and convert it to coordinates
     on the focal plane.
@@ -32,9 +32,7 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
 
-    @param [in] epoch is the epoch of mean ra and dec in julian years (optional; if not
-    provided, this method will try to get it from the db_obj member variable, assuming this
-    method is part of an InstanceCatalog)
+    @param [in] epoch is the epoch of mean ra and dec in julian years (default=2000.0)
 
     @param [out] returns a numpy array whose first row is the x coordinate on the pupil in
     radians and whose second row is the y coordinate in radians
@@ -44,7 +42,7 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
                                  obs_metadata=obs_metadata, epoch=epoch)
 
 
-def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
+def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     """
     Take an input RA and dec from the sky and convert it to coordinates
     on the focal plane.
@@ -70,9 +68,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=None):
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
 
-    @param [in] epoch is the epoch of mean ra and dec in julian years (optional; if not
-    provided, this method will try to get it from the db_obj member variable, assuming this
-    method is part of an InstanceCatalog)
+    @param [in] epoch is the epoch of mean ra and dec in julian years (default=2000.0)
 
     @param [out] returns a numpy array whose first row is the x coordinate on the pupil in
     radians and whose second row is the y coordinate in radians

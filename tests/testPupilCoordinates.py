@@ -26,10 +26,6 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         raShort = np.array([1.0])
         decShort = np.array([1.0])
 
-        #test without epoch
-        self.assertRaises(RuntimeError, _pupilCoordsFromRaDec, ra, dec,
-                          obs_metadata=obs_metadata)
-
         #test without obs_metadata
         self.assertRaises(RuntimeError, _pupilCoordsFromRaDec, ra, dec,
                           epoch=2000.0)
