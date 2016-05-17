@@ -646,15 +646,18 @@ class astrometryUnitTest(unittest.TestCase):
         for mjd, ra_app, dec_app in zip(mjd_list, ra_app_list, dec_app_list):
             obs = ObservationMetaData(mjd=mjd)
 
-            ra_test, dec_test = _appGeoFromICRS(np.array([ra_icrs]), np.array([dec_icrs]),
+            ra_test, dec_test = _appGeoFromICRS(ra_icrs, dec_icrs,
                                                 mjd=obs.mjd,
-                                                pm_ra=np.array([pm_ra]),
-                                                pm_dec=np.array([pm_dec]),
-                                                v_rad=np.array([v_rad]),
-                                                parallax=np.array([px]),
+                                                pm_ra=pm_ra,
+                                                pm_dec=pm_dec,
+                                                v_rad=v_rad,
+                                                parallax=px,
                                                 epoch=2000.0)
 
-            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
+            self.assertIsInstance(ra_test, np.float)
+            self.assertIsInstance(dec_test, np.float)
+
+            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test, dec_test))
             self.assertLess(distance, 0.1)
 
 
@@ -690,16 +693,143 @@ class astrometryUnitTest(unittest.TestCase):
         for mjd, ra_app, dec_app in zip(mjd_list, ra_app_list, dec_app_list):
             obs = ObservationMetaData(mjd=mjd)
 
-            ra_test, dec_test = _appGeoFromICRS(np.array([ra_icrs]), np.array([dec_icrs]),
+            ra_test, dec_test = _appGeoFromICRS(ra_icrs, dec_icrs,
                                                 mjd=obs.mjd,
-                                                pm_ra=np.array([pm_ra]),
-                                                pm_dec=np.array([pm_dec]),
-                                                v_rad=np.array([v_rad]),
-                                                parallax=np.array([px]),
+                                                pm_ra=pm_ra,
+                                                pm_dec=pm_dec,
+                                                v_rad=v_rad,
+                                                parallax=px,
                                                 epoch=2000.0)
 
-            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
+            self.assertIsInstance(ra_test, np.float)
+            self.assertIsInstance(dec_test, np.float)
+
+            distance = arcsecFromRadians(haversine(ra_app, dec_app, ra_test, dec_test))
             self.assertLess(distance, 0.1)
+
+
+    def test_appGeoFromICRS_inputs(self):
+        """
+        Test that appGeoFromICRS behaves as expected when given numpy array inputs
+        """
+
+        np.random.seed(83)
+        nSamples = 100
+        ra_icrs = 2.0*np.pi*np.random.random_sample(nSamples)
+        dec_icrs = (np.random.random_sample(nSamples)-0.5)*np.pi
+        pm_ra = radiansFromArcsec((np.random.random_sample(nSamples)-0.5)*0.02)
+        pm_dec = radiansFromArcsec((np.random.random_sample(nSamples)-0.5)*0.02)
+        parallax = radiansFromArcsec(np.random.random_sample(nSamples)*0.01)
+        v_rad = (np.random.random_sample(nSamples)-0.5)*1200.0
+        mjd = ModifiedJulianDate(TAI=59580.0)
+
+        ra_control, dec_control = _appGeoFromICRS(ra_icrs, dec_icrs,
+                                       pm_ra=pm_ra, pm_dec=pm_dec, parallax=parallax,
+                                       v_rad=v_rad, mjd=mjd)
+
+        self.assertIsInstance(ra_control, np.ndarray)
+        self.assertIsInstance(dec_control, np.ndarray)
+
+        # test that passing in floats and numpy arrays gives the same result
+        for ix in range(len(ra_control)):
+            ra_test, dec_test = _appGeoFromICRS(ra_icrs[ix], dec_icrs[ix],
+                                       pm_ra=pm_ra[ix], pm_dec=pm_dec[ix],
+                                       parallax=parallax[ix], v_rad=v_rad[ix],
+                                       mjd=mjd)
+
+            self.assertIsInstance(ra_test, np.float)
+            self.assertIsInstance(dec_test, np.float)
+            dd = arcsecFromRadians(haversine(ra_test, dec_test, ra_control[ix], dec_control[ix]))
+            self.assertLess(dd, 1.0e-6)
+
+        # next test that inputs of inappropriate types raise RuntimeErrors
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, 5.0, pm_ra=pm_ra, pm_dec=pm_dec,
+                                      parallax=parallax, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The inputs to appGeoFromICRS should all be either "
+                         "floats or numpy arrays")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(5.0, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
+                                      parallax=parallax, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The inputs to appGeoFromICRS should all be either "
+                         "floats or numpy arrays")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=5.0, pm_dec=pm_dec,
+                                      parallax=parallax, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The inputs to appGeoFromICRS should all be either "
+                         "floats or numpy arrays")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=5.0,
+                                      parallax=parallax, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The inputs to appGeoFromICRS should all be either "
+                         "floats or numpy arrays")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
+                                      parallax=5.0, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The inputs to appGeoFromICRS should all be either "
+                         "floats or numpy arrays")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
+                                      parallax=parallax, v_rad=5.0, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The inputs to appGeoFromICRS should all be either "
+                         "floats or numpy arrays")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs[:2], pm_ra=pm_ra, pm_dec=pm_dec,
+                                      parallax=parallax, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The arrays input to appGeoFromICRS all need to "
+                         "have the same length")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra[:2], pm_dec=pm_dec,
+                                      parallax=parallax, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The arrays input to appGeoFromICRS all need to "
+                         "have the same length")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec[:2],
+                                      parallax=parallax, v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The arrays input to appGeoFromICRS all need to "
+                         "have the same length")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
+                                      parallax=parallax[:2], v_rad=v_rad, mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The arrays input to appGeoFromICRS all need to "
+                         "have the same length")
+
+        with self.assertRaises(RuntimeError) as context:
+            ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
+                                      parallax=parallax, v_rad=v_rad[:2], mjd=mjd)
+
+        self.assertEqual(context.exception.args[0],
+                         "The arrays input to appGeoFromICRS all need to "
+                         "have the same length")
 
 
 
