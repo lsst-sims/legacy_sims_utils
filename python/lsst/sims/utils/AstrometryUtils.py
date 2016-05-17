@@ -17,6 +17,57 @@ __all__ = ["_solarRaDec", "solarRaDec",
            "_icrsFromObserved", "icrsFromObserved"]
 
 
+def _validate_inputs(input_list, method_name):
+    """
+    This method will validate the inputs of the astrometry methods.
+
+    input_list is a list of the inputs passed to a an astrometry method.
+
+    method_name is the name of the method.
+
+    _validate_inputs will verify that all of the inputs in input_list are:
+
+    1) of the same type
+    2) either floats or numpy arrays
+    3) if they are numpy arrays, they all have the same length
+
+    If any of these criteria are violated, a RuntimeError will be raised
+
+    returns True if the inputs are numpy arrays; False if not
+    """
+
+    if isinstance(input_list[0], np.ndarray):
+        desired_type = np.ndarray
+    elif isinstance(input_list[0], np.float):
+        desired_type = np.float
+    else:
+        raise RuntimeError("The inputs to %s should all be either " % method_name
+                           + "floats or numpy arrays")
+
+    valid_type = True
+    for ii in input_list:
+        if not isinstance(ii, desired_type):
+            valid_type = False
+
+    if not valid_type:
+        raise RuntimeError("The inputs to %s should all be either " % method_name
+                           + "floats or numpy arrays")
+
+    if desired_type is np.ndarray:
+        same_length=True
+        for ii in input_list:
+            if len(ii) != len(input_list[0]):
+                same_length = False
+        if not same_length:
+            raise RuntimeError("The arrays input to %s " % method_name
+                               + "all need to have the same length")
+
+    if desired_type is np.ndarray:
+        return True
+
+    return False
+
+
 def _solarRaDec(mjd, epoch=2000.0):
     """
     Return the RA and Dec of the Sun in radians
@@ -388,9 +439,9 @@ def appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     (arcsec/year), parallax (arcsec), v_rad (km/sec; positive if receding),
     epoch (Julian years)
 
-    @param [in] ra in degrees (ICRS).  Must be a numpy array.
+    @param [in] ra in degrees (ICRS).  Can be a numpy array or a float.
 
-    @param [in] dec in degrees (ICRS).  Must be a numpy array.
+    @param [in] dec in degrees (ICRS).  Can be a numpy array or a float.
 
     @param [in] pm_ra is ra proper motion multiplied by cos(Dec) in arcsec/year
 
@@ -443,17 +494,20 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     (radians/year), parallax (radians), v_rad (km/sec; positive if receding),
     epoch (Julian years)
 
-    @param [in] ra in radians (ICRS).  Must be a numpy array.
+    @param [in] ra in radians (ICRS).  Can be a numpy array or a float.
 
-    @param [in] dec in radians (ICRS).  Must be a numpy array.
+    @param [in] dec in radians (ICRS).  Can be a numpy array or a float.
 
-    @param [in] pm_ra is ra proper motion multiplied by cos(Dec) in radians/year
+    @param [in] pm_ra is ra proper motion multiplied by cos(Dec) in radians/year.
+    Can be a numpy array or a float or None.
 
-    @param [in] pm_dec is dec proper motion in radians/year
+    @param [in] pm_dec is dec proper motion in radians/year.
+    Can be a numpy array or a float or None.
 
-    @param [in] parallax in radians
+    @param [in] parallax in radians.  Can be a numpy array or a float or None.
 
-    @param [in] v_rad is radial velocity in km/sec (positive if the object is receding)
+    @param [in] v_rad is radial velocity in km/sec (positive if the object is receding).
+    Can be a numpy array or a float or None.
 
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
@@ -468,21 +522,25 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     if mjd is None:
         raise RuntimeError("cannot call appGeoFromICRS; mjd is None")
 
-    if len(ra) != len(dec):
-        raise RuntimeError('appGeoFromICRS: len(ra) %d len(dec) %d '
-                        % (len(ra),len(dec)))
+    if isinstance(ra, np.ndarray):
+        fill_value = np.zeros(len(ra))
+    else:
+        fill_value = 0.0
 
     if pm_ra is None:
-        pm_ra=np.zeros(len(ra))
+        pm_ra=fill_value
 
     if pm_dec is None:
-        pm_dec=np.zeros(len(ra))
+        pm_dec=fill_value
 
     if v_rad is None:
-        v_rad=np.zeros(len(ra))
+        v_rad=fill_value
 
     if parallax is None:
-        parallax=np.zeros(len(ra))
+        parallax=fill_value
+
+    are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, v_rad, parallax],
+                                  "appGeoFromICRS")
 
     # Define star independent mean to apparent place parameters
     # palpy.mappa calculates the star-independent parameters
@@ -507,7 +565,12 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     # angle; not true angle" (as stated in erfa/starpm.c documentation)
     pm_ra_corrected = pm_ra/np.cos(dec)
 
-    raOut,decOut = palpy.mapqkVector(ra,dec,pm_ra_corrected,pm_dec,arcsecFromRadians(parallax),v_rad,prms)
+    if are_arrays:
+        raOut, decOut = palpy.mapqkVector(ra, dec, pm_ra_corrected, pm_dec,
+                                          arcsecFromRadians(parallax), v_rad,prms)
+    else:
+        raOut, decOut = palpy.mapqk(ra, dec, pm_ra_corrected, pm_dec,
+                                    arcsecFromRadians(parallax), v_rad, prms)
 
     return np.array([raOut,decOut])
 
