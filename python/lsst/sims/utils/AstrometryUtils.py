@@ -671,9 +671,9 @@ def observedFromAppGeo(ra, dec, includeRefraction = True,
 
     This method works in degrees.
 
-    @param [in] ra is geocentric apparent RA (degrees).  Must be a numpy array.
+    @param [in] ra is geocentric apparent RA (degrees).  Can be a numpy array or a float.
 
-    @param [in] dec is geocentric apparent Dec (degrees).  Must be a numpy array.
+    @param [in] dec is geocentric apparent Dec (degrees).  Can be a numpy array or a float.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -787,9 +787,9 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
 
     This method works in radians.
 
-    @param [in] ra is geocentric apparent RA (radians).  Must be a numpy array.
+    @param [in] ra is geocentric apparent RA (radians).  Can be a numpy array or a float.
 
-    @param [in] dec is geocentric apparent Dec (radians).  Must be a numpy array.
+    @param [in] dec is geocentric apparent Dec (radians).  Can be a numpy array or a float.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -810,6 +810,8 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
 
     """
 
+    are_arrays = _validate_inputs([ra, dec], "observedFromAppGeo")
+
     if obs_metadata is None:
         raise RuntimeError("Cannot call observedFromAppGeo without an obs_metadata")
 
@@ -819,9 +821,6 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
     if obs_metadata.mjd is None:
         raise RuntimeError("Cannot call observedFromAppGeo: obs_metadata has no mjd")
 
-    if len(ra)!=len(dec):
-        raise RuntimeError("You passed %d RAs but %d Decs to observedFromAppGeo" % \
-                           (len(ra), len(dec)))
 
 
     obsPrms = _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
@@ -835,7 +834,10 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
     #for a large zenith distance)
     #
 
-    azimuth, zenith, hourAngle, decOut, raOut = palpy.aopqkVector(ra,dec,obsPrms)
+    if are_arrays:
+        azimuth, zenith, hourAngle, decOut, raOut = palpy.aopqkVector(ra,dec,obsPrms)
+    else:
+        azimuth, zenith, hourAngle, decOut, raOut = palpy.aopqk(ra, dec, obsPrms)
 
     #
     #Note: this is a choke point.  Even the vectorized version of aopqk
@@ -848,7 +850,11 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
         #
         #palpy.de2h converts equatorial to horizon coordinates
         #
-        az, alt = palpy.de2hVector(hourAngle, decOut, obs_metadata.site.latitude_rad)
+        if are_arrays:
+            az, alt = palpy.de2hVector(hourAngle, decOut, obs_metadata.site.latitude_rad)
+        else:
+            az, alt = palpy.de2h(hourAngle, decOut, obs_metadata.site.latitude_rad)
+
         return np.array([raOut, decOut]), np.array([alt, az])
     return np.array([raOut, decOut])
 

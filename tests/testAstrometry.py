@@ -893,7 +893,8 @@ class astrometryUnitTest(unittest.TestCase):
 
     def test_icrsFromObserved(self):
         """
-        Test that _icrsFromObserved really inverts _observedFromAppGeo.
+        Test that _icrsFromObserved really inverts _observedFromICRS and that
+        _appGeoFromObserved really does invert _observedFromAppGeo.
 
         In this case, the method is only reliable at distances of more than
         45 degrees from the sun and at zenith distances less than 70 degrees.
@@ -953,6 +954,17 @@ class astrometryUnitTest(unittest.TestCase):
                                                      ra_app[valid_pts], dec_app[valid_pts]))
 
                         self.assertLess(distance.max(), 0.01)
+
+                        # test that passing arguments in as floats gives consistent
+                        # results
+                        for ix in valid_pts:
+                            ra_f, dec_f = _observedFromAppGeo(ra_in[ix], dec_in[ix],
+                                                              obs_metadata=obs,
+                                                              includeRefraction=includeRefraction)
+                            self.assertIsInstance(ra_f, np.float)
+                            self.assertIsInstance(dec_f, np.float)
+                            dist_f = arcsecFromRadians(pal.dsep(ra_obs[ix], dec_obs[ix], ra_f, dec_f))
+                            self.assertLess(dist_f, 0.0001)
 
 
     def test_icrsFromObservedExceptions(self):
