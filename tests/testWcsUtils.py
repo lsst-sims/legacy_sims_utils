@@ -66,13 +66,10 @@ class NativeLonLatTest(unittest.TestCase):
                                                        epoch=2000.0, includeRefraction=True)
 
             obsTemp = ObservationMetaData(mjd=mjd)
-            ra_temp, dec_temp = observedFromICRS(np.array([raPointing_icrs]),
-                                                 np.array([decPointing_icrs]),
-                                                 obs_metadata=obsTemp, epoch=2000.0,
-                                                 includeRefraction=True)
-
-            raPointing_obs = ra_temp[0]
-            decPointing_obs = dec_temp[0]
+            raPointing_obs, decPointing_obs = observedFromICRS(raPointing_icrs,
+                                                               decPointing_icrs,
+                                                               obs_metadata=obsTemp, epoch=2000.0,
+                                                               includeRefraction=True)
 
             for ra_obs, dec_obs, ra_icrs, dec_icrs in \
                 zip(raList_obs, decList_obs, raList_icrs, decList_icrs):
@@ -210,7 +207,7 @@ class NativeLonLatTest(unittest.TestCase):
 
 
 
-                rr_obs, dec_obs = observedFromICRS(np.array([rr]), np.array([dd]),
+                rr_obs, dec_obs = observedFromICRS(rr, dd,
                                                    obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
 

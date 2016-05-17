@@ -270,7 +270,7 @@ class astrometryUnitTest(unittest.TestCase):
             ra_list = np.random.random_sample(nStars)*2.0*np.pi
             dec_list =(np.random.random_sample(nStars)-0.5)*np.pi
             distance_list = _distanceToSun(ra_list, dec_list, mjd)
-            distance_control = haversine(ra_list, dec_list, np.array([raS]*nStars), np.array([decS]*nStars))
+            distance_control = haversine(ra_list, dec_list, raS, decS)
             np.testing.assert_array_almost_equal(distance_list, distance_control, 5)
 
 

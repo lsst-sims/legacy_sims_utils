@@ -278,7 +278,7 @@ class testCoordinateTransformations(unittest.TestCase):
 
         points = np.array(points)
         lon, lat = utils.sphericalFromCartesian(points)
-        outPoints = utils.cartesianFromSpherical(np.array(lon), np.array(lat))
+        outPoints = utils.cartesianFromSpherical(lon, lat)
 
         for pp, oo in zip(points, outPoints):
             np.testing.assert_array_almost_equal(pp, oo, decimal=6)

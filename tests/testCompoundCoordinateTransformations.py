@@ -35,10 +35,8 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
         raRad, decRad = utils._observedFromICRS(raRad_in, decRad_in, obs_metadata=obs,
                                                 epoch=2000.0, includeRefraction=True)
     else:
-        raRad_temp, decRad_temp = utils._observedFromICRS(np.array([raRad_in]), np.array([decRad_in]),
-                                                          obs_metadata=obs, epoch=2000.0, includeRefraction=True)
-        raRad = raRad_temp[0]
-        decRad = decRad_temp[0]
+        raRad, decRad = utils._observedFromICRS(raRad_in, decRad_in,
+                                                obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
     lst = utils.calcLmstLast(mjd, longRad)
     last = lst[1]
@@ -169,13 +167,12 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
 
             ra_icrs, dec_icrs = utils._raDecFromAltAz(alt, az, obs)
-            ra_test, dec_test = utils._appGeoFromICRS(np.array([ra_icrs]), np.array([dec_icrs]),
-                                                      mjd=obs.mjd)
+            ra_test, dec_test = utils._appGeoFromICRS(ra_icrs, dec_icrs, mjd=obs.mjd)
 
-            distance = np.degrees(utils.haversine(ra_app, dec_app, ra_test[0], dec_test[0]))
+            distance = np.degrees(utils.haversine(ra_app, dec_app, ra_test, dec_test))
             self.assertLess(distance, 0.1) # since that is all the precision we have in the alt, az
                                            # data taken from the USNO
-            correction = np.degrees(utils.haversine(ra_test[0], dec_test[0], ra_icrs, dec_icrs))
+            correction = np.degrees(utils.haversine(ra_test, dec_test, ra_icrs, dec_icrs))
             self.assertLess(distance, correction)
 
 
@@ -268,9 +265,9 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
             controlAlt, controlAz = controlAltAzFromRaDec(r, d, lon_rad, lat_rad, self.mjd)
             testAlt, testAz, testPa = utils._altAzPaFromRaDec(r, d, obs)
             lmst, last = utils.calcLmstLast(self.mjd, lon_rad)
-            r_obs, dec_obs = utils._observedFromICRS(np.array([r]), np.array([d]), obs_metadata=obs,
+            r_obs, dec_obs = utils._observedFromICRS(r, d, obs_metadata=obs,
                                                      epoch=2000.0, includeRefraction=True)
-            hourAngle = np.radians(last*15.0) - r_obs[0]
+            hourAngle = np.radians(last*15.0) - r_obs
             controlSinPa = np.sin(hourAngle)*np.cos(lat_rad)/np.cos(controlAlt)
             self.assertLess(np.abs(testAz - controlAz), self.tolerance)
             self.assertLess(np.abs(testAlt - controlAlt), self.tolerance)

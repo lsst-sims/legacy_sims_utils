@@ -202,25 +202,14 @@ def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
     @param [out] latOut is the native latitude in radians
     """
 
-    if not hasattr(ra_in, '__len__'):
-        ra_temp, dec_temp = _observedFromICRS(np.array([ra_in]), np.array([dec_in]),
-                                              obs_metadata=obs_metadata, epoch=2000.0,
-                                              includeRefraction=True)
+    ra, dec = _observedFromICRS(ra_in, dec_in,
+                                obs_metadata=obs_metadata, epoch=2000.0,
+                                includeRefraction=True)
 
-        ra = ra_temp[0]
-        dec = dec_temp[0]
-    else:
-        ra, dec = _observedFromICRS(ra_in, dec_in,
-                                    obs_metadata=obs_metadata, epoch=2000.0,
-                                    includeRefraction=True)
-
-    ra_temp, dec_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
-                                          np.array([obs_metadata._pointingDec]),
-                                          obs_metadata=obs_metadata, epoch=2000.0,
-                                          includeRefraction=True)
-
-    raPointing = ra_temp[0]
-    decPointing = dec_temp[0]
+    raPointing, decPointing = _observedFromICRS(obs_metadata._pointingRA,
+                                               obs_metadata._pointingDec,
+                                               obs_metadata=obs_metadata, epoch=2000.0,
+                                               includeRefraction=True)
 
     return _nativeLonLatFromPointing(ra, dec, raPointing, decPointing)
 
@@ -287,13 +276,10 @@ def _raDecFromNativeLonLat(lon, lat, obs_metadata):
     than 45 degrees and zenith distances of less than 75 degrees.
     """
 
-    ra_temp, dec_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
-                                          np.array([obs_metadata._pointingDec]),
-                                          obs_metadata=obs_metadata, epoch=2000.0,
-                                          includeRefraction=True)
-
-    raPointing = ra_temp[0]
-    decPointing = dec_temp[0]
+    raPointing, decPointing = _observedFromICRS(obs_metadata._pointingRA,
+                                                obs_metadata._pointingDec,
+                                                obs_metadata=obs_metadata, epoch=2000.0,
+                                                includeRefraction=True)
 
     raObs, decObs = _lonLatFromNativeLonLat(lon, lat, raPointing, decPointing)
 
@@ -301,16 +287,8 @@ def _raDecFromNativeLonLat(lon, lat, obs_metadata):
     # convert from observed geocentric coordinates to International Celestial Reference System
     # coordinates
 
-    if hasattr(raObs,'__len__'):
-        raOut, decOut = _icrsFromObserved(raObs, decObs, obs_metadata=obs_metadata,
-                                          epoch=2000.0, includeRefraction=True)
-    else:
-        raOut, decOut = _icrsFromObserved(np.array([raObs]), np.array([decObs]),
-                                          obs_metadata=obs_metadata,
-                                          epoch=2000.0, includeRefraction=True)
-
-    if not hasattr(lon, '__len__'):
-        return raOut[0], decOut[0]
+    raOut, decOut = _icrsFromObserved(raObs, decObs, obs_metadata=obs_metadata,
+                                      epoch=2000.0, includeRefraction=True)
 
     return raOut, decOut
 
