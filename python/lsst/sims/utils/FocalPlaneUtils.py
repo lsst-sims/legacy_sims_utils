@@ -97,11 +97,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
                                                   obs_metadata._pointingDec,
                                                   obs_metadata=obs_metadata,
-                                                  epoch=2000.0, includeRefraction=True)
-                                                  # epoch is set to 2000.0 here, because that
-                                                  # is the epoch of ObservationMetaData
-                                                  # RA, Dec, which is what we are dealing with
-                                                  # in this line of code.
+                                                  epoch=epoch, includeRefraction=True)
 
     #palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
     #with a tangent point at (pointingRA, pointingDec)
