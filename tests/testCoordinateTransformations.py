@@ -275,13 +275,13 @@ class testCoordinateTransformations(unittest.TestCase):
 
             points.append(vv)
 
-
         points = np.array(points)
         lon, lat = utils.sphericalFromCartesian(points)
         outPoints = utils.cartesianFromSpherical(np.array(lon), np.array(lat))
 
         for pp, oo in zip(points, outPoints):
             np.testing.assert_array_almost_equal(pp, oo, decimal=6)
+
 
     def testHaversine(self):
         arg1 = 7.853981633974482790e-01
