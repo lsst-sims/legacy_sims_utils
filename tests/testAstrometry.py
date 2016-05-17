@@ -560,6 +560,37 @@ class astrometryUnitTest(unittest.TestCase):
             # demand that the two methods agree on the stars' new positions to within one part in 100
 
 
+    def test_applyProperMotion_inputs(self):
+        """
+        Verify that _applyProperMotion handles both floats and numpy arrays as inputs
+        """
+        np.random.seed(7134)
+        nSamples = 100
+        pm_ra = (np.random.random_sample(nSamples)-0.5)*radiansFromArcsec(1.0)
+        pm_dec = (np.random.random_sample(nSamples)-0.5)*radiansFromArcsec(1.0)
+        px = np.random.random_sample(nSamples)*radiansFromArcsec(1.0)
+        v_rad = np.random.random_sample(nSamples)*200.0
+        mjd = ModifiedJulianDate(TAI=59580.0)
+
+        ra_icrs = np.random.random_sample(nSamples)*2.0*np.pi
+        dec_icrs = (np.random.random_sample(nSamples)-0.5)*np.pi
+
+        ra_arr, dec_arr = _applyProperMotion(ra_icrs, dec_icrs,
+                                             pm_ra, pm_dec, px, v_rad, mjd=mjd)
+
+
+        self.assertIsInstance(ra_arr, np.ndarray)
+        self.assertIsInstance(dec_arr, np.ndarray)
+        for ix, (rr, dd, mura, mudec, xx, vv) in \
+        enumerate(zip(ra_icrs, dec_icrs, pm_ra, pm_dec, px, v_rad)):
+
+            ra_f, dec_f = _applyProperMotion(rr, dd, mura, mudec, xx, vv, mjd=mjd)
+            self.assertIsInstance(ra_f, np.float)
+            self.assertIsInstance(dec_f, np.float)
+            distance = arcsecFromRadians(haversine(ra_f, dec_f, ra_arr[ix], dec_arr[ix]))
+            self.assertLess(distance, 0.000001)
+
+
     def test_appGeoFromICRS(self):
         """
         Test conversion between ICRS RA, Dec and apparent geocentric ICRS.
