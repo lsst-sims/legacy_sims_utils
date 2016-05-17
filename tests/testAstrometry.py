@@ -201,6 +201,19 @@ class astrometryUnitTest(unittest.TestCase):
                 hh = haversine(raS, decS, new_ra, new_dec)
                 self.assertLess(np.abs(arcsecFromRadians(dd-hh)), 5.0)
 
+        # Test passing in numpy arrays of RA, Dec
+        np.random.seed(87)
+        nSamples = 100
+        ra = np.random.random_sample(nSamples)*2.0*np.pi
+        dec = (np.random.random_sample(nSamples)-0.5)*np.pi
+        mjd = 59580.0
+        control_distance = _distanceToSun(ra, dec, mjd)
+        self.assertIsInstance(control_distance, np.ndarray)
+        for ix, (rr, dd) in enumerate(zip(ra, dec)):
+            dd = _distanceToSun(rr, dd, mjd)
+            self.assertIsInstance(dd, np.float)
+            self.assertAlmostEqual(dd, control_distance[ix], 12)
+
 
     def testDistanceToSunDeg(self):
         """
