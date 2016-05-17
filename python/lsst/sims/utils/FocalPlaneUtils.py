@@ -147,9 +147,11 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
 
 def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     """
-    @param [in] xPupil -- pupil coordinates in radians
+    @param [in] xPupil -- pupil coordinates in radians.
+    Can be a numpy array or a float.
 
-    @param [in] yPupil -- pupil coordinates in radians
+    @param [in] yPupil -- pupil coordinates in radians.
+    Can be a numpy array or a float.
 
     @param [in] obs_metadata -- an instantiation of ObservationMetaData characterizing
     the state of the telescope
@@ -169,9 +171,11 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 
 def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     """
-    @param [in] xPupil -- pupil coordinates in radians
+    @param [in] xPupil -- pupil coordinates in radians.
+    Can be a numpy array or a float.
 
-    @param [in] yPupil -- pupil coordinates in radians
+    @param [in] yPupil -- pupil coordinates in radians.
+    Can be a numpy array or a float.
 
     @param [in] obs_metadata -- an instantiation of ObservationMetaData characterizing
     the state of the telescope
@@ -182,6 +186,8 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     @param [out] a 2-D numpy array in which the first row is RA and the second
     row is Dec (both in radians; both in the International Celestial Reference System)
     """
+
+    are_arrays = _validate_inputs([xPupil, yPupil], "raDecFromPupilCoords")
 
     if obs_metadata is None:
         raise RuntimeError("Cannot call raDecFromPupilCoords without obs_metadata")
@@ -201,10 +207,6 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
         raise RuntimeError("Cannot calculate x_pupil, y_pupil without mjd " + \
                            "in obs_metadata")
 
-    if len(xPupil)!=len(yPupil):
-        raise RuntimeError("You passed %d RAs but %d Decs into raDecFromPupilCoords" % \
-                           (len(raObj), len(decObj)))
-
     ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
                                                   obs_metadata._pointingDec,
                                                   obs_metadata=obs_metadata,
@@ -222,7 +224,10 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     # x_g and y_g are now the x and y coordinates
     # can now use the PALPY method palDtp2s to convert to RA, Dec.
 
-    raObs, decObs = palpy.dtp2sVector(x_g, y_g, ra_pointing, dec_pointing)
+    if are_arrays:
+        raObs, decObs = palpy.dtp2sVector(x_g, y_g, ra_pointing, dec_pointing)
+    else:
+        raObs, decObs = palpy.dtp2s(x_g, y_g, ra_pointing, dec_pointing)
 
     ra_icrs, dec_icrs = _icrsFromObserved(raObs, decObs,
                                           obs_metadata=obs_metadata,

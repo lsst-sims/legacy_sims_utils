@@ -201,6 +201,14 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         (distance.max(), worstSolarDistance)
         self.assertLess(distance.max(), 0.005, msg=msg)
 
+        # now check that passing in the xp, yp values one at a time still gives the right answer
+        for ix in range(len(ra)):
+            ra_f, dec_f = _raDecFromPupilCoords(xp[ix], yp[ix], obs_metadata=obs, epoch=2000.0)
+            self.assertIsInstance(ra_f, np.float)
+            self.assertIsInstance(dec_f, np.float)
+            dist_f = arcsecFromRadians(haversine(ra_f, dec_f, raTest[ix], decTest[ix]))
+            self.assertLess(dist_f, 1.0e-9)
+
 
     def testNaNs(self):
         """
