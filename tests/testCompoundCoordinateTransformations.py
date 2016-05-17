@@ -205,8 +205,19 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
                 ra_in, dec_in = utils.raDecFromAltAz(alt_in, az_in, obs)
 
+                self.assertIsInstance(ra_in, np.ndarray)
+                self.assertIsInstance(dec_in, np.ndarray)
+
                 self.assertFalse(np.isnan(ra_in).any())
                 self.assertFalse(np.isnan(dec_in).any())
+
+                # test that passing them in one at a time gives the same answer
+                for ix in range(len(alt_in)):
+                    ra_f, dec_f = utils.raDecFromAltAz(alt_in[ix], az_in[ix], obs)
+                    self.assertIsInstance(ra_f, np.float)
+                    self.assertIsInstance(dec_f, np.float)
+                    self.assertAlmostEqual(ra_f, ra_in[ix], 12)
+                    self.assertAlmostEqual(dec_f, dec_in[ix], 12)
 
                 alt_out, az_out, pa_out = utils.altAzPaFromRaDec(ra_in, dec_in, obs)
 

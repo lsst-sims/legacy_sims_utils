@@ -130,23 +130,7 @@ def _raDecFromAltAz(altRad, azRad, obs):
     Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
 
-    altIsArray = False
-    azIsArray = False
-
-    if isinstance(altRad, np.ndarray):
-        altIsArray = True
-
-    if isinstance(azRad, np.ndarray):
-        azIsArray = True
-
-    if altIsArray and not azIsArray:
-        raise RuntimeError('passed a numpy array of alt to raDecFromAltAz, but only one az')
-
-    if azIsArray and not altIsArray:
-        raise RuntimeError('passed a numpy array of az to raDecFromAltAz, but only one alt')
-
-    if azIsArray and altIsArray and len(altRad)!=len(azRad):
-        raise RuntimeError('in raDecFromAltAz, length of alt numpy array does not match length of az numpy array')
+    are_arrays = _validate_inputs([altRad, azRad], "raDecFromAltAz")
 
     lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]
@@ -155,7 +139,7 @@ def _raDecFromAltAz(altRad, azRad, obs):
     sinLat = np.sin(obs.site.latitude_rad)
     decObs = np.arcsin(sinLat*sinAlt+ cosLat*np.cos(altRad)*np.cos(azRad))
     costheta = (sinAlt - np.sin(decObs)*sinLat)/(np.cos(decObs)*cosLat)
-    if altIsArray:
+    if are_arrays:
         haRad0 =  np.arccos(costheta)
         # Make sure there were no NaNs
         nanSpots = np.where(np.isnan(haRad0))[0]
@@ -171,14 +155,6 @@ def _raDecFromAltAz(altRad, azRad, obs):
 
     haRad = np.where(np.sin(azRad)>=0.0, -1.0*haRad0, haRad0)
     raObs = np.radians(last*15.) - haRad
-
-    if not hasattr(raObs, '__len__'):
-        raRad, decRad = _icrsFromObserved(np.array([raObs]), np.array([decObs]),
-                                          obs_metadata=obs, epoch=2000.0,
-                                          includeRefraction=True)
-
-        return raRad[0], decRad[0]
-
 
     raRad, decRad = _icrsFromObserved(raObs, decObs,
                                       obs_metadata=obs, epoch=2000.0,
