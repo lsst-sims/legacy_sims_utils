@@ -442,9 +442,18 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertRaises(RuntimeError, _observedFromICRS, ra, decShort, epoch=2000.0, obs_metadata=dummy)
         self.assertRaises(RuntimeError, _observedFromICRS, raShort, dec, epoch=2000.0, obs_metadata=dummy)
 
-        #test that it actually runs
-        test = _observedFromICRS(ra, dec, obs_metadata=dummy, epoch=2000.0)
+        # test that it actually runs
+        ra_arr, dec_arr = _observedFromICRS(ra, dec, obs_metadata=dummy, epoch=2000.0)
+        self.assertIsInstance(ra_arr, np.ndarray)
+        self.assertIsInstance(dec_arr, np.ndarray)
 
+        # test passing in floats
+        for ix in range(len(ra_arr)):
+            ra_f, dec_f = _observedFromICRS(ra[ix], dec[ix], obs_metadata=dummy, epoch=2000.0)
+            self.assertIsInstance(ra_f, np.float)
+            self.assertIsInstance(dec_f, np.float)
+            self.assertAlmostEqual(ra_f, ra_arr[ix], 12)
+            self.assertAlmostEqual(dec_f, dec_arr[ix], 12)
 
 
     def test_applyPrecession(self):

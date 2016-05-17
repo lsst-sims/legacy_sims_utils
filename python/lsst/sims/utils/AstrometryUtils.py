@@ -951,17 +951,21 @@ def observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=None
 
     This method works in degrees.
 
-    @param [in] ra is the unrefracted RA in degrees (ICRS).  Must be a numpy array.
+    @param [in] ra is the unrefracted RA in degrees (ICRS).  Can be a numpy array or a float.
 
-    @param [in] dec is the unrefracted Dec in degrees (ICRS).  Must be a numpy array.
+    @param [in] dec is the unrefracted Dec in degrees (ICRS).  Can be a numpy array or a float.
 
     @param [in] pm_ra is proper motion in RA multiplied by cos(Dec) (arcsec/yr)
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] pm_dec is proper motion in dec (arcsec/yr)
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] parallax is parallax in arcsec
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] v_rad is radial velocity (km/s)
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.
@@ -1010,17 +1014,21 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
 
     This method works in radians.
 
-    @param [in] ra is the unrefracted RA in radians (ICRS).  Must be a numpy array.
+    @param [in] ra is the unrefracted RA in radians (ICRS).  Can be a numpy array or a float.
 
-    @param [in] dec is the unrefracted Dec in radians (ICRS).  Must be a numpy array.
+    @param [in] dec is the unrefracted Dec in radians (ICRS).  Can be a numpy array or a float.
 
     @param [in] pm_ra is proper motion in RA multiplied by cos(Dec) (radians/yr)
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] pm_dec is proper motion in dec (radians/yr)
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] parallax is parallax in radians
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] v_rad is radial velocity (km/s)
+    Can be a numpy array or a float or None (default=None).
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.
@@ -1043,10 +1051,6 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
 
     if epoch is None:
         raise RuntimeError("cannot call observedFromICRS; you have not specified an epoch")
-
-    if len(ra)!=len(dec):
-        raise RuntimeError("You passed %d RAs but %d Decs to observedFromICRS" % \
-                           (len(ra), len(dec)))
 
     ra_apparent, dec_apparent = _appGeoFromICRS(ra, dec, pm_ra = pm_ra,
              pm_dec = pm_dec, parallax = parallax, v_rad = v_rad, epoch = epoch, mjd=obs_metadata.mjd)
