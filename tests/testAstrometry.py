@@ -898,6 +898,15 @@ class astrometryUnitTest(unittest.TestCase):
 
         self.assertAlmostEqual(output,7.851689251070859132e-01,6)
 
+        # test that passing in a numpy array and passing in floats
+        # give the same results
+        np.random.seed(712)
+        zd_arr = np.random.random_sample(20)*np.pi*0.2
+        control_refraction = applyRefraction(zd_arr, coeffs[0], coeffs[1])
+        for ix, zz in enumerate(zd_arr):
+            test_refraction = applyRefraction(zz, coeffs[0], coeffs[1])
+            self.assertAlmostEqual(test_refraction, control_refraction[ix], 12)
+
 
 
 def suite():
