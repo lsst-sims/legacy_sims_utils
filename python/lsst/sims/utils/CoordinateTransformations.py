@@ -44,8 +44,20 @@ def calcLmstLast(mjd, longRad):
         if len(longRad) != len(mjd):
             raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
 
-    if longRadIsArray and not mjdIsArray:
-        raise RuntimeError("in calcLmstLast longRad is numpy array but mjd is not")
+
+    valid_type = False
+    if isinstance(mjd, numpy.ndarray) and isinstance(longRad, numpy.ndarray):
+        valid_type = True
+    elif isinstance(mjd, numpy.ndarray) and isinstance(longRad, numpy.float):
+        valid_type = True
+    elif isinstance(mjd, numpy.float) and isinstance(longRad, numpy.float):
+        valid_type = True
+
+    if not valid_type:
+        raise RuntimeError("Valid input types for calcLmstLast are:\n"
+                           "mjd and longRad as numpy arrays of the same length\n"
+                           "mjd as a numpy array and longRad as a float\n"
+                           "mjd as a float and longRad as a float\n")
 
     longDeg0 = numpy.degrees(longRad)
     longDeg0 %= 360.0

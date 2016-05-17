@@ -115,6 +115,8 @@ class testCoordinateTransformations(unittest.TestCase):
 
         gmst, gast = utils.calcGmstGast(self.mjd)
         ll = [1.2, 2.2]
+
+        # test passing a float for longitude and a numpy array for mjd
         for longitude in ll:
             hours = numpy.degrees(longitude)/15.0
             if hours > 24.0:
@@ -126,8 +128,10 @@ class testCoordinateTransformations(unittest.TestCase):
             testLmst, testLast = utils.calcLmstLast(self.mjd, longitude)
             self.assertTrue(numpy.abs(testLmst - controlLmst).max() < self.tolerance)
             self.assertTrue(numpy.abs(testLast - controlLast).max() < self.tolerance)
+            self.assertIsInstance(testLmst, numpy.ndarray)
+            self.assertIsInstance(testLast, numpy.ndarray)
 
-        #test non-vectorized version
+        # test passing two floats
         for longitude in ll:
             for mm in self.mjd:
                 gmst, gast = utils.calcGmstGast(mm)
@@ -141,7 +145,18 @@ class testCoordinateTransformations(unittest.TestCase):
                 testLmst, testLast = utils.calcLmstLast(mm, longitude)
                 self.assertTrue(numpy.abs(testLmst - controlLmst) < self.tolerance)
                 self.assertTrue(numpy.abs(testLast - controlLast) < self.tolerance)
+                self.assertIsInstance(testLmst, numpy.float)
+                self.assertIsInstance(testLast, numpy.float)
 
+        # test passing two numpy arrays
+        ll = numpy.random.random_sample(len(self.mjd))*2.0*numpy.pi
+        testLmst, testLast = utils.calcLmstLast(self.mjd, ll)
+        self.assertIsInstance(testLmst, numpy.ndarray)
+        self.assertIsInstance(testLast, numpy.ndarray)
+        for ix, (longitude, mm) in enumerate(zip(ll, self.mjd)):
+            controlLmst, controlLast = utils.calcLmstLast(mm, longitude)
+            self.assertAlmostEqual(controlLmst, testLmst[ix], 10)
+            self.assertAlmostEqual(controlLast, testLast[ix], 10)
 
 
     def test_galacticFromEquatorial(self):
