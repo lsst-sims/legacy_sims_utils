@@ -1043,6 +1043,22 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
 
     """
 
+    if isinstance(ra, np.ndarray):
+        fill_value = np.zeros(len(ra))
+    else:
+        fill_value = 0.0
+
+    if pm_ra is None:
+        pm_ra = fill_value
+    if pm_dec is None:
+        pm_dec = fill_value
+    if parallax is None:
+        parallax = fill_value
+    if v_rad is None:
+        v_rad = fill_value
+
+    are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, parallax, v_rad], "observedFromICRS")
+
     if obs_metadata is None:
         raise RuntimeError("cannot call observedFromICRS; obs_metadata is none")
 
