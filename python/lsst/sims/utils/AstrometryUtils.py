@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import palpy
 from lsst.sims.utils import arcsecFromRadians, cartesianFromSpherical, sphericalFromCartesian
 from lsst.sims.utils import radiansFromArcsec
@@ -53,7 +53,7 @@ def solarRaDec(mjd, epoch=2000.0):
     """
 
     solarRA, solarDec = _solarRaDec(mjd, epoch=epoch)
-    return numpy.degrees(solarRA), numpy.degrees(solarDec)
+    return np.degrees(solarRA), np.degrees(solarDec)
 
 
 def _distanceToSun(ra, dec, mjd, epoch=2000.0):
@@ -76,8 +76,8 @@ def _distanceToSun(ra, dec, mjd, epoch=2000.0):
 
     if hasattr(ra, '__len__'):
         return haversine(ra, dec,
-                         numpy.array([sunRa]*len(ra)),
-                         numpy.array([sunDec]*len(ra)))
+                         np.array([sunRa]*len(ra)),
+                         np.array([sunDec]*len(ra)))
 
     return haversine(ra, dec,sunRa, sunDec)
 
@@ -98,7 +98,7 @@ def distanceToSun(ra, dec, mjd, epoch=2000.0):
     @param [out] distance on the sky to the Sun in degrees
     """
 
-    return numpy.degrees(_distanceToSun(numpy.radians(ra), numpy.radians(dec),
+    return np.degrees(_distanceToSun(np.radians(ra), np.radians(dec),
                                         mjd, epoch=epoch))
 
 
@@ -156,7 +156,7 @@ def applyRefraction(zenithDistance, tanzCoeff, tan3zCoeff):
                            "applyRefraction.  The method won't know how to " +
                            "handle that.  Pass a numpy array.")
 
-    if isinstance(zenithDistance, numpy.ndarray):
+    if isinstance(zenithDistance, np.ndarray):
         refractedZenith = palpy.refzVector(zenithDistance, tanzCoeff, tan3zCoeff)
     else:
         refractedZenith=palpy.refz(zenithDistance, tanzCoeff, tan3zCoeff)
@@ -190,10 +190,10 @@ def applyPrecession(ra, dec, epoch=2000.0, mjd=None):
 
     """
 
-    output = _applyPrecession(numpy.radians(ra), numpy.radians(dec),
+    output = _applyPrecession(np.radians(ra), np.radians(dec),
                               epoch=epoch, mjd=mjd)
 
-    return numpy.degrees(output)
+    return np.degrees(output)
 
 
 
@@ -240,10 +240,10 @@ def _applyPrecession(ra, dec, epoch=2000.0, mjd=None):
 
     # Apply rotation matrix
     xyz = cartesianFromSpherical(ra,dec)
-    xyz =  numpy.dot(rmat,xyz.transpose()).transpose()
+    xyz =  np.dot(rmat,xyz.transpose()).transpose()
 
     raOut,decOut = sphericalFromCartesian(xyz)
-    return numpy.array([raOut,decOut])
+    return np.array([raOut,decOut])
 
 
 def applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
@@ -284,13 +284,13 @@ def applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
     (both in degrees)
     """
 
-    output = _applyProperMotion(numpy.radians(ra), numpy.radians(dec),
+    output = _applyProperMotion(np.radians(ra), np.radians(dec),
                                 radiansFromArcsec(pm_ra),
                                 radiansFromArcsec(pm_dec),
                                 radiansFromArcsec(parallax),
                                 v_rad, epoch=epoch, mjd=mjd)
 
-    return numpy.degrees(output)
+    return np.degrees(output)
 
 
 def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
@@ -357,9 +357,9 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
 
     #because PAL and ERFA expect proper motion in terms of "coordinate
     #angle; not true angle" (as stated in erfa/starpm.c documentation)
-    pm_ra_corrected = pm_ra/numpy.cos(dec)
+    pm_ra_corrected = pm_ra/np.cos(dec)
 
-    if isinstance(ra, numpy.ndarray):
+    if isinstance(ra, np.ndarray):
         if len(ra) != len(dec) or \
         len(ra) != len(pm_ra) or \
         len(ra) != len(pm_dec) or \
@@ -379,7 +379,7 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
     else:
         raOut, decOut = palpy.pm(ra, dec, pm_ra_corrected, pm_dec, parallaxArcsec, v_rad, epoch, julianEpoch)
 
-    return numpy.array([raOut,decOut])
+    return np.array([raOut,decOut])
 
 
 
@@ -430,12 +430,12 @@ def appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     else:
         px_in = None
 
-    output = _appGeoFromICRS(numpy.radians(ra), numpy.radians(dec),
+    output = _appGeoFromICRS(np.radians(ra), np.radians(dec),
                              pm_ra=pm_ra_in, pm_dec=pm_dec_in,
                              parallax=px_in, v_rad=v_rad, epoch=epoch, mjd=mjd)
 
 
-    return numpy.degrees(output)
+    return np.degrees(output)
 
 
 def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
@@ -478,16 +478,16 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
                         % (len(ra),len(dec)))
 
     if pm_ra is None:
-        pm_ra=numpy.zeros(len(ra))
+        pm_ra=np.zeros(len(ra))
 
     if pm_dec is None:
-        pm_dec=numpy.zeros(len(ra))
+        pm_dec=np.zeros(len(ra))
 
     if v_rad is None:
-        v_rad=numpy.zeros(len(ra))
+        v_rad=np.zeros(len(ra))
 
     if parallax is None:
-        parallax=numpy.zeros(len(ra))
+        parallax=np.zeros(len(ra))
 
     # Define star independent mean to apparent place parameters
     # palpy.mappa calculates the star-independent parameters
@@ -510,11 +510,11 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
 
     # because PAL and ERFA expect proper motion in terms of "coordinate
     # angle; not true angle" (as stated in erfa/starpm.c documentation)
-    pm_ra_corrected = pm_ra/numpy.cos(dec)
+    pm_ra_corrected = pm_ra/np.cos(dec)
 
     raOut,decOut = palpy.mapqkVector(ra,dec,pm_ra_corrected,pm_dec,arcsecFromRadians(parallax),v_rad,prms)
 
-    return numpy.array([raOut,decOut])
+    return np.array([raOut,decOut])
 
 
 def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
@@ -559,7 +559,7 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
 
     raOut, decOut = palpy.ampqkVector(ra, dec, params)
 
-    return numpy.array([raOut, decOut])
+    return np.array([raOut, decOut])
 
 
 def icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
@@ -590,10 +590,10 @@ def icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
     the second row is the mean ICRS Dec (both in degrees)
     """
 
-    raOut, decOut = _icrsFromAppGeo(numpy.radians(ra), numpy.radians(dec),
+    raOut, decOut = _icrsFromAppGeo(np.radians(ra), np.radians(dec),
                                     epoch=epoch, mjd=mjd)
 
-    return numpy.array([numpy.degrees(raOut), numpy.degrees(decOut)])
+    return np.array([np.degrees(raOut), np.degrees(decOut)])
 
 
 def observedFromAppGeo(ra, dec, includeRefraction = True,
@@ -628,20 +628,20 @@ def observedFromAppGeo(ra, dec, includeRefraction = True,
 
     if altAzHr:
         raDec, \
-        altAz = _observedFromAppGeo(numpy.radians(ra), numpy.radians(dec),
+        altAz = _observedFromAppGeo(np.radians(ra), np.radians(dec),
                                             includeRefraction=includeRefraction,
                                             altAzHr=altAzHr, wavelength=wavelength,
                                             obs_metadata=obs_metadata)
 
-        return numpy.degrees(raDec), numpy.degrees(altAz)
+        return np.degrees(raDec), np.degrees(altAz)
 
     else:
-        output = _observedFromAppGeo(numpy.radians(ra), numpy.radians(dec),
+        output = _observedFromAppGeo(np.radians(ra), np.radians(dec),
                                             includeRefraction=includeRefraction,
                                             altAzHr=altAzHr, wavelength=wavelength,
                                             obs_metadata=obs_metadata)
 
-        return numpy.degrees(output)
+        return np.degrees(output)
 
 
 def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction):
@@ -782,8 +782,8 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
         #palpy.de2h converts equatorial to horizon coordinates
         #
         az, alt = palpy.de2hVector(hourAngle, decOut, obs_metadata.site.latitude_rad)
-        return numpy.array([raOut, decOut]), numpy.array([alt, az])
-    return numpy.array([raOut, decOut])
+        return np.array([raOut, decOut]), np.array([alt, az])
+    return np.array([raOut, decOut])
 
 
 def appGeoFromObserved(ra, dec, includeRefraction = True,
@@ -812,12 +812,12 @@ def appGeoFromObserved(ra, dec, includeRefraction = True,
     in degrees)
     """
 
-    raOut, decOut = _appGeoFromObserved(numpy.radians(ra), numpy.radians(dec),
+    raOut, decOut = _appGeoFromObserved(np.radians(ra), np.radians(dec),
                                         includeRefraction=includeRefraction,
                                         wavelength=wavelength,
                                         obs_metadata=obs_metadata)
 
-    return numpy.array([numpy.degrees(raOut), numpy.degrees(decOut)])
+    return np.array([np.degrees(raOut), np.degrees(decOut)])
 
 
 def _appGeoFromObserved(ra, dec, includeRefraction = True,
@@ -862,7 +862,7 @@ def _appGeoFromObserved(ra, dec, includeRefraction = True,
     obsPrms = _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
 
     raOut, decOut = palpy.oapqkVector('r', ra, dec, obsPrms)
-    return numpy.array([raOut, decOut])
+    return np.array([raOut, decOut])
 
 
 def observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=None,
@@ -915,12 +915,12 @@ def observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=None
     else:
         parallax_in = None
 
-    output = _observedFromICRS(numpy.radians(ra), numpy.radians(dec),
+    output = _observedFromICRS(np.radians(ra), np.radians(dec),
                                pm_ra=pm_ra_in, pm_dec=pm_dec_in, parallax=parallax_in,
                                v_rad=v_rad, obs_metadata=obs_metadata, epoch=epoch,
                                includeRefraction=includeRefraction)
 
-    return numpy.degrees(output)
+    return np.degrees(output)
 
 
 
@@ -979,7 +979,7 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
     ra_out, dec_out = _observedFromAppGeo(ra_apparent, dec_apparent, obs_metadata=obs_metadata,
                                                includeRefraction = includeRefraction)
 
-    return numpy.array([ra_out,dec_out])
+    return np.array([ra_out,dec_out])
 
 
 def icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=True):
@@ -1012,11 +1012,11 @@ def icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=T
     RA and the second row is the mean ICRS Dec (both in degrees)
     """
 
-    ra_out, dec_out = _icrsFromObserved(numpy.radians(ra), numpy.radians(dec),
+    ra_out, dec_out = _icrsFromObserved(np.radians(ra), np.radians(dec),
                                         obs_metadata=obs_metadata,
                                         epoch=epoch, includeRefraction=includeRefraction)
 
-    return numpy.array([numpy.degrees(ra_out), numpy.degrees(dec_out)])
+    return np.array([np.degrees(ra_out), np.degrees(dec_out)])
 
 
 def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=True):
@@ -1069,4 +1069,4 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
     ra_icrs, dec_icrs = _icrsFromAppGeo(ra_app, dec_app, epoch=epoch,
                                         mjd=obs_metadata.mjd)
 
-    return numpy.array([ra_icrs, dec_icrs])
+    return np.array([ra_icrs, dec_icrs])

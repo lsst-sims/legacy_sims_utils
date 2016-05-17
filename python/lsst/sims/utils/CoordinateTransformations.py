@@ -3,7 +3,7 @@ This file contains coordinate transformation methods that are very thin wrappers
 of palpy methods, or that have no dependence on palpy at all
 """
 
-import numpy
+import numpy as np
 import palpy
 from collections import OrderedDict
 
@@ -34,10 +34,10 @@ def calcLmstLast(mjd, longRad):
     """
     mjdIsArray = False
     longRadIsArray = False
-    if isinstance(mjd, numpy.ndarray):
+    if isinstance(mjd, np.ndarray):
         mjdIsArray = True
 
-    if isinstance(longRad, numpy.ndarray):
+    if isinstance(longRad, np.ndarray):
         longRadIsArray = True
 
     if longRadIsArray and mjdIsArray:
@@ -46,11 +46,11 @@ def calcLmstLast(mjd, longRad):
 
 
     valid_type = False
-    if isinstance(mjd, numpy.ndarray) and isinstance(longRad, numpy.ndarray):
+    if isinstance(mjd, np.ndarray) and isinstance(longRad, np.ndarray):
         valid_type = True
-    elif isinstance(mjd, numpy.ndarray) and isinstance(longRad, numpy.float):
+    elif isinstance(mjd, np.ndarray) and isinstance(longRad, np.float):
         valid_type = True
-    elif isinstance(mjd, numpy.float) and isinstance(longRad, numpy.float):
+    elif isinstance(mjd, np.float) and isinstance(longRad, np.float):
         valid_type = True
 
     if not valid_type:
@@ -59,11 +59,11 @@ def calcLmstLast(mjd, longRad):
                            "mjd as a numpy array and longRad as a float\n"
                            "mjd as a float and longRad as a float\n")
 
-    longDeg0 = numpy.degrees(longRad)
+    longDeg0 = np.degrees(longRad)
     longDeg0 %= 360.0
 
     if longRadIsArray:
-        longDeg = numpy.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
+        longDeg = np.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
     else:
         if longDeg0 > 180.:
             longDeg = longDeg0-360.
@@ -91,8 +91,8 @@ def galacticFromEquatorial(ra, dec):
     @param [out] gLat is galactic latitude in degrees
     '''
 
-    gLong, gLat = _galacticFromEquatorial(numpy.radians(ra), numpy.radians(dec))
-    return numpy.degrees(gLong), numpy.degrees(gLat)
+    gLong, gLat = _galacticFromEquatorial(np.radians(ra), np.radians(dec))
+    return np.degrees(gLong), np.degrees(gLat)
 
 
 def _galacticFromEquatorial(ra, dec):
@@ -109,7 +109,7 @@ def _galacticFromEquatorial(ra, dec):
     @param [out] gLat is galactic latitude in radians
     '''
 
-    if isinstance(ra, numpy.ndarray):
+    if isinstance(ra, np.ndarray):
         gLong, gLat = palpy.eqgalVector(ra, dec)
     else:
         gLong, gLat = palpy.eqgal(ra, dec)
@@ -131,8 +131,8 @@ def equatorialFromGalactic(gLong, gLat):
     @param [out] dec is declination in degrees
     '''
 
-    ra, dec = _equatorialFromGalactic(numpy.radians(gLong), numpy.radians(gLat))
-    return numpy.degrees(ra), numpy.degrees(dec)
+    ra, dec = _equatorialFromGalactic(np.radians(gLong), np.radians(gLat))
+    return np.degrees(ra), np.degrees(dec)
 
 
 def _equatorialFromGalactic(gLong, gLat):
@@ -149,7 +149,7 @@ def _equatorialFromGalactic(gLong, gLat):
     @param [out] dec is declination in radians (J2000)
     '''
 
-    if isinstance(gLong, numpy.ndarray):
+    if isinstance(gLong, np.ndarray):
         ra, dec = palpy.galeqVector(gLong, gLat)
     else:
         ra, dec = palpy.galeq(gLong, gLat)
@@ -170,13 +170,13 @@ def cartesianFromSpherical(longitude, latitude):
     All angles are in radians
     """
 
-    if not isinstance(longitude, numpy.ndarray) or not isinstance(latitude, numpy.ndarray):
+    if not isinstance(longitude, np.ndarray) or not isinstance(latitude, np.ndarray):
         raise RuntimeError("you need to pass numpy arrays to cartesianFromSpherical")
 
-    cosDec = numpy.cos(latitude)
-    return numpy.array([numpy.cos(longitude)*cosDec,
-                      numpy.sin(longitude)*cosDec,
-                      numpy.sin(latitude)]).transpose()
+    cosDec = np.cos(latitude)
+    return np.array([np.cos(longitude)*cosDec,
+                      np.sin(longitude)*cosDec,
+                      np.sin(latitude)]).transpose()
 
 
 def sphericalFromCartesian(xyz):
@@ -191,17 +191,17 @@ def sphericalFromCartesian(xyz):
     All angles are in radians
     """
 
-    if not isinstance(xyz, numpy.ndarray):
+    if not isinstance(xyz, np.ndarray):
         raise RuntimeError("you need to pass a numpy array to sphericalFromCartesian")
 
     if len(xyz.shape)>1:
-        rad = numpy.sqrt(numpy.power(xyz,2).sum(axis=1))
-        longitude = numpy.arctan2( xyz[:,1], xyz[:,0])
-        latitude = numpy.arcsin( xyz[:,2] / rad)
+        rad = np.sqrt(np.power(xyz,2).sum(axis=1))
+        longitude = np.arctan2( xyz[:,1], xyz[:,0])
+        latitude = np.arcsin( xyz[:,2] / rad)
     else:
-        rad = numpy.sqrt(numpy.dot(xyz,xyz))
-        longitude = numpy.arctan2(xyz[1], xyz[0])
-        latitude = numpy.arcsin(xyz[2]/rad)
+        rad = np.sqrt(np.dot(xyz,xyz))
+        longitude = np.arctan2(xyz[1], xyz[0])
+        latitude = np.arcsin(xyz[2]/rad)
 
     return longitude, latitude
 
@@ -216,20 +216,20 @@ def rotationMatrixFromVectors(v1, v2):
 
     '''
 
-    if numpy.abs(numpy.sqrt(numpy.dot(v1,v1))-1.0) > 0.01:
+    if np.abs(np.sqrt(np.dot(v1,v1))-1.0) > 0.01:
         raise RuntimeError("v1 in rotationMatrixFromVectors is not a unit vector")
 
-    if numpy.abs(numpy.sqrt(numpy.dot(v2,v2))-1.0) > 0.01:
+    if np.abs(np.sqrt(np.dot(v2,v2))-1.0) > 0.01:
         raise RuntimeError("v2 in rotationMatrixFromVectors is not a unit vector")
 
     # Calculate the axis of rotation by the cross product of v1 and v2
-    cross = numpy.cross(v1,v2)
-    cross = cross / numpy.sqrt(numpy.dot(cross,cross))
+    cross = np.cross(v1,v2)
+    cross = cross / np.sqrt(np.dot(cross,cross))
 
     # calculate the angle of rotation via dot product
-    angle  = numpy.arccos(numpy.dot(v1,v2))
-    sinDot = numpy.sin(angle)
-    cosDot = numpy.cos(angle)
+    angle  = np.arccos(np.dot(v1,v2))
+    sinDot = np.sin(angle)
+    cosDot = np.cos(angle)
 
     # calculate the corresponding rotation matrix
     # http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
@@ -254,7 +254,7 @@ def equationOfEquinoxes(d):
     @param [out] the equation of equinoxes in radians.
     """
 
-    if isinstance(d, numpy.ndarray):
+    if isinstance(d, np.ndarray):
         return palpy.eqeqxVector(d)
     else:
         return palpy.eqeqx(d)
@@ -272,9 +272,9 @@ def calcGmstGast(mjd):
     @param [out] gast Greenwich apparent sidereal time in hours
     """
 
-    date = numpy.floor(mjd)
+    date = np.floor(mjd)
     ut1 = mjd-date
-    if isinstance(mjd, numpy.ndarray):
+    if isinstance(mjd, np.ndarray):
         gmst = palpy.gmstaVector(date, ut1)
     else:
         gmst = palpy.gmsta(date, ut1)
@@ -282,10 +282,10 @@ def calcGmstGast(mjd):
     eqeq = equationOfEquinoxes(mjd)
     gast = gmst + eqeq
 
-    gmst = gmst*24.0/(2.0*numpy.pi)
+    gmst = gmst*24.0/(2.0*np.pi)
     gmst %= 24.0
 
-    gast = gast*24.0/(2.0*numpy.pi)
+    gast = gast*24.0/(2.0*np.pi)
     gast %= 24.0
 
     return gmst, gast
@@ -307,9 +307,9 @@ def haversine(long1, lat1, long2, lat2):
 
     From http://en.wikipedia.org/wiki/Haversine_formula
     """
-    t1 = numpy.sin(lat2/2.-lat1/2.)**2
-    t2 = numpy.cos(lat1)*numpy.cos(lat2)*numpy.sin(long2/2. - long1/2.)**2
-    return 2*numpy.arcsin(numpy.sqrt(t1 + t2))
+    t1 = np.sin(lat2/2.-lat1/2.)**2
+    t2 = np.cos(lat1)*np.cos(lat2)*np.sin(long2/2. - long1/2.)**2
+    return 2*np.arcsin(np.sqrt(t1 + t2))
 
 
 def arcsecFromRadians(value):
@@ -321,7 +321,7 @@ def arcsecFromRadians(value):
     if value is None:
         return None
 
-    return 3600.0*numpy.degrees(value)
+    return 3600.0*np.degrees(value)
 
 
 def radiansFromArcsec(value):
@@ -333,7 +333,7 @@ def radiansFromArcsec(value):
     if value is None:
         return None
 
-    return numpy.radians(value/3600.0)
+    return np.radians(value/3600.0)
 
 
 def arcsecFromDegrees(value):

@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 import inspect
 from .SpatialBounds import SpatialBounds
 from lsst.sims.utils import ModifiedJulianDate
@@ -114,22 +114,22 @@ class ObservationMetaData(object):
             self._mjd = None
 
         if rotSkyPos is not None:
-            self._rotSkyPos = numpy.radians(rotSkyPos)
+            self._rotSkyPos = np.radians(rotSkyPos)
         else:
             self._rotSkyPos = None
 
         if pointingRA is not None:
-            self._pointingRA = numpy.radians(pointingRA)
+            self._pointingRA = np.radians(pointingRA)
         else:
             self._pointingRA = None
 
         if pointingDec is not None:
-            self._pointingDec = numpy.radians(pointingDec)
+            self._pointingDec = np.radians(pointingDec)
         else:
             self._pointingDec = None
 
         if boundLength is not None:
-            self._boundLength = numpy.radians(boundLength)
+            self._boundLength = np.radians(boundLength)
         else:
             self._boundLength = None
 
@@ -333,7 +333,7 @@ class ObservationMetaData(object):
         (in the International Celestial Reference System).
         """
         if self._pointingRA is not None:
-            return numpy.degrees(self._pointingRA)
+            return np.degrees(self._pointingRA)
         else:
             return None
 
@@ -344,7 +344,7 @@ class ObservationMetaData(object):
                 raise RuntimeError('WARNING overwriting pointingRA ' +
                                    'which was set by phoSimMetaData')
 
-        self._pointingRA = numpy.radians(value)
+        self._pointingRA = np.radians(value)
         self._buildBounds()
 
     @property
@@ -354,7 +354,7 @@ class ObservationMetaData(object):
         (in the International Celestial Reference System).
         """
         if self._pointingDec is not None:
-            return numpy.degrees(self._pointingDec)
+            return np.degrees(self._pointingDec)
         else:
             return None
 
@@ -365,7 +365,7 @@ class ObservationMetaData(object):
                 raise RuntimeError('WARNING overwriting pointingDec ' +
                                    'which was set by phoSimMetaData')
 
-        self._pointingDec = numpy.radians(value)
+        self._pointingDec = np.radians(value)
         self._buildBounds()
 
     @property
@@ -384,11 +384,11 @@ class ObservationMetaData(object):
         if self._boundLength is None:
             return None
 
-        return numpy.degrees(self._boundLength)
+        return np.degrees(self._boundLength)
 
     @boundLength.setter
     def boundLength(self, value):
-        self._boundLength = numpy.radians(value)
+        self._boundLength = np.radians(value)
         self._buildBounds()
 
     @property
@@ -420,7 +420,7 @@ class ObservationMetaData(object):
         It is a parameter you should get from OpSim.
         """
         if self._rotSkyPos is not None:
-            return numpy.degrees(self._rotSkyPos)
+            return np.degrees(self._rotSkyPos)
         else:
             return None
 
@@ -431,7 +431,7 @@ class ObservationMetaData(object):
                 raise RuntimeError('WARNING overwriting rotSkyPos ' +
                                    'which was set by phoSimMetaData')
 
-        self._rotSkyPos = numpy.radians(value)
+        self._rotSkyPos = np.radians(value)
 
 
     @property

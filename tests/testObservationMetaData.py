@@ -1,7 +1,7 @@
 from __future__ import with_statement
 
 import os
-import numpy
+import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
 from collections import OrderedDict
@@ -171,9 +171,9 @@ class ObservationMetaDataTest(unittest.TestCase):
         testObsMD = ObservationMetaData(site=testSite)
 
         self.assertAlmostEqual(testObsMD.site.longitude, 20.0, 10)
-        self.assertAlmostEqual(testObsMD.site.longitude_rad, numpy.radians(20.0), 10)
+        self.assertAlmostEqual(testObsMD.site.longitude_rad, np.radians(20.0), 10)
         self.assertAlmostEqual(testObsMD.site.latitude, -71.0, 10)
-        self.assertAlmostEqual(testObsMD.site.latitude_rad, numpy.radians(-71.0), 10)
+        self.assertAlmostEqual(testObsMD.site.latitude_rad, np.radians(-71.0), 10)
         self.assertAlmostEqual(testObsMD.site.height, 4.0, 10)
         self.assertAlmostEqual(testObsMD.site.temperature, 100.0, 10)
         self.assertAlmostEqual(testObsMD.site.temperature_kelvin, 373.15, 10)
@@ -236,9 +236,9 @@ class ObservationMetaDataTest(unittest.TestCase):
 
 
         testObsMD.phoSimMetaData = phosimMD
-        self.assertAlmostEqual(testObsMD.pointingRA, numpy.degrees(-2.0), 10)
-        self.assertAlmostEqual(testObsMD.pointingDec, numpy.degrees(0.9), 10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos, numpy.degrees(1.1))
+        self.assertAlmostEqual(testObsMD.pointingRA, np.degrees(-2.0), 10)
+        self.assertAlmostEqual(testObsMD.pointingDec, np.degrees(0.9), 10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos, np.degrees(1.1))
         self.assertAlmostEqual(testObsMD.mjd.TAI, 4000.0, 10)
         self.assertAlmostEqual(testObsMD.bandpass, 'g')
 
@@ -259,9 +259,9 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.mjd.TAI,4000.0,10)
 
         #recall that pointingRA/Dec are stored as radians in phoSim metadata
-        self.assertAlmostEqual(testObsMD.pointingRA,numpy.degrees(-2.0),10)
-        self.assertAlmostEqual(testObsMD.pointingDec,numpy.degrees(0.9),10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos,numpy.degrees(1.1),10)
+        self.assertAlmostEqual(testObsMD.pointingRA,np.degrees(-2.0),10)
+        self.assertAlmostEqual(testObsMD.pointingDec,np.degrees(0.9),10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,np.degrees(1.1),10)
         self.assertEqual(testObsMD.bandpass,'g')
 
         testObsMD = ObservationMetaData()
@@ -270,9 +270,9 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.mjd.TAI,4000.0,10)
 
         #recall that pointingRA/Dec are stored as radians in phoSim metadata
-        self.assertAlmostEqual(testObsMD.pointingRA,numpy.degrees(-2.0),10)
-        self.assertAlmostEqual(testObsMD.pointingDec,numpy.degrees(0.9),10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos,numpy.degrees(1.1),10)
+        self.assertAlmostEqual(testObsMD.pointingRA,np.degrees(-2.0),10)
+        self.assertAlmostEqual(testObsMD.pointingDec,np.degrees(0.9),10)
+        self.assertAlmostEqual(testObsMD.rotSkyPos,np.degrees(1.1),10)
         self.assertEqual(testObsMD.bandpass,'g')
 
 
@@ -294,15 +294,15 @@ class ObservationMetaDataTest(unittest.TestCase):
         """
         boxBounds = [0.1, 0.3]
         circObs = ObservationMetaData(boundType='circle', pointingRA=0.0, pointingDec=0.0, boundLength=1.0, mjd=53580.0)
-        boundControl = CircleBounds(0.0, 0.0, numpy.radians(1.0))
+        boundControl = CircleBounds(0.0, 0.0, np.radians(1.0))
         self.assertEqual(circObs.bounds, boundControl)
 
         squareObs = ObservationMetaData(boundType = 'box', pointingRA=0.0, pointingDec=0.0, boundLength=1.0, mjd=53580.0)
-        boundControl = BoxBounds(0.0, 0.0, numpy.radians(1.0))
+        boundControl = BoxBounds(0.0, 0.0, np.radians(1.0))
         self.assertEqual(squareObs.bounds, boundControl)
 
         boxObs = ObservationMetaData(boundType = 'box', pointingRA=0.0, pointingDec=0.0, boundLength=boxBounds, mjd=53580.0)
-        boundControl = BoxBounds(0.0, 0.0, numpy.radians([0.1, 0.3]))
+        boundControl = BoxBounds(0.0, 0.0, np.radians([0.1, 0.3]))
         self.assertEqual(boxObs.bounds, boundControl)
 
     def testBounds(self):
@@ -317,7 +317,7 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         boxRA = 15.0
         boxDec = 0.0
-        boxLength = numpy.array([5.0,10.0])
+        boxLength = np.array([5.0,10.0])
 
         testObsMD = ObservationMetaData(boundType='circle',
                      pointingRA = circRA, pointingDec=circDec, boundLength = radius, mjd=53580.0)
