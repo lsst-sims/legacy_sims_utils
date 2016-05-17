@@ -59,20 +59,24 @@ class testCoordinateTransformations(unittest.TestCase):
         mjd3 = numpy.array([53000.0, 53000.0, 54000.0])
 
         longFloat = 1.2
-        longList = numpy.array([1.2, 1.4])
+        longArr = numpy.array([1.2, 1.4])
         latFloat = 0.5
-        latList = numpy.array([0.5, 0.6])
+        latArr = numpy.array([0.5, 0.6])
 
         raFloat = 1.1
-        raList = numpy.array([0.2, 0.3])
+        raArr = numpy.array([0.2, 0.3])
 
         decFloat = 1.1
-        decList = numpy.array([0.2, 0.3])
+        decArr = numpy.array([0.2, 0.3])
 
-        self.assertRaises(RuntimeError, utils.calcLmstLast, mjdFloat, longList)
-        self.assertRaises(RuntimeError, utils.calcLmstLast, mjd3, longList)
+        self.assertRaises(RuntimeError, utils.calcLmstLast, mjdFloat, longArr)
+        self.assertRaises(RuntimeError, utils.calcLmstLast, mjd3, longArr)
+        self.assertRaises(RuntimeError, utils.calcLmstLast, list(mjd2), longArr)
+        self.assertRaises(RuntimeError, utils.calcLmstLast, mjd2, list(longArr))
+        self.assertRaises(RuntimeError, utils.calcLmstLast, mjdFloat, longArr)
+        ans = utils.calcLmstLast(mjd2, longFloat)
         ans = utils.calcLmstLast(mjdFloat, longFloat)
-        ans = utils.calcLmstLast(mjd2, longList)
+        ans = utils.calcLmstLast(mjd2, longArr)
 
 
     def testEquationOfEquinoxes(self):
