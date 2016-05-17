@@ -145,7 +145,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     return np.array([x_out, y_out])
 
 
-def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
+def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     """
     @param [in] xPupil -- pupil coordinates in radians
 
@@ -155,7 +155,7 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     the state of the telescope
 
     @param [in] epoch -- julian epoch of the mean equinox used for the coordinate
-    transformations (in years)
+    transformations (in years; defaults to 2000)
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
     row is Dec (both in degrees; both in the International Celestial Reference System)
@@ -167,7 +167,7 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     return np.degrees(output)
 
 
-def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
+def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     """
     @param [in] xPupil -- pupil coordinates in radians
 
@@ -177,7 +177,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     the state of the telescope
 
     @param [in] epoch -- julian epoch of the mean equinox used for the coordinate
-    transformations (in years)
+    transformations (in years; defaults to 2000)
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
     row is Dec (both in radians; both in the International Celestial Reference System)
@@ -205,13 +205,10 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
         raise RuntimeError("You passed %d RAs but %d Decs into raDecFromPupilCoords" % \
                            (len(raObj), len(decObj)))
 
-    ra_pointing_temp, dec_pointing_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
-                                                            np.array([obs_metadata._pointingDec]),
-                                                            obs_metadata=obs_metadata,
-                                                            epoch=2000.0, includeRefraction=True)
-
-    ra_pointing = ra_pointing_temp[0]
-    dec_pointing = dec_pointing_temp[0]
+    ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
+                                                  obs_metadata._pointingDec,
+                                                  obs_metadata=obs_metadata,
+                                                  epoch=epoch, includeRefraction=True)
 
     #This is the same as theta in pupilCoordsFromRaDec, except without the minus sign.
     #This is because we will be reversing the rotation performed in that other method.
@@ -228,6 +225,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=None):
     raObs, decObs = palpy.dtp2sVector(x_g, y_g, ra_pointing, dec_pointing)
 
     ra_icrs, dec_icrs = _icrsFromObserved(raObs, decObs,
-                                          obs_metadata=obs_metadata, epoch=2000.0, includeRefraction=True)
+                                          obs_metadata=obs_metadata,
+                                          epoch=epoch, includeRefraction=True)
 
     return np.array([ra_icrs, dec_icrs])
