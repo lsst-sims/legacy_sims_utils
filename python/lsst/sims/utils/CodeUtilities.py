@@ -24,8 +24,8 @@ def _validate_inputs(input_list, method_name):
     elif isinstance(input_list[0], np.float):
         desired_type = np.float
     else:
-        raise RuntimeError("The inputs to %s should all be either " % method_name
-                           + "floats or numpy arrays")
+        raise RuntimeError("The inputs to %s should all be the same type," % method_name
+                           + " either floats or numpy arrays")
 
     valid_type = True
     for ii in input_list:
@@ -33,8 +33,8 @@ def _validate_inputs(input_list, method_name):
             valid_type = False
 
     if not valid_type:
-        raise RuntimeError("The inputs to %s should all be either " % method_name
-                           + "floats or numpy arrays")
+        raise RuntimeError("The inputs to %s should all be the same type," % method_name
+                           + " either floats or numpy arrays")
 
     if desired_type is np.ndarray:
         same_length=True

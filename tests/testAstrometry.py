@@ -761,48 +761,48 @@ class astrometryUnitTest(unittest.TestCase):
                                       parallax=parallax, v_rad=v_rad, mjd=mjd)
 
         self.assertEqual(context.exception.args[0],
-                         "The inputs to appGeoFromICRS should all be either "
-                         "floats or numpy arrays")
+                         "The inputs to appGeoFromICRS should all be the same "
+                         "type, either floats or numpy arrays")
 
         with self.assertRaises(RuntimeError) as context:
             ra, dec = _appGeoFromICRS(5.0, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
                                       parallax=parallax, v_rad=v_rad, mjd=mjd)
 
         self.assertEqual(context.exception.args[0],
-                         "The inputs to appGeoFromICRS should all be either "
-                         "floats or numpy arrays")
+                         "The inputs to appGeoFromICRS should all be the same type, "
+                         "either floats or numpy arrays")
 
         with self.assertRaises(RuntimeError) as context:
             ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=5.0, pm_dec=pm_dec,
                                       parallax=parallax, v_rad=v_rad, mjd=mjd)
 
         self.assertEqual(context.exception.args[0],
-                         "The inputs to appGeoFromICRS should all be either "
-                         "floats or numpy arrays")
+                         "The inputs to appGeoFromICRS should all be the same type, "
+                         "either floats or numpy arrays")
 
         with self.assertRaises(RuntimeError) as context:
             ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=5.0,
                                       parallax=parallax, v_rad=v_rad, mjd=mjd)
 
         self.assertEqual(context.exception.args[0],
-                         "The inputs to appGeoFromICRS should all be either "
-                         "floats or numpy arrays")
+                         "The inputs to appGeoFromICRS should all be the same type, "
+                         "either floats or numpy arrays")
 
         with self.assertRaises(RuntimeError) as context:
             ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
                                       parallax=5.0, v_rad=v_rad, mjd=mjd)
 
         self.assertEqual(context.exception.args[0],
-                         "The inputs to appGeoFromICRS should all be either "
-                         "floats or numpy arrays")
+                         "The inputs to appGeoFromICRS should all be the same type, "
+                         "either floats or numpy arrays")
 
         with self.assertRaises(RuntimeError) as context:
             ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs, pm_ra=pm_ra, pm_dec=pm_dec,
                                       parallax=parallax, v_rad=5.0, mjd=mjd)
 
         self.assertEqual(context.exception.args[0],
-                         "The inputs to appGeoFromICRS should all be either "
-                         "floats or numpy arrays")
+                         "The inputs to appGeoFromICRS should all be the same type, "
+                         "either floats or numpy arrays")
 
         with self.assertRaises(RuntimeError) as context:
             ra, dec = _appGeoFromICRS(ra_icrs, dec_icrs[:2], pm_ra=pm_ra, pm_dec=pm_dec,
