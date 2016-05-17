@@ -153,7 +153,9 @@ class astrometryUnitTest(unittest.TestCase):
         sun_dec_list = [np.radians(-22.0-47.0/60.0-40.27/3600.0),
                         np.radians(22.0+30.0/60.0+0.73/3600.0)]
 
-        for raS, decS, mjd in zip(sun_ra_list, sun_dec_list, mjd_list):
+        for raS, decS, tai in zip(sun_ra_list, sun_dec_list, mjd_list):
+
+            mjd = ModifiedJulianDate(TAI=tai)
 
             # first, verify that the Sun is where we think it is to within 5 arc seconds
             self.assertLess(arcsecFromRadians(_distanceToSun(raS, decS, mjd)), 5.0)
@@ -206,7 +208,7 @@ class astrometryUnitTest(unittest.TestCase):
         nSamples = 100
         ra = np.random.random_sample(nSamples)*2.0*np.pi
         dec = (np.random.random_sample(nSamples)-0.5)*np.pi
-        mjd = 59580.0
+        mjd = ModifiedJulianDate(TAI=59580.0)
         control_distance = _distanceToSun(ra, dec, mjd)
         self.assertIsInstance(control_distance, np.ndarray)
         for ix, (rr, dd) in enumerate(zip(ra, dec)):
@@ -220,7 +222,8 @@ class astrometryUnitTest(unittest.TestCase):
         Test that distanceToSun is consistent with _distanceToSun
         """
 
-        for mjd, ra, dec in zip((57632.1, 45623.4, 55682.3), (112.0, 24.0, 231.2), (-25.0, 23.4, -60.0)):
+        for tai, ra, dec in zip((57632.1, 45623.4, 55682.3), (112.0, 24.0, 231.2), (-25.0, 23.4, -60.0)):
+             mjd = ModifiedJulianDate(TAI=tai)
              dd_deg = distanceToSun(ra, dec, mjd)
              dd_rad = _distanceToSun(np.radians(ra), np.radians(dec), mjd)
              self.assertAlmostEqual(np.radians(dd_deg), dd_rad, 10)
@@ -231,7 +234,8 @@ class astrometryUnitTest(unittest.TestCase):
         Test that solarRaDec is consistent with _solarRaDec
         """
 
-        for mjd in (57664.2, 53478.9, 45672.1):
+        for tai in (57664.2, 53478.9, 45672.1):
+            mjd = ModifiedJulianDate(TAI=tai)
             ra_deg, dec_deg = solarRaDec(mjd)
             ra_rad, dec_rad = _solarRaDec(mjd)
             self.assertAlmostEqual(np.radians(ra_deg), ra_rad, 10)
@@ -261,8 +265,8 @@ class astrometryUnitTest(unittest.TestCase):
         sun_dec_list = [np.radians(-22.0-47.0/60.0-40.27/3600.0),
                         np.radians(22.0+30.0/60.0+0.73/3600.0)]
 
-        for mjd, raS, decS in zip(mjd_list, sun_ra_list, sun_dec_list):
-
+        for tai, raS, decS in zip(mjd_list, sun_ra_list, sun_dec_list):
+            mjd=ModifiedJulianDate(TAI=tai)
             ra_list = np.random.random_sample(nStars)*2.0*np.pi
             dec_list =(np.random.random_sample(nStars)-0.5)*np.pi
             distance_list = _distanceToSun(ra_list, dec_list, mjd)
@@ -868,7 +872,7 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertFalse(np.isnan(ra_icrs).any())
             self.assertFalse(np.isnan(dec_icrs).any())
 
-            valid_pts = np.where(_distanceToSun(ra_in, dec_in, mjd.TDB)>0.25*np.pi)[0]
+            valid_pts = np.where(_distanceToSun(ra_in, dec_in, mjd)>0.25*np.pi)[0]
 
             self.assertGreater(len(valid_pts), 0)
 
@@ -902,17 +906,17 @@ class astrometryUnitTest(unittest.TestCase):
 
         site = Site(name='LSST')
 
-        for mjd in (53000.0, 53241.6, 58504.6):
+        for tai in (53000.0, 53241.6, 58504.6):
             for includeRefraction in (True, False):
                 for raPointing in (23.5, 256.9, 100.0):
                     for decPointing in (-12.0, 45.0, 66.8):
 
-                        obs = ObservationMetaData(mjd=mjd, site=site)
+                        obs = ObservationMetaData(mjd=tai, site=site)
 
                         raZenith, decZenith = _raDecFromAltAz(0.5*np.pi, 0.0, obs)
 
                         obs = ObservationMetaData(pointingRA=raPointing, pointingDec=decPointing,
-                                                  mjd=mjd, site=site)
+                                                  mjd=tai, site=site)
 
                         rr = np.random.random_sample(nSamples)*np.radians(50.0)
                         theta = np.random.random_sample(nSamples)*2.0*np.pi
@@ -929,7 +933,7 @@ class astrometryUnitTest(unittest.TestCase):
                                                               includeRefraction=includeRefraction,
                                                               epoch=2000.0)
 
-                        valid_pts = np.where(_distanceToSun(ra_in, dec_in, mjd)>0.25*np.pi)[0]
+                        valid_pts = np.where(_distanceToSun(ra_in, dec_in, obs.mjd)>0.25*np.pi)[0]
 
                         self.assertGreater(len(valid_pts), 0)
 

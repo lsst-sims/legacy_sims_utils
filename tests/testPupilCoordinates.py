@@ -166,7 +166,7 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         """
 
         mjd = ModifiedJulianDate(TAI=52000.0)
-        solarRA, solarDec = solarRaDec(mjd.TDB)
+        solarRA, solarDec = solarRaDec(mjd)
 
         # to make sure that we are more than 45 degrees from the Sun as required
         # for _icrsFromObserved to be at all accurate
@@ -188,7 +188,7 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         raTest, decTest = _raDecFromPupilCoords(xp, yp, obs_metadata=obs, epoch=2000.0)
         distance = arcsecFromRadians(haversine(ra, dec, raTest, decTest))
         dex = np.argmax(distance)
-        worstSolarDistance = distanceToSun(np.degrees(ra[dex]), np.degrees(dec[dex]), mjd.TDB)
+        worstSolarDistance = distanceToSun(np.degrees(ra[dex]), np.degrees(dec[dex]), mjd)
         msg = "_raDecFromPupilCoords off by %e arcsec at distance to Sun of %e degrees" % \
         (distance.max(), worstSolarDistance)
         self.assertLess(distance.max(), 0.005, msg=msg)

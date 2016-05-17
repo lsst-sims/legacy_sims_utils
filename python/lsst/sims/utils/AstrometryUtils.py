@@ -72,8 +72,8 @@ def _solarRaDec(mjd, epoch=2000.0):
     """
     Return the RA and Dec of the Sun in radians
 
-    @param [in] mjd is the date (TDB) in question as an MJD
-    (this is a float)
+    @param [in] mjd is the date represented as a
+    ModifiedJulianDate object.
 
     @param [in] epoch is the mean epoch of the coordinate system
     (default is 2000.0)
@@ -83,7 +83,7 @@ def _solarRaDec(mjd, epoch=2000.0):
     @param [out] Dec of Sun in radians
     """
 
-    params = palpy.mappa(epoch, mjd)
+    params = palpy.mappa(epoch, mjd.TDB)
     # params[4:7] is a unit vector pointing from the Sun
     # to the Earth (see the docstring for palpy.mappa)
 
@@ -94,8 +94,8 @@ def solarRaDec(mjd, epoch=2000.0):
     """
     Return the RA and Dec of the Sun in degrees
 
-    @param [in] mjd is the date (TDB) in question as an MJD
-    (this is a float)
+    @param [in] mjd is the date represented as a
+    ModifiedJulianDate object.
 
     @param [in] epoch is the mean epoch of the coordinate system
     (default is 2000.0)
@@ -117,8 +117,8 @@ def _distanceToSun(ra, dec, mjd, epoch=2000.0):
 
     @param [in] dec in radians
 
-    @param [in] mjd is the date (TDB) in question as an MJD
-    (this is a float)
+    @param [in] mjd is the date represented as a
+    ModifiedJulianDate object.
 
     @param [in] epoch is the epoch of the coordinate system
     (default is 2000.0)
@@ -139,8 +139,8 @@ def distanceToSun(ra, dec, mjd, epoch=2000.0):
 
     @param [in] dec in degrees
 
-    @param [in] mjd is the date (TDB) in question as an MJD
-    (this is a float)
+    @param [in] mjd is the date represented as a
+    ModifiedJulianDate object.
 
     @param [in] epoch is the epoch of the coordinate system
     (default is 2000.0)
