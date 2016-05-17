@@ -253,6 +253,7 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertAlmostEqual(np.cos(lat[ix]), np.cos(theta[ix]), 5)
             self.assertAlmostEqual(np.sin(lat[ix]), np.sin(theta[ix]), 5)
 
+        # test passing in the points one at a time
         for pp, th, ph in zip(points, theta, phi):
             lon, lat = utils.sphericalFromCartesian(pp)
             self.assertAlmostEqual(np.cos(lon), np.cos(ph), 5)
