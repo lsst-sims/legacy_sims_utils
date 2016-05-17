@@ -589,9 +589,9 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
 
     This method works in radians.
 
-    @param [in] ra in radians (apparent geocentric).  Must be a numpy array.
+    @param [in] ra in radians (apparent geocentric).  Can be a numpy array or a float.
 
-    @param [in] dec in radians (apparent geocentric).  Must be a numpy array.
+    @param [in] dec in radians (apparent geocentric).  Can be a numpy array or a float.
 
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
@@ -602,6 +602,8 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
     @param [out] a 2-D numpy array in which the first row is the mean ICRS RA and
     the second row is the mean ICRS Dec (both in radians)
     """
+
+    are_arrays = _validate_inputs([ra, dec], "icrsFromAppGeo")
 
     # Define star independent mean to apparent place parameters
     # palpy.mappa calculates the star-independent parameters
@@ -615,7 +617,10 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
     # date (MJD)
     params = palpy.mappa(epoch, mjd.TDB)
 
-    raOut, decOut = palpy.ampqkVector(ra, dec, params)
+    if are_arrays:
+        raOut, decOut = palpy.ampqkVector(ra, dec, params)
+    else:
+        raOut, decOut = palpy.ampqk(ra, dec, params)
 
     return np.array([raOut, decOut])
 
@@ -634,9 +639,9 @@ def icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
 
     This method works in degrees.
 
-    @param [in] ra in degrees (apparent geocentric).  Must be a numpy array.
+    @param [in] ra in degrees (apparent geocentric).  Can be a numpy array or a float.
 
-    @param [in] dec in degrees (apparent geocentric).  Must be a numpy array.
+    @param [in] dec in degrees (apparent geocentric).  Can be a numpy array or a float.
 
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)

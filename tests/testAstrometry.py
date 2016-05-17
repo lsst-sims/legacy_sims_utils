@@ -852,21 +852,23 @@ class astrometryUnitTest(unittest.TestCase):
 
         mjd2000 = pal.epb(2000.0) # convert epoch to mjd
 
-        for mjd in (53000.0, 53241.6, 58504.6):
+        for tai in (53000.0, 53241.6, 58504.6):
+
+            mjd = ModifiedJulianDate(TAI=tai)
 
             ra_in = np.random.random_sample(nSamples)*2.0*np.pi
             dec_in = (np.random.random_sample(nSamples)-0.5)*np.pi
 
 
-            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=ModifiedJulianDate(TAI=mjd))
+            ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=mjd)
 
             ra_icrs, dec_icrs = _icrsFromAppGeo(ra_app, dec_app,
-                                                epoch=2000.0, mjd=ModifiedJulianDate(TAI=mjd))
+                                                epoch=2000.0, mjd=mjd)
 
             self.assertFalse(np.isnan(ra_icrs).any())
             self.assertFalse(np.isnan(dec_icrs).any())
 
-            valid_pts = np.where(_distanceToSun(ra_in, dec_in, mjd)>0.25*np.pi)[0]
+            valid_pts = np.where(_distanceToSun(ra_in, dec_in, mjd.TDB)>0.25*np.pi)[0]
 
             self.assertGreater(len(valid_pts), 0)
 
@@ -874,6 +876,15 @@ class astrometryUnitTest(unittest.TestCase):
                                          ra_icrs[valid_pts], dec_icrs[valid_pts]))
 
             self.assertLess(distance.max(), 0.01)
+
+            # test passing in floats
+            for ix in valid_pts:
+                ra_test, dec_test = _icrsFromAppGeo(ra_app[ix], dec_app[ix], mjd=mjd)
+                self.assertIsInstance(ra_test, np.float)
+                self.assertIsInstance(dec_test, np.float)
+                distance_f = arcsecFromRadians(pal.dsep(ra_in[ix], dec_in[ix],
+                                                       ra_test, dec_test))
+                self.assertLess(distance_f, 0.01)
 
 
     def test_icrsFromObserved(self):
