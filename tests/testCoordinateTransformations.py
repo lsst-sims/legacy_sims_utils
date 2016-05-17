@@ -282,6 +282,16 @@ class testCoordinateTransformations(unittest.TestCase):
         for pp, oo in zip(points, outPoints):
             np.testing.assert_array_almost_equal(pp, oo, decimal=6)
 
+        # test passing in arguments as floats
+        for ix, (ll, bb) in enumerate(zip(lon, lat)):
+            xyz = utils.cartesianFromSpherical(ll, bb)
+            self.assertIsInstance(xyz[0], np.float)
+            self.assertIsInstance(xyz[1], np.float)
+            self.assertIsInstance(xyz[2], np.float)
+            self.assertAlmostEqual(xyz[0], outPoints[ix][0], 12)
+            self.assertAlmostEqual(xyz[1], outPoints[ix][1], 12)
+            self.assertAlmostEqual(xyz[2], outPoints[ix][2], 12)
+
 
     def testHaversine(self):
         arg1 = 7.853981633974482790e-01

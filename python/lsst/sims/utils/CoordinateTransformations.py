@@ -161,17 +161,28 @@ def cartesianFromSpherical(longitude, latitude):
     """
     Transforms between spherical and Cartesian coordinates.
 
-    @param [in] longitude is a numpy array of longitudes
+    @param [in] longitude is a numpy array or a float in radians
 
-    @param [in] latitude is a numpy array of latitudes
+    @param [in] latitude is a numpy array or float in radians
 
-    @param [out] a numpy array of the (three-dimensional) cartesian coordinates on a unit sphere
+    @param [out] a numpy array of the (three-dimensional) cartesian coordinates on a unit sphere.
+
+    if inputs are numpy arrays:
+    output[i][0] will be the x-coordinate of the ith point
+    output[i][1] will be the y-coordinate of the ith point
+    output[i][2] will be the z-coordinate of the ith point
 
     All angles are in radians
     """
 
-    if not isinstance(longitude, np.ndarray) or not isinstance(latitude, np.ndarray):
-        raise RuntimeError("you need to pass numpy arrays to cartesianFromSpherical")
+    valid_type = False
+    if isinstance(longitude, np.ndarray) and isinstance(latitude, np.ndarray):
+        valid_type = True
+    elif isinstance(longitude, np.float) and isinstance(latitude, np.float):
+        valid_type = True
+
+    if not valid_type:
+        raise RuntimeError("longitude and latitude must both be either numpy arrays or a floats")
 
     cosDec = np.cos(latitude)
     return np.array([np.cos(longitude)*cosDec,
