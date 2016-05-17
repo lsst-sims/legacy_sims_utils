@@ -202,14 +202,27 @@ class testCoordinateTransformations(unittest.TestCase):
         lon[2]=2.829585540991265358e+00
         lat[2]=-6.510790587552289788e-01
 
-        output=utils._equatorialFromGalactic(lon,lat)
+        ra, dec = utils._equatorialFromGalactic(lon,lat)
 
-        self.assertAlmostEqual(output[0][0],2.549091039839124218e+00,6)
-        self.assertAlmostEqual(output[1][0],5.198752733024248895e-01,6)
-        self.assertAlmostEqual(output[0][1],8.693375673649429425e-01,6)
-        self.assertAlmostEqual(output[1][1],1.038086165642298164e+00,6)
-        self.assertAlmostEqual(output[0][2],7.740864769302191473e-01,6)
-        self.assertAlmostEqual(output[1][2],2.758053025017753179e-01,6)
+        self.assertIsInstance(ra, np.ndarray)
+        self.assertIsInstance(dec, np.ndarray)
+
+        self.assertAlmostEqual(ra[0],2.549091039839124218e+00,6)
+        self.assertAlmostEqual(dec[0],5.198752733024248895e-01,6)
+        self.assertAlmostEqual(ra[1],8.693375673649429425e-01,6)
+        self.assertAlmostEqual(dec[1],1.038086165642298164e+00,6)
+        self.assertAlmostEqual(ra[2],7.740864769302191473e-01,6)
+        self.assertAlmostEqual(dec[2],2.758053025017753179e-01,6)
+
+        # test passing in floats as args
+        for ix, (ll, bb) in enumerate(zip(lon, lat)):
+            rr, dd = utils._equatorialFromGalactic(ll, bb)
+            self.assertIsInstance(ll, np.float)
+            self.assertIsInstance(bb, np.float)
+            self.assertIsInstance(rr, np.float)
+            self.assertIsInstance(dd, np.float)
+            self.assertAlmostEqual(rr, ra[ix], 10)
+            self.assertAlmostEqual(dd, dec[ix], 10)
 
 
     def testCartesianFromSpherical(self):
