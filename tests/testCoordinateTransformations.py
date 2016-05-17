@@ -167,14 +167,28 @@ class testCoordinateTransformations(unittest.TestCase):
         ra[2]=7.740864769302191473e-01
         dec[2]=2.758053025017753179e-01
 
-        output=utils._galacticFromEquatorial(ra,dec)
+        glon, glat = utils._galacticFromEquatorial(ra,dec)
 
-        self.assertAlmostEqual(output[0][0],3.452036693523627964e+00,6)
-        self.assertAlmostEqual(output[1][0],8.559512505657201897e-01,6)
-        self.assertAlmostEqual(output[0][1],2.455968474619387720e+00,6)
-        self.assertAlmostEqual(output[1][1],3.158563770667878468e-02,6)
-        self.assertAlmostEqual(output[0][2],2.829585540991265358e+00,6)
-        self.assertAlmostEqual(output[1][2],-6.510790587552289788e-01,6)
+        self.assertIsInstance(glon, np.ndarray)
+        self.assertIsInstance(glat, np.ndarray)
+
+        self.assertAlmostEqual(glon[0],3.452036693523627964e+00,6)
+        self.assertAlmostEqual(glat[0],8.559512505657201897e-01,6)
+        self.assertAlmostEqual(glon[1],2.455968474619387720e+00,6)
+        self.assertAlmostEqual(glat[1],3.158563770667878468e-02,6)
+        self.assertAlmostEqual(glon[2],2.829585540991265358e+00,6)
+        self.assertAlmostEqual(glat[2],-6.510790587552289788e-01,6)
+
+        # test passing in floats as args
+        for ix, (rr, dd) in enumerate(zip(ra, dec)):
+            gl, gb = utils._galacticFromEquatorial(rr, dd)
+            self.assertIsInstance(rr, np.float)
+            self.assertIsInstance(dd, np.float)
+            self.assertIsInstance(gl, np.float)
+            self.assertIsInstance(gb, np.float)
+            self.assertAlmostEqual(gl, glon[ix], 10)
+            self.assertAlmostEqual(gb, glat[ix], 10)
+
 
     def test_equatorialFromGalactic(self):
 
