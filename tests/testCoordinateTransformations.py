@@ -60,14 +60,6 @@ class testCoordinateTransformations(unittest.TestCase):
 
         longFloat = 1.2
         longArr = numpy.array([1.2, 1.4])
-        latFloat = 0.5
-        latArr = numpy.array([0.5, 0.6])
-
-        raFloat = 1.1
-        raArr = numpy.array([0.2, 0.3])
-
-        decFloat = 1.1
-        decArr = numpy.array([0.2, 0.3])
 
         self.assertRaises(RuntimeError, utils.calcLmstLast, mjdFloat, longArr)
         self.assertRaises(RuntimeError, utils.calcLmstLast, mjd3, longArr)
