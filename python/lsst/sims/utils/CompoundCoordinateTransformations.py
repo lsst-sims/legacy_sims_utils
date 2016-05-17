@@ -69,7 +69,8 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     @param [out] parallactic angle in radians
     """
 
-    are_arrays = _validate_inputs([raRad, decRad], "altAzPaFromRaDec")
+    are_arrays = _validate_inputs([raRad, decRad], ['ra', 'dec'],
+                                  "altAzPaFromRaDec")
 
     raObs, decObs = _observedFromICRS(raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
@@ -130,7 +131,8 @@ def _raDecFromAltAz(altRad, azRad, obs):
     Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
 
-    are_arrays = _validate_inputs([altRad, azRad], "raDecFromAltAz")
+    are_arrays = _validate_inputs([altRad, azRad], ['altRad', 'azRad'],
+                                 "raDecFromAltAz")
 
     lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]

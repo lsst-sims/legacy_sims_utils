@@ -71,7 +71,8 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     radians and whose second row is the y coordinate in radians
     """
 
-    are_arrays = _validate_inputs([ra_in, dec_in], "pupilCoordsFromRaDec")
+    are_arrays = _validate_inputs([ra_in, dec_in], ['ra_in', 'dec_in'],
+                                  "pupilCoordsFromRaDec")
 
     if obs_metadata is None:
         raise RuntimeError("Cannot call pupilCoordsFromRaDec without obs_metadata")
@@ -187,7 +188,8 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     row is Dec (both in radians; both in the International Celestial Reference System)
     """
 
-    are_arrays = _validate_inputs([xPupil, yPupil], "raDecFromPupilCoords")
+    are_arrays = _validate_inputs([xPupil, yPupil], ['xPupil', 'yPupil'],
+                                 "raDecFromPupilCoords")
 
     if obs_metadata is None:
         raise RuntimeError("Cannot call raDecFromPupilCoords without obs_metadata")

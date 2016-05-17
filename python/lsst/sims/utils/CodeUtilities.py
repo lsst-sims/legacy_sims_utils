@@ -1,10 +1,13 @@
 import numpy as np
 
-def _validate_inputs(input_list, method_name):
+def _validate_inputs(input_list, input_names, method_name):
     """
     This method will validate the inputs of other methods.
 
     input_list is a list of the inputs passed to a method.
+
+    input_name is a list of the variable names associated with
+    input_list
 
     method_name is the name of the method whose input is being validated.
 
@@ -24,17 +27,24 @@ def _validate_inputs(input_list, method_name):
     elif isinstance(input_list[0], np.float):
         desired_type = np.float
     else:
-        raise RuntimeError("The inputs to %s should all be the same type," % method_name
-                           + " either floats or numpy arrays")
+        raise RuntimeError("The arg %s imput to method %s " % (input_names[0], method_name)
+                           + "should be either a float or a numpy array")
 
     valid_type = True
-    for ii in input_list:
+    bad_names = []
+    for ii, nn in zip(input_list, input_names):
         if not isinstance(ii, desired_type):
             valid_type = False
+            bad_names.append(nn)
 
     if not valid_type:
-        raise RuntimeError("The inputs to %s should all be the same type," % method_name
-                           + " either floats or numpy arrays")
+        msg = "The input arguments:\n"
+        for nn in bad_names:
+            msg += "%s,\n" % nn
+        msg += "passed to %s " % method_name
+        msg += "need to be either floats or numpy arrays\n"
+        msg += "and the same type as the argument %s" % input_names[0]
+        raise RuntimeError(msg)
 
     if desired_type is np.ndarray:
         same_length=True

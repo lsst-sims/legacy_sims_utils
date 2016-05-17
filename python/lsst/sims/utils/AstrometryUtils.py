@@ -494,6 +494,8 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
         parallax=fill_value
 
     are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, v_rad, parallax],
+                                  ['ra', 'dec', 'pm_ra', 'pm_dec', 'v_rad',
+                                  'parallax'],
                                   "appGeoFromICRS")
 
     # Define star independent mean to apparent place parameters
@@ -557,7 +559,7 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
     the second row is the mean ICRS Dec (both in radians)
     """
 
-    are_arrays = _validate_inputs([ra, dec], "icrsFromAppGeo")
+    are_arrays = _validate_inputs([ra, dec], ['ra', 'dec'], "icrsFromAppGeo")
 
     # Define star independent mean to apparent place parameters
     # palpy.mappa calculates the star-independent parameters
@@ -760,7 +762,7 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
 
     """
 
-    are_arrays = _validate_inputs([ra, dec], "observedFromAppGeo")
+    are_arrays = _validate_inputs([ra, dec], ['ra', 'dec'], "observedFromAppGeo")
 
     if obs_metadata is None:
         raise RuntimeError("Cannot call observedFromAppGeo without an obs_metadata")
@@ -869,7 +871,7 @@ def _appGeoFromObserved(ra, dec, includeRefraction = True,
     in radians)
     """
 
-    are_arrays = _validate_inputs([ra, dec], "appGeoFromObserved")
+    are_arrays = _validate_inputs([ra, dec], ['ra', 'dec'], "appGeoFromObserved")
 
     if obs_metadata is None:
         raise RuntimeError("Cannot call appGeoFromObserved without an obs_metadata")
@@ -1007,7 +1009,10 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
     if v_rad is None:
         v_rad = fill_value
 
-    are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, parallax, v_rad], "observedFromICRS")
+    are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, parallax, v_rad],
+                                  ['ra', 'dec', 'pm_ra', 'pm_dec', 'parallax',
+                                  'v_rad'],
+                                  "observedFromICRS")
 
     if obs_metadata is None:
         raise RuntimeError("cannot call observedFromICRS; obs_metadata is none")
@@ -1094,7 +1099,7 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
     RA and the second row is the mean ICRS Dec (both in radians)
     """
 
-    are_arrays = _validate_inputs([ra, dec], "icrsFromObserved")
+    are_arrays = _validate_inputs([ra, dec], ['ra', 'dec'], "icrsFromObserved")
 
 
     if obs_metadata is None:
