@@ -1075,9 +1075,9 @@ def icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=T
 
     This method works in degrees.
 
-    @param [in] ra is the observed RA in degrees.  Must be a numpy array.
+    @param [in] ra is the observed RA in degrees.  Can be a numpy array or a float.
 
-    @param [in] dec is the observed Dec in degrees.  Must be a numpy array.
+    @param [in] dec is the observed Dec in degrees.  Can be a numpy array or a float.
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.
@@ -1112,9 +1112,9 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
 
     This method works in radians.
 
-    @param [in] ra is the observed RA in radians.  Must be a numpy array.
+    @param [in] ra is the observed RA in radians.  Can be a numpy array or a float.
 
-    @param [in] dec is the observed Dec in radians.  Must be a numpy array.
+    @param [in] dec is the observed Dec in radians.  Can be a numpy array or a float.
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.
@@ -1128,6 +1128,9 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
     RA and the second row is the mean ICRS Dec (both in radians)
     """
 
+    are_arrays = _validate_inputs([ra, dec], "icrsFromObserved")
+
+
     if obs_metadata is None:
         raise RuntimeError("cannot call icrsFromObserved; obs_metadata is None")
 
@@ -1136,10 +1139,6 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
 
     if epoch is None:
         raise RuntimeError("cannot call icrsFromObserved; you have not specified an epoch")
-
-    if len(ra)!=len(dec):
-        raise RuntimeError("You passed %d RAs but %d Decs to icrsFromObserved" % \
-                           (len(ra), len(dec)))
 
 
     ra_app, dec_app = _appGeoFromObserved(ra, dec, obs_metadata=obs_metadata,

@@ -954,10 +954,13 @@ class astrometryUnitTest(unittest.TestCase):
 
 
                         # test a round-trip between observedFromAppGeo and appGeoFromObserved
-                        ra_obs, dec_obs = _observedFromAppGeo(ra_in, dec_in, obs_metadata=obs,
+                        ra_obs_from_app_geo, \
+                        dec_obs_from_app_geo = _observedFromAppGeo(ra_in, dec_in, obs_metadata=obs,
                                                               includeRefraction=includeRefraction)
-                        ra_app, dec_app = _appGeoFromObserved(ra_obs, dec_obs, obs_metadata=obs,
-                                                                includeRefraction=includeRefraction)
+                        ra_app, dec_app = _appGeoFromObserved(ra_obs_from_app_geo,
+                                                              dec_obs_from_app_geo,
+                                                              obs_metadata=obs,
+                                                              includeRefraction=includeRefraction)
 
                         distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
                                                      ra_app[valid_pts], dec_app[valid_pts]))
@@ -967,15 +970,28 @@ class astrometryUnitTest(unittest.TestCase):
                         # test that passing arguments in as floats gives consistent
                         # results
                         for ix in valid_pts:
+                            ra_f, dec_f = _icrsFromObserved(ra_obs[ix], dec_obs[ix],
+                                                            obs_metadata=obs,
+                                                            includeRefraction=includeRefraction,
+                                                            epoch=2000.0)
+                            self.assertIsInstance(ra_f, np.float)
+                            self.assertIsInstance(dec_f, np.float)
+                            dist_f = arcsecFromRadians(pal.dsep(ra_icrs[ix], dec_icrs[ix], ra_f, dec_f))
+                            self.assertLess(dist_f, 1.0e-9)
+
                             ra_f, dec_f = _observedFromAppGeo(ra_in[ix], dec_in[ix],
                                                               obs_metadata=obs,
                                                               includeRefraction=includeRefraction)
                             self.assertIsInstance(ra_f, np.float)
                             self.assertIsInstance(dec_f, np.float)
-                            dist_f = arcsecFromRadians(pal.dsep(ra_obs[ix], dec_obs[ix], ra_f, dec_f))
+                            dist_f = arcsecFromRadians(pal.dsep(ra_obs_from_app_geo[ix],
+                                                                dec_obs_from_app_geo[ix],
+                                                                ra_f, dec_f))
                             self.assertLess(dist_f, 1.0e-9)
 
-                            ra_f, dec_f = _appGeoFromObserved(ra_obs[ix], dec_obs[ix], obs_metadata=obs,
+                            ra_f, dec_f = _appGeoFromObserved(ra_obs_from_app_geo[ix],
+                                                              dec_obs_from_app_geo[ix],
+                                                              obs_metadata=obs,
                                                               includeRefraction=includeRefraction)
                             self.assertIsInstance(ra_f, np.float)
                             self.assertIsInstance(dec_f, np.float)
@@ -1011,7 +1027,7 @@ class astrometryUnitTest(unittest.TestCase):
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _icrsFromObserved(ra_in[:3], dec_in, obs_metadata=obs, epoch=2000.0)
         self.assertEqual(context.exception.args[0],
-                         "You passed 3 RAs but 10 Decs to icrsFromObserved")
+                         "The arrays input to icrsFromObserved all need to have the same length")
 
 
     def test_appGeoFromObserved(self):
