@@ -964,7 +964,14 @@ class astrometryUnitTest(unittest.TestCase):
                             self.assertIsInstance(ra_f, np.float)
                             self.assertIsInstance(dec_f, np.float)
                             dist_f = arcsecFromRadians(pal.dsep(ra_obs[ix], dec_obs[ix], ra_f, dec_f))
-                            self.assertLess(dist_f, 0.0001)
+                            self.assertLess(dist_f, 1.0e-9)
+
+                            ra_f, dec_f = _appGeoFromObserved(ra_obs[ix], dec_obs[ix], obs_metadata=obs,
+                                                              includeRefraction=includeRefraction)
+                            self.assertIsInstance(ra_f, np.float)
+                            self.assertIsInstance(dec_f, np.float)
+                            dist_f = arcsecFromRadians(pal.dsep(ra_app[ix], dec_app[ix], ra_f, dec_f))
+                            self.assertLess(dist_f, 1.0e-9)
 
 
     def test_icrsFromObservedExceptions(self):
@@ -1081,7 +1088,7 @@ class astrometryUnitTest(unittest.TestCase):
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _appGeoFromObserved(ra_in[:2], dec_in, obs_metadata=obs)
         self.assertEqual(context.exception.args[0],
-                         "You passed 2 RAs but 10 Decs to appGeoFromObserved")
+                         "The arrays input to appGeoFromObserved all need to have the same length")
 
 
     def testRefractionCoefficients(self):

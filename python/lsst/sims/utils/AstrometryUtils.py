@@ -869,9 +869,9 @@ def appGeoFromObserved(ra, dec, includeRefraction = True,
 
     This method works in degrees.
 
-    @param [in] ra is observed RA (degrees).  Must be a numpy array.
+    @param [in] ra is observed RA (degrees).  Can be a numpy array or a float.
 
-    @param [in] dec is observed Dec (degrees).  Must be a numpy array.
+    @param [in] dec is observed Dec (degrees).  Can be a numpy array or a float.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -903,9 +903,9 @@ def _appGeoFromObserved(ra, dec, includeRefraction = True,
 
     This method works in radians.
 
-    @param [in] ra is observed RA (radians).  Must be a numpy array.
+    @param [in] ra is observed RA (radians).  Can be a numpy array or a float.
 
-    @param [in] dec is observed Dec (radians).  Must be a numpy array.
+    @param [in] dec is observed Dec (radians).  Can be a numpy array or a float.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -919,6 +919,8 @@ def _appGeoFromObserved(ra, dec, includeRefraction = True,
     in radians)
     """
 
+    are_arrays = _validate_inputs([ra, dec], "appGeoFromObserved")
+
     if obs_metadata is None:
         raise RuntimeError("Cannot call appGeoFromObserved without an obs_metadata")
 
@@ -928,13 +930,13 @@ def _appGeoFromObserved(ra, dec, includeRefraction = True,
     if obs_metadata.mjd is None:
         raise RuntimeError("Cannot call appGeoFromObserved: obs_metadata has no mjd")
 
-    if len(ra)!=len(dec):
-        raise RuntimeError("You passed %d RAs but %d Decs to appGeoFromObserved" % \
-                           (len(ra), len(dec)))
-
     obsPrms = _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
 
-    raOut, decOut = palpy.oapqkVector('r', ra, dec, obsPrms)
+    if are_arrays:
+        raOut, decOut = palpy.oapqkVector('r', ra, dec, obsPrms)
+    else:
+        raOut, decOut = palpy.oapqk('r', ra, dec, obsPrms)
+
     return np.array([raOut, decOut])
 
 
