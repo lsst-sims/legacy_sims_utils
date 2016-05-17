@@ -458,7 +458,18 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertRaises(RuntimeError, _applyPrecession, ra, dec)
 
         #just make sure it runs
-        output=_applyPrecession(ra,dec, mjd=ModifiedJulianDate(TAI=57388.0))
+        mjd = ModifiedJulianDate(TAI=57388.0)
+        ra_arr, dec_arr=_applyPrecession(ra, dec, mjd=mjd)
+        self.assertIsInstance(ra_arr, np.ndarray)
+        self.assertIsInstance(dec_arr, np.ndarray)
+
+        # test that passing in floats gie the same results
+        for ix, (rr, dd) in enumerate(zip(ra, dec)):
+            ra_f, dec_f = _applyPrecession(rr, dd, mjd=mjd)
+            self.assertIsInstance(ra_f, np.float)
+            self.assertIsInstance(dec_f, np.float)
+            self.assertAlmostEqual(ra_f, ra_arr[ix], 12)
+            self.assertAlmostEqual(dec_f, dec_arr[ix], 12)
 
 
     def test_applyProperMotion(self):
