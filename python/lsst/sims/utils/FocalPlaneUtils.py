@@ -1,5 +1,6 @@
 import numpy as np
 import palpy
+from lsst.sims.utils.CodeUtilities import _validate_inputs
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 
 __all__ = ["_pupilCoordsFromRaDec", "pupilCoordsFromRaDec",
@@ -23,11 +24,9 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     observers actually see, rather than the idealized, above-the-atmosphere
     coordinates represented by the ICRS.
 
-    @param [in] ra_in is a numpy array of RAs in degrees
-    (in the International Celestial Reference System)
+    @param [in] ra_in is in degrees (ICRS).  Can be either a numpy array or a float.
 
-    @param [in] dec_in is a numpy array of Decs in degrees
-    (in the International Celestial Reference System)
+    @param [in] dec_in is in degrees (ICRS).  Can be either a numpy array or a float.
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
@@ -59,11 +58,9 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     observers actually see, rather than the idealized, above-the-atmosphere
     coordinates represented by the ICRS.
 
-    @param [in] ra_in is a numpy array of RAs in radians
-    (in the International Celestial Reference System)
+    @param [in] ra_in is in radians (ICRS).  Can be either a numpy array or a float.
 
-    @param [in] dec_in is a numpy array of Decs in radians
-    (in the International Celestial Reference System)
+    @param [in] dec_in is in radians (ICRS).  Can be either a numpy array or a float.
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
@@ -74,6 +71,8 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     radians and whose second row is the y coordinate in radians
     """
 
+    are_arrays = _validate_inputs([ra_in, dec_in], "pupilCoordsFromRaDec")
+
     if obs_metadata is None:
         raise RuntimeError("Cannot call pupilCoordsFromRaDec without obs_metadata")
 
@@ -82,9 +81,6 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
 
     if epoch is None:
         raise RuntimeError("Cannot call pupilCoordsFromRaDec; epoch is None")
-
-    if len(ra_in)!=len(dec_in):
-        raise RuntimeError("You passed %d RAs but %d Decs to pupilCoordsFromRaDec" % (len(ra_in), len(dec_in)))
 
     if obs_metadata.rotSkyPos is None:
         #there is no observation meta data on which to base astrometry
@@ -96,36 +92,45 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     theta = obs_metadata._rotSkyPos
 
     ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in, obs_metadata=obs_metadata,
-                                        epoch=2000.0, includeRefraction=True)
+                                        epoch=epoch, includeRefraction=True)
 
-    ra_pointing_temp, dec_pointing_temp = _observedFromICRS(np.array([obs_metadata._pointingRA]),
-                                                            np.array([obs_metadata._pointingDec]),
-                                                            obs_metadata=obs_metadata,
-                                                            epoch=2000.0, includeRefraction=True)
-
-    ra_pointing = ra_pointing_temp[0]
-    dec_pointing = dec_pointing_temp[0]
+    ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
+                                                  obs_metadata._pointingDec,
+                                                  obs_metadata=obs_metadata,
+                                                  epoch=2000.0, includeRefraction=True)
+                                                  # epoch is set to 2000.0 here, because that
+                                                  # is the epoch of ObservationMetaData
+                                                  # RA, Dec, which is what we are dealing with
+                                                  # in this line of code.
 
     #palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
     #with a tangent point at (pointingRA, pointingDec)
     #
-    try:
-        x, y = palpy.ds2tpVector(ra_obs, dec_obs, ra_pointing, dec_pointing)
-    except:
-        # apparently, one of your ra/dec values was improper; we will have to do this
-        # element-wise, putting NaN in the place of the bad values
-        x = []
-        y = []
-        for rr, dd in zip(ra_obs, dec_obs):
-            try:
-                xx, yy = palpy.ds2tp(rr, dd, ra_pointing, dec_pointing)
-            except:
-                xx = np.NaN
-                yy = np.NaN
-            x.append(xx)
-            y.append(yy)
-        x = np.array(x)
-        y = np.array(y)
+    if not are_arrays:
+        try:
+            x, y = palpy.ds2tp(ra_obs, dec_obs, ra_pointing, dec_pointing)
+        except:
+            x = np.NaN
+            y = np.NaN
+    else:
+        try:
+            x, y = palpy.ds2tpVector(ra_obs, dec_obs, ra_pointing, dec_pointing)
+        except:
+            # apparently, one of your ra/dec values was improper; we will have to do this
+            # element-wise, putting NaN in the place of the bad values
+            x = []
+            y = []
+            for rr, dd in zip(ra_obs, dec_obs):
+                try:
+                    xx, yy = palpy.ds2tp(rr, dd, ra_pointing, dec_pointing)
+                except:
+                    xx = np.NaN
+                    yy = np.NaN
+                x.append(xx)
+                y.append(yy)
+            x = np.array(x)
+            y = np.array(y)
+
 
     # The extra negative sign on x_out comes from the following:
     # The Gnomonic projection as calculated by palpy is such that,

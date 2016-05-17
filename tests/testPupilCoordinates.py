@@ -71,8 +71,20 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         self.assertRaises(RuntimeError, _pupilCoordsFromRaDec, raShort, dec, epoch=2000.0,
                           obs_metadata=dummy)
 
-        #test that it actually runs
-        test = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs_metadata, epoch=2000.0)
+        # test that it actually runs (and that passing in either numpy arrays or floats gives
+        # the same results)
+        xx_arr, yy_arr = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs_metadata)
+        self.assertIsInstance(xx_arr, np.ndarray)
+        self.assertIsInstance(yy_arr, np.ndarray)
+
+        for ix in range(len(ra)):
+            xx_f, yy_f = _pupilCoordsFromRaDec(ra[ix], dec[ix], obs_metadata=obs_metadata)
+            self.assertIsInstance(xx_f, np.float)
+            self.assertIsInstance(yy_f, np.float)
+            self.assertAlmostEqual(xx_arr[ix], xx_f, 12)
+            self.assertAlmostEqual(yy_arr[ix], yy_f, 12)
+            self.assertFalse(np.isnan(xx_f))
+            self.assertFalse(np.isnan(yy_f))
 
 
     def testCardinalDirections(self):
