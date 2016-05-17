@@ -27,7 +27,7 @@ def _validate_inputs(input_list, input_names, method_name):
     elif isinstance(input_list[0], np.float):
         desired_type = np.float
     else:
-        raise RuntimeError("The arg %s imput to method %s " % (input_names[0], method_name)
+        raise RuntimeError("The arg %s input to method %s " % (input_names[0], method_name)
                            + "should be either a float or a numpy array")
 
     valid_type = True
