@@ -225,21 +225,6 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertAlmostEqual(dd, dec[ix], 10)
 
 
-    def testCartesianFromSpherical(self):
-        arg1=2.19911485751
-        arg2=5.96902604182
-        output=utils.cartesianFromSpherical(arg1,arg2)
-
-        vv=np.zeros((3),dtype=float)
-        vv[0]=np.cos(arg2)*np.cos(arg1)
-        vv[1]=np.cos(arg2)*np.sin(arg1)
-        vv[2]=np.sin(arg2)
-
-        self.assertAlmostEqual(output[0],vv[0],7)
-        self.assertAlmostEqual(output[1],vv[1],7)
-        self.assertAlmostEqual(output[2],vv[2],7)
-
-
     def testSphericalFromCartesian(self):
         """
         Note that xyz[i][j] is the ith component of the jth vector
