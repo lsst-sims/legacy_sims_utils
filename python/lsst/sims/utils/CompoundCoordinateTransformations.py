@@ -8,6 +8,7 @@ and ICRS RA, Dec)
 import numpy as np
 import palpy
 from collections import OrderedDict
+from lsst.sims.utils.CodeUtilities import _validate_inputs
 from lsst.sims.utils import _icrsFromObserved, _observedFromICRS, calcLmstLast, _observedFromAppGeo
 from lsst.sims.utils import ObservationMetaData, Site, haversine
 
@@ -68,40 +69,15 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     @param [out] parallactic angle in radians
     """
 
-    raIsArray = False
-    decIsArray = False
-    if isinstance(raRad, np.ndarray):
-        raIsArray = True
+    are_arrays = _validate_inputs([raRad, decRad], "altAzPaFromRaDec")
 
-    if isinstance(decRad, np.ndarray):
-        decIsArray = True
-
-    if raIsArray and not decIsArray:
-        raise RuntimeError('passed numpy array of RA to altAzPaFromRaDec; but only one Dec')
-
-    if decIsArray and not raIsArray:
-        raise RuntimeError('passed numpy array of Dec to altAzPaFromRaDec; but only one RA')
-
-    if raIsArray and decIsArray and len(raRad) != len(decRad):
-        raise RuntimeError('in altAzPaFromRaDec length of RA numpy array does not match length of Dec numpy array')
-
-
-    if not hasattr(raRad, '__len__'):
-        raObs_temp, decObs_temp = _observedFromICRS(np.array([raRad]), np.array([decRad]), obs_metadata=obs,
-                                                      includeRefraction=True, epoch=2000.0)
-
-        raObs = raObs_temp[0]
-        decObs = decObs_temp[0]
-
-
-    else:
-        raObs, decObs = _observedFromICRS(raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
+    raObs, decObs = _observedFromICRS(raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
     lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]
     haRad = np.radians(last*15.0) - raObs
 
-    if isinstance(haRad, np.ndarray):
+    if are_arrays:
         az, azd, azdd, \
         alt, altd, altdd, \
         pa, pad, padd = palpy.altazVector(haRad, decObs, obs.site.latitude_rad)
