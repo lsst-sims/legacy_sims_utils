@@ -54,10 +54,14 @@ def calcLmstLast(mjd, longRad):
         valid_type = True
 
     if not valid_type:
-        raise RuntimeError("Valid input types for calcLmstLast are:\n"
-                           "mjd and longRad as numpy arrays of the same length\n"
-                           "mjd as a numpy array and longRad as a float\n"
-                           "mjd as a float and longRad as a float\n")
+        msg = "Valid input types for calcLmstLast are:\n" \
+              "mjd and longRad as numpy arrays of the same length\n" \
+              "mjd as a numpy array and longRad as a float\n" \
+              "mjd as a float and longRad as a float\n" \
+              "You gave mjd: %s\n" % type(mjd) \
+             + "and longRad: %s\n" % type(longRad)
+
+        raise RuntimeError(msg)
 
     longDeg0 = np.degrees(longRad)
     longDeg0 %= 360.0
