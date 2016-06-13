@@ -5,6 +5,7 @@ __all__ = ["_nativeLonLatFromPointing", "_lonLatFromNativeLonLat",
            "_nativeLonLatFromRaDec", "_raDecFromNativeLonLat",
            "nativeLonLatFromRaDec", "raDecFromNativeLonLat"]
 
+
 def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     """
     Convert the longitude and latitude of a point into `native'
@@ -43,20 +44,13 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     alpha = latPointing - 0.5*np.pi
     beta = lonPointing
 
-    ca=np.cos(alpha)
-    sa=np.sin(alpha)
-    cb=np.cos(beta)
-    sb=np.sin(beta)
+    ca = np.cos(alpha)
+    sa = np.sin(alpha)
+    cb = np.cos(beta)
+    sb = np.sin(beta)
 
-    v2 = np.dot(np.array([
-                          [1.0, 0.0, 0.0],
-                          [0.0, ca, sa],
-                          [0.0, -1.0*sa, ca]
-                          ]),
-                   np.dot(np.array([[cb, sb, 0.0],
-                                    [-sb, cb, 0.0],
-                                    [0.0, 0.0, 1.0]
-                                    ]), np.array([x,y,z])))
+    v2 = np.dot(np.array([[1.0, 0.0, 0.0], [0.0, ca, sa], [0.0, -1.0*sa, ca]]),
+                np.dot(np.array([[cb, sb, 0.0], [-sb, cb, 0.0], [0.0, 0.0, 1.0]]), np.array([x, y, z])))
 
     cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
     latOut = np.arctan2(v2[2], cc)
@@ -67,12 +61,13 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     # control for _y=1.0, -1.0 but actually being stored as just outside
     # the bounds of -1.0<=_y<=1.0 because of floating point error
     if hasattr(_ra_raw, '__len__'):
-        _ra = np.array([rr if not np.isnan(rr) \
-                           else 0.5*np.pi*(1.0-np.sign(yy)) \
-                           for rr, yy in zip(_ra_raw, _y)])
+        _ra = np.array([rr
+                        if not np.isnan(rr)
+                        else 0.5*np.pi*(1.0-np.sign(yy))
+                        for rr, yy in zip(_ra_raw, _y)])
     else:
         if np.isnan(_ra_raw):
-            if np.sign(_y)<0.0:
+            if np.sign(_y) < 0.0:
                 _ra = np.pi
             else:
                 _ra = 0.0
@@ -84,16 +79,18 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     if type(_ra) is np.float64:
         if np.isnan(_ra):
             lonOut = 0.0
-        elif (np.abs(_x)>1.0e-9 and np.sign(_x)!=np.sign(v2[0])) \
-             or (np.abs(_y)>1.0e-9 and np.sign(_y)!=np.sign(v2[1])):
+        elif (np.abs(_x) > 1.0e-9 and np.sign(_x) != np.sign(v2[0])) or \
+             (np.abs(_y) > 1.0e-9 and np.sign(_y) != np.sign(v2[1])):
+
             lonOut = 2.0*np.pi-_ra
         else:
             lonOut = _ra
     else:
-        _lonOut = [2.0*np.pi-rr if (np.abs(xx)>1.0e-9 and np.sign(xx)!=np.sign(v2_0)) \
-                                   or (np.abs(yy)>1.0e-9 and np.sign(yy)!=np.sign(v2_1)) \
-                                   else rr \
-                                   for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
+        _lonOut = [2.0*np.pi-rr
+                   if (np.abs(xx) > 1.0e-9 and np.sign(xx) != np.sign(v2_0))
+                   or (np.abs(yy) > 1.0e-9 and np.sign(yy) != np.sign(v2_1))
+                   else rr
+                   for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
 
         lonOut = np.array([0.0 if np.isnan(ll) else ll for ll in _lonOut])
 
@@ -130,21 +127,13 @@ def _lonLatFromNativeLonLat(nativeLon, nativeLat, lonPointing, latPointing):
     alpha = 0.5*np.pi - latPointing
     beta = lonPointing
 
-    ca=np.cos(alpha)
-    sa=np.sin(alpha)
-    cb=np.cos(beta)
-    sb=np.sin(beta)
+    ca = np.cos(alpha)
+    sa = np.sin(alpha)
+    cb = np.cos(beta)
+    sb = np.sin(beta)
 
-    v2 = np.dot(np.array([[cb, -1.0*sb, 0.0],
-                          [sb, cb, 0.0],
-                          [0.0, 0.0, 1.0]
-                          ]),
-                                np.dot(np.array([[1.0, 0.0, 0.0],
-                                                 [0.0, ca, sa],
-                                                 [0.0, -1.0*sa, ca]
-                                ]),
-                                np.array([x,y,z])))
-
+    v2 = np.dot(np.array([[cb, -1.0*sb, 0.0], [sb, cb, 0.0], [0.0, 0.0, 1.0]]),
+                np.dot(np.array([[1.0, 0.0, 0.0], [0.0, ca, sa], [0.0, -1.0*sa, ca]]), np.array([x, y, z])))
 
     cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
     latOut = np.arctan2(v2[2], cc)
@@ -156,16 +145,18 @@ def _lonLatFromNativeLonLat(nativeLon, nativeLat, lonPointing, latPointing):
     if type(_lonOut) is np.float64:
         if np.isnan(_lonOut):
             lonOut = 0.0
-        elif (np.abs(_x)>1.0e-9 and np.sign(_x)!=np.sign(v2[0])) \
-             or (np.abs(_y)>1.0e-9 and np.sign(_y)!=np.sign(v2[1])):
+        elif (np.abs(_x) > 1.0e-9 and np.sign(_x) != np.sign(v2[0])) or \
+             (np.abs(_y) > 1.0e-9 and np.sign(_y) != np.sign(v2[1])):
+
             lonOut = 2.0*np.pi-_lonOut
         else:
             lonOut = _lonOut
     else:
-        _lonOut = [2.0*np.pi-rr if (np.abs(xx)>1.0e-9 and np.sign(xx)!=np.sign(v2_0)) \
-                                  or (np.abs(yy)>1.0e-9 and np.sign(yy)!=np.sign(v2_1)) \
-                                  else rr \
-                                  for rr, xx, yy, v2_0, v2_1 in zip(_lonOut, _x, _y, v2[0], v2[1])]
+        _lonOut = [2.0*np.pi-rr
+                   if (np.abs(xx) > 1.0e-9 and np.sign(xx) != np.sign(v2_0))
+                   or (np.abs(yy) > 1.0e-9 and np.sign(yy) != np.sign(v2_1))
+                   else rr
+                   for rr, xx, yy, v2_0, v2_1 in zip(_lonOut, _x, _y, v2[0], v2[1])]
 
         lonOut = np.array([0.0 if np.isnan(rr) else rr for rr in _lonOut])
 
@@ -207,9 +198,9 @@ def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
                                 includeRefraction=True)
 
     raPointing, decPointing = _observedFromICRS(obs_metadata._pointingRA,
-                                               obs_metadata._pointingDec,
-                                               obs_metadata=obs_metadata, epoch=2000.0,
-                                               includeRefraction=True)
+                                                obs_metadata._pointingDec,
+                                                obs_metadata=obs_metadata, epoch=2000.0,
+                                                includeRefraction=True)
 
     return _nativeLonLatFromPointing(ra, dec, raPointing, decPointing)
 
@@ -282,7 +273,6 @@ def _raDecFromNativeLonLat(lon, lat, obs_metadata):
                                                 includeRefraction=True)
 
     raObs, decObs = _lonLatFromNativeLonLat(lon, lat, raPointing, decPointing)
-
 
     # convert from observed geocentric coordinates to International Celestial Reference System
     # coordinates
