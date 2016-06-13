@@ -698,7 +698,7 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
     # TODO: palpy.aoppa requires as its first argument
     # the UTC time expressed as an MJD.  It is not clear to me
     # how to actually calculate that.
-    if includeRefraction is True:
+    if includeRefraction:
         obsPrms = palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
                               obs_metadata.site.longitude_rad,
                               obs_metadata.site.latitude_rad,
@@ -792,7 +792,7 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
     # Actually, this is only a choke point if you are dealing with zenith
     # distances of greater than about 70 degrees
 
-    if altAzHr is True:
+    if altAzHr:
         #
         # palpy.de2h converts equatorial to horizon coordinates
         #
