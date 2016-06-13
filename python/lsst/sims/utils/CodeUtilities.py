@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def _validate_inputs(input_list, input_names, method_name):
     """
     This method will validate the inputs of other methods.
@@ -47,7 +48,7 @@ def _validate_inputs(input_list, input_names, method_name):
         raise RuntimeError(msg)
 
     if desired_type is np.ndarray:
-        same_length=True
+        same_length = True
         for ii in input_list:
             if len(ii) != len(input_list[0]):
                 same_length = False
