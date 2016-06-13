@@ -1,10 +1,10 @@
 import numpy as np
-import inspect
 from .SpatialBounds import SpatialBounds
 from lsst.sims.utils import ModifiedJulianDate
 from lsst.sims.utils import Site
 
 __all__ = ["ObservationMetaData"]
+
 
 class ObservationMetaData(object):
     """Observation Metadata
@@ -149,11 +149,10 @@ class ObservationMetaData(object):
         # somehow in sync).
         self._seeing = self._assignDictKeyedToBandpass(seeing, 'seeing')
 
-        #this should be done after phoSimMetaData is assigned, just in case
-        #self._assignPhoSimMetadata overwrites pointingRA/Dec
+        # this should be done after phoSimMetaData is assigned, just in case
+        # self._assignPhoSimMetadata overwrites pointingRA/Dec
         if self._bounds is None:
             self._buildBounds()
-
 
     @property
     def summary(self):
@@ -214,20 +213,19 @@ class ObservationMetaData(object):
                 inputIsList = True
 
             if bandpassIsList and not inputIsList:
-                raise RuntimeError('You passed a list of bandpass names' + \
+                raise RuntimeError('You passed a list of bandpass names' +
                                    'but did not pass a list of %s to ObservationMetaData' % inputName)
 
             if inputIsList and not bandpassIsList:
-                raise RuntimeError('You passed a list of %s ' % inputName + \
-                                    'but did not pass a list of bandpass names to ObservationMetaData')
-
+                raise RuntimeError('You passed a list of %s ' % inputName +
+                                   'but did not pass a list of bandpass names to ObservationMetaData')
 
             if inputIsList:
                 if len(inputValue) != len(self._bandpass):
-                    raise RuntimeError('The list of %s you passed to ObservationMetaData ' % inputName + \
+                    raise RuntimeError('The list of %s you passed to ObservationMetaData ' % inputName +
                                        'has a different length than the list of bandpass names you passed')
 
-            #now build the dict
+            # now build the dict
             if bandpassIsList:
                 if len(inputValue) != len(self._bandpass):
                     raise RuntimeError('In ObservationMetaData you tried to assign bandpass ' +
@@ -237,10 +235,9 @@ class ObservationMetaData(object):
                 for b, m in zip(self._bandpass, inputValue):
                     outputDict[b] = m
             else:
-                outputDict = {self._bandpass:inputValue}
+                outputDict = {self._bandpass: inputValue}
 
             return outputDict
-
 
     def _buildBounds(self):
         """
@@ -262,7 +259,6 @@ class ObservationMetaData(object):
         self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._pointingRA, self._pointingDec,
                                                       self._boundLength)
 
-
     def _assignPhoSimMetaData(self, metaData):
         """
         Assign the dict metaData to be the associated phoSimMetaData dict of this object.
@@ -276,10 +272,11 @@ class ObservationMetaData(object):
         self._phoSimMetaData = metaData
 
         if self._phoSimMetaData is not None:
-            #overwrite member variables with values from the phoSimMetaData
+            # overwrite member variables with values from the phoSimMetaData
             if 'Opsim_expmjd' in self._phoSimMetaData:
                 if self._mjd is not None:
-                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite mjd with phoSimMetaData')
+                    raise RuntimeError('WARNING in ObservationMetaData trying to '
+                                       'overwrite mjd with phoSimMetaData')
 
                 self._mjd = ModifiedJulianDate(TAI=self._phoSimMetaData['Opsim_expmjd'][0])
 
@@ -289,7 +286,6 @@ class ObservationMetaData(object):
                                        'with phoSimMetaData')
 
                 self._rotSkyPos = self._phoSimMetaData['Opsim_rotskypos'][0]
-
 
             if 'Opsim_filter' in self._phoSimMetaData:
                 if self._bandpass is not None:
@@ -425,14 +421,13 @@ class ObservationMetaData(object):
             return None
 
     @rotSkyPos.setter
-    def rotSkyPos(self,value):
+    def rotSkyPos(self, value):
         if self._phoSimMetaData is not None:
             if 'Opsim_rotskypos' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting rotSkyPos ' +
                                    'which was set by phoSimMetaData')
 
         self._rotSkyPos = np.radians(value)
-
 
     @property
     def m5(self):
@@ -446,7 +441,6 @@ class ObservationMetaData(object):
     @m5.setter
     def m5(self, value):
         self._m5 = self._assignDictKeyedToBandpass(value, 'm5')
-
 
     @property
     def seeing(self):
@@ -464,7 +458,6 @@ class ObservationMetaData(object):
                                    'which was set by phoSimMetaData')
 
         self._seeing = self._assignDictKeyedToBandpass(value, 'seeing')
-
 
     @property
     def site(self):
@@ -503,7 +496,6 @@ class ObservationMetaData(object):
         else:
             raise RuntimeError("You can only set mjd to either a float or a ModifiedJulianDate")
 
-
     @property
     def bandpass(self):
         """
@@ -540,7 +532,6 @@ class ObservationMetaData(object):
             if 'Opsim_rawseeing' in self._phoSimMetaData:
                 raise RuntimeError('WARNING overwriting seeing ' +
                                    'which was set by phoSimMetaData')
-
 
         self._bandpass = bandpassName
         self._m5 = self._assignDictKeyedToBandpass(m5, 'm5')
