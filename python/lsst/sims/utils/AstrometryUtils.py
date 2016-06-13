@@ -78,7 +78,7 @@ def _distanceToSun(ra, dec, mjd, epoch=2000.0):
 
     sunRa, sunDec = _solarRaDec(mjd, epoch=epoch)
 
-    return haversine(ra, dec,sunRa, sunDec)
+    return haversine(ra, dec, sunRa, sunDec)
 
 
 def distanceToSun(ra, dec, mjd, epoch=2000.0):
@@ -99,7 +99,7 @@ def distanceToSun(ra, dec, mjd, epoch=2000.0):
     """
 
     return np.degrees(_distanceToSun(np.radians(ra), np.radians(dec),
-                                        mjd, epoch=epoch))
+                                     mjd, epoch=epoch))
 
 
 def refractionCoefficients(wavelength=0.5, site=None):
@@ -121,16 +121,16 @@ def refractionCoefficients(wavelength=0.5, site=None):
     if site is None:
         raise RuntimeError("Cannot call refractionCoefficients; no site information")
 
-    #TODO the latitude in refco needs to be astronomical latitude,
-    #not geodetic latitude
-    _refcoOutput=palpy.refco(site.height,
-                        site.temperature_kelvin,
-                        site.pressure,
-                        site.humidity,
-                        wavelength ,
-                        site.latitude_rad,
-                        site.lapseRate,
-                        precision)
+    # TODO the latitude in refco needs to be astronomical latitude,
+    # not geodetic latitude
+    _refcoOutput = palpy.refco(site.height,
+                               site.temperature_kelvin,
+                               site.pressure,
+                               site.humidity,
+                               wavelength,
+                               site.latitude_rad,
+                               site.lapseRate,
+                               precision)
 
     return _refcoOutput[0], _refcoOutput[1]
 
@@ -159,7 +159,7 @@ def applyRefraction(zenithDistance, tanzCoeff, tan3zCoeff):
     if isinstance(zenithDistance, np.ndarray):
         refractedZenith = palpy.refzVector(zenithDistance, tanzCoeff, tan3zCoeff)
     else:
-        refractedZenith=palpy.refz(zenithDistance, tanzCoeff, tan3zCoeff)
+        refractedZenith = palpy.refz(zenithDistance, tanzCoeff, tan3zCoeff)
 
     return refractedZenith
 
@@ -196,7 +196,6 @@ def applyPrecession(ra, dec, epoch=2000.0, mjd=None):
     return np.degrees(output)
 
 
-
 def _applyPrecession(ra, dec, epoch=2000.0, mjd=None):
     """
     _applyPrecession() applies precesion and nutation to coordinates between two epochs.
@@ -231,22 +230,22 @@ def _applyPrecession(ra, dec, epoch=2000.0, mjd=None):
         raise RuntimeError("You need to supply applyPrecession with an mjd")
 
     # Determine the precession and nutation
-    #palpy.prenut takes the julian epoch for the mean coordinates
-    #and the MJD for the the true coordinates
+    # palpy.prenut takes the julian epoch for the mean coordinates
+    # and the MJD for the the true coordinates
     #
-    #TODO it is not specified what this MJD should be (i.e. in which
-    #time system it should be reckoned)
-    rmat=palpy.prenut(epoch, mjd.TT)
+    # TODO it is not specified what this MJD should be (i.e. in which
+    # time system it should be reckoned)
+    rmat = palpy.prenut(epoch, mjd.TT)
 
     # Apply rotation matrix
-    xyz = cartesianFromSpherical(ra,dec)
-    xyz =  np.dot(rmat,xyz.transpose()).transpose()
+    xyz = cartesianFromSpherical(ra, dec)
+    xyz = np.dot(rmat, xyz.transpose()).transpose()
 
-    raOut,decOut = sphericalFromCartesian(xyz)
-    return np.array([raOut,decOut])
+    raOut, decOut = sphericalFromCartesian(xyz)
+    return np.array([raOut, decOut])
 
 
-def applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
+def applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad,
                       epoch=2000.0, mjd=None):
     """Applies proper motion between two epochs.
 
@@ -293,8 +292,8 @@ def applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
     return np.degrees(output)
 
 
-def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
-                      epoch=2000.0, mjd=None):
+def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad,
+                       epoch=2000.0, mjd=None):
     """Applies proper motion between two epochs.
 
     units:  ra (radians), dec (radians), pm_ra (radians/year), pm_dec
@@ -332,9 +331,9 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
 
     """
 
-    if isinstance(ra, list) or isinstance(dec, list) or \
-    isinstance(pm_ra, list) or isinstance(pm_dec, list) or \
-    isinstance(parallax, list) or isinstance(v_rad, list):
+    if (isinstance(ra, list) or isinstance(dec, list) or
+        isinstance(pm_ra, list) or isinstance(pm_dec, list) or
+        isinstance(parallax, list) or isinstance(v_rad, list)):
 
         raise RuntimeError("You tried to pass lists to applyPm. " +
                            "The method does not know how to handle lists. " +
@@ -343,8 +342,8 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
     if mjd is None:
         raise RuntimeError("cannot call applyProperMotion; mjd is None")
 
-    parallaxArcsec=arcsecFromRadians(parallax)
-    #convert to Arcsec because that is what PALPY expects
+    parallaxArcsec = arcsecFromRadians(parallax)
+    # convert to Arcsec because that is what PALPY expects
 
     # Generate Julian epoch from MJD
     #
@@ -355,32 +354,32 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad, \
     # ephemerides
     julianEpoch = palpy.epj(mjd.TT)
 
-    #because PAL and ERFA expect proper motion in terms of "coordinate
-    #angle; not true angle" (as stated in erfa/starpm.c documentation)
+    # because PAL and ERFA expect proper motion in terms of "coordinate
+    # angle; not true angle" (as stated in erfa/starpm.c documentation)
     pm_ra_corrected = pm_ra/np.cos(dec)
 
     if isinstance(ra, np.ndarray):
-        if len(ra) != len(dec) or \
-        len(ra) != len(pm_ra) or \
-        len(ra) != len(pm_dec) or \
-        len(ra) != len(parallaxArcsec) or \
-        len(ra) != len(v_rad):
+        if ((len(ra) != len(dec) or
+            len(ra) != len(pm_ra) or
+            len(ra) != len(pm_dec) or
+            len(ra) != len(parallaxArcsec)) or
+           len(ra) != len(v_rad)):
 
             raise RuntimeError("You passed: " +
                                "%d RAs, " % len(ra) +
                                "%d Dec, " % len(dec) +
                                "%d pm_ras, " % len(pm_ra) +
                                "%d pm_decs, " % len(pm_dec) +
-                               "%d parallaxes, " % len(parallaxArcsec)+
+                               "%d parallaxes, " % len(parallaxArcsec) +
                                "%d v_rads " % len(v_rad) +
                                "to applyPm; those numbers need to be identical.")
 
-        raOut, decOut = palpy.pmVector(ra,dec,pm_ra_corrected,pm_dec,parallaxArcsec,v_rad, epoch, julianEpoch)
+        raOut, decOut = palpy.pmVector(ra, dec, pm_ra_corrected, pm_dec,
+                                       parallaxArcsec, v_rad, epoch, julianEpoch)
     else:
         raOut, decOut = palpy.pm(ra, dec, pm_ra_corrected, pm_dec, parallaxArcsec, v_rad, epoch, julianEpoch)
 
-    return np.array([raOut,decOut])
-
+    return np.array([raOut, decOut])
 
 
 def appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
@@ -434,12 +433,11 @@ def appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
                              pm_ra=pm_ra_in, pm_dec=pm_dec_in,
                              parallax=px_in, v_rad=v_rad, epoch=epoch, mjd=mjd)
 
-
     return np.degrees(output)
 
 
 def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
-                   v_rad=None, epoch=2000.0, mjd = None):
+                    v_rad=None, epoch=2000.0, mjd = None):
     """
     Convert the mean position (RA, Dec) in the International Celestial Reference
     System (ICRS) to the mean apparent geocentric position
@@ -482,16 +480,16 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
         fill_value = 0.0
 
     if pm_ra is None:
-        pm_ra=fill_value
+        pm_ra = fill_value
 
     if pm_dec is None:
-        pm_dec=fill_value
+        pm_dec = fill_value
 
     if v_rad is None:
-        v_rad=fill_value
+        v_rad = fill_value
 
     if parallax is None:
-        parallax=fill_value
+        parallax = fill_value
 
     are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, v_rad, parallax],
                                   ['ra', 'dec', 'pm_ra', 'pm_dec', 'v_rad',
@@ -508,7 +506,7 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     # epoch of mean equinox to be used (Julian)
     #
     # date (MJD)
-    prms=palpy.mappa(epoch, mjd.TDB)
+    prms = palpy.mappa(epoch, mjd.TDB)
 
     # palpy.mapqk does a quick mean to apparent place calculation using
     # the output of palpy.mappa
@@ -523,12 +521,12 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
 
     if are_arrays:
         raOut, decOut = palpy.mapqkVector(ra, dec, pm_ra_corrected, pm_dec,
-                                          arcsecFromRadians(parallax), v_rad,prms)
+                                          arcsecFromRadians(parallax), v_rad, prms)
     else:
         raOut, decOut = palpy.mapqk(ra, dec, pm_ra_corrected, pm_dec,
                                     arcsecFromRadians(parallax), v_rad, prms)
 
-    return np.array([raOut,decOut])
+    return np.array([raOut, decOut])
 
 
 def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
@@ -646,19 +644,18 @@ def observedFromAppGeo(ra, dec, includeRefraction = True,
     """
 
     if altAzHr:
-        raDec, \
-        altAz = _observedFromAppGeo(np.radians(ra), np.radians(dec),
-                                            includeRefraction=includeRefraction,
-                                            altAzHr=altAzHr, wavelength=wavelength,
-                                            obs_metadata=obs_metadata)
+        raDec, altAz = _observedFromAppGeo(np.radians(ra), np.radians(dec),
+                                           includeRefraction=includeRefraction,
+                                           altAzHr=altAzHr, wavelength=wavelength,
+                                           obs_metadata=obs_metadata)
 
         return np.degrees(raDec), np.degrees(altAz)
 
     else:
         output = _observedFromAppGeo(np.radians(ra), np.radians(dec),
-                                            includeRefraction=includeRefraction,
-                                            altAzHr=altAzHr, wavelength=wavelength,
-                                            obs_metadata=obs_metadata)
+                                     includeRefraction=includeRefraction,
+                                     altAzHr=altAzHr, wavelength=wavelength,
+                                     obs_metadata=obs_metadata)
 
         return np.degrees(output)
 
@@ -693,46 +690,45 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
     yPolar = 0.0
 
     #
-    #palpy.aoppa computes star-independent parameters necessary for
-    #converting apparent place into observed place
-    #i.e. it calculates geodetic latitude, magnitude of diurnal aberration,
-    #refraction coefficients and the like based on data about the observation site
+    # palpy.aoppa computes star-independent parameters necessary for
+    # converting apparent place into observed place
+    # i.e. it calculates geodetic latitude, magnitude of diurnal aberration,
+    # refraction coefficients and the like based on data about the observation site
     #
-    #TODO: palpy.aoppa requires as its first argument
-    #the UTC time expressed as an MJD.  It is not clear to me
-    #how to actually calculate that.
-    if (includeRefraction == True):
-        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
-                          obs_metadata.site.longitude_rad,
-                          obs_metadata.site.latitude_rad,
-                          obs_metadata.site.height,
-                          xPolar,
-                          yPolar,
-                          obs_metadata.site.temperature_kelvin,
-                          obs_metadata.site.pressure,
-                          obs_metadata.site.humidity,
-                          wavelength ,
-                          obs_metadata.site.lapseRate)
+    # TODO: palpy.aoppa requires as its first argument
+    # the UTC time expressed as an MJD.  It is not clear to me
+    # how to actually calculate that.
+    if includeRefraction is True:
+        obsPrms = palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
+                              obs_metadata.site.longitude_rad,
+                              obs_metadata.site.latitude_rad,
+                              obs_metadata.site.height,
+                              xPolar,
+                              yPolar,
+                              obs_metadata.site.temperature_kelvin,
+                              obs_metadata.site.pressure,
+                              obs_metadata.site.humidity,
+                              wavelength,
+                              obs_metadata.site.lapseRate)
     else:
-        #we can discard refraction by setting pressure and humidity to zero
-        obsPrms=palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
-                          obs_metadata.site.longitude_rad,
-                          obs_metadata.site.latitude_rad,
-                          obs_metadata.site.height,
-                          xPolar,
-                          yPolar,
-                          obs_metadata.site.temperature,
-                          0.0,
-                          0.0,
-                          wavelength ,
-                          obs_metadata.site.lapseRate)
-
+        # we can discard refraction by setting pressure and humidity to zero
+        obsPrms = palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
+                              obs_metadata.site.longitude_rad,
+                              obs_metadata.site.latitude_rad,
+                              obs_metadata.site.height,
+                              xPolar,
+                              yPolar,
+                              obs_metadata.site.temperature,
+                              0.0,
+                              0.0,
+                              wavelength,
+                              obs_metadata.site.lapseRate)
 
     return obsPrms
 
 
 def _observedFromAppGeo(ra, dec, includeRefraction = True,
-                       altAzHr=False, wavelength=0.5, obs_metadata = None):
+                        altAzHr=False, wavelength=0.5, obs_metadata = None):
     """
     Convert apparent geocentric (RA, Dec) to observed (RA, Dec).  More specifically:
     apply refraction and diurnal aberration.
@@ -773,34 +769,32 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
     if obs_metadata.mjd is None:
         raise RuntimeError("Cannot call observedFromAppGeo: obs_metadata has no mjd")
 
-
-
     obsPrms = _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
 
-    #palpy.aopqk does an apparent to observed place
-    #correction
+    # palpy.aopqk does an apparent to observed place
+    # correction
     #
-    #it corrects for diurnal aberration and refraction
-    #(using a fast algorithm for refraction in the case of
-    #a small zenith distance and a more rigorous algorithm
-    #for a large zenith distance)
+    # it corrects for diurnal aberration and refraction
+    # (using a fast algorithm for refraction in the case of
+    # a small zenith distance and a more rigorous algorithm
+    # for a large zenith distance)
     #
 
     if are_arrays:
-        azimuth, zenith, hourAngle, decOut, raOut = palpy.aopqkVector(ra,dec,obsPrms)
+        azimuth, zenith, hourAngle, decOut, raOut = palpy.aopqkVector(ra, dec, obsPrms)
     else:
         azimuth, zenith, hourAngle, decOut, raOut = palpy.aopqk(ra, dec, obsPrms)
 
     #
-    #Note: this is a choke point.  Even the vectorized version of aopqk
-    #is expensive (it takes about 0.006 seconds per call)
+    # Note: this is a choke point.  Even the vectorized version of aopqk
+    # is expensive (it takes about 0.006 seconds per call)
     #
-    #Actually, this is only a choke point if you are dealing with zenith
-    #distances of greater than about 70 degrees
+    # Actually, this is only a choke point if you are dealing with zenith
+    # distances of greater than about 70 degrees
 
-    if altAzHr == True:
+    if altAzHr is True:
         #
-        #palpy.de2h converts equatorial to horizon coordinates
+        # palpy.de2h converts equatorial to horizon coordinates
         #
         if are_arrays:
             az, alt = palpy.de2hVector(hourAngle, decOut, obs_metadata.site.latitude_rad)
@@ -812,7 +806,7 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
 
 
 def appGeoFromObserved(ra, dec, includeRefraction = True,
-                        wavelength=0.5, obs_metadata = None):
+                       wavelength=0.5, obs_metadata = None):
     """
     Convert observed (RA, Dec) to apparent geocentric (RA, Dec).  More
     specifically: undo the effects of refraction and diurnal aberration.
@@ -954,9 +948,8 @@ def observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=None
     return np.degrees(output)
 
 
-
 def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=None,
-                     obs_metadata=None, epoch=None, includeRefraction=True):
+                      obs_metadata=None, epoch=None, includeRefraction=True):
     """
     Convert mean position (RA, Dec) in the International Celestial Reference Frame
     to observed (RA, Dec)-like coordinates.
@@ -1009,10 +1002,10 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
     if v_rad is None:
         v_rad = fill_value
 
-    are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, parallax, v_rad],
-                                  ['ra', 'dec', 'pm_ra', 'pm_dec', 'parallax',
-                                  'v_rad'],
-                                  "observedFromICRS")
+    _validate_inputs([ra, dec, pm_ra, pm_dec, parallax, v_rad],
+                     ['ra', 'dec', 'pm_ra', 'pm_dec', 'parallax',
+                     'v_rad'],
+                     "observedFromICRS")
 
     if obs_metadata is None:
         raise RuntimeError("cannot call observedFromICRS; obs_metadata is none")
@@ -1024,12 +1017,13 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
         raise RuntimeError("cannot call observedFromICRS; you have not specified an epoch")
 
     ra_apparent, dec_apparent = _appGeoFromICRS(ra, dec, pm_ra = pm_ra,
-             pm_dec = pm_dec, parallax = parallax, v_rad = v_rad, epoch = epoch, mjd=obs_metadata.mjd)
+                                                pm_dec = pm_dec, parallax = parallax,
+                                                v_rad = v_rad, epoch = epoch, mjd=obs_metadata.mjd)
 
     ra_out, dec_out = _observedFromAppGeo(ra_apparent, dec_apparent, obs_metadata=obs_metadata,
-                                               includeRefraction = includeRefraction)
+                                          includeRefraction = includeRefraction)
 
-    return np.array([ra_out,dec_out])
+    return np.array([ra_out, dec_out])
 
 
 def icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=True):
@@ -1099,8 +1093,7 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
     RA and the second row is the mean ICRS Dec (both in radians)
     """
 
-    are_arrays = _validate_inputs([ra, dec], ['ra', 'dec'], "icrsFromObserved")
-
+    _validate_inputs([ra, dec], ['ra', 'dec'], "icrsFromObserved")
 
     if obs_metadata is None:
         raise RuntimeError("cannot call icrsFromObserved; obs_metadata is None")
@@ -1110,7 +1103,6 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
 
     if epoch is None:
         raise RuntimeError("cannot call icrsFromObserved; you have not specified an epoch")
-
 
     ra_app, dec_app = _appGeoFromObserved(ra, dec, obs_metadata=obs_metadata,
                                           includeRefraction=includeRefraction)
