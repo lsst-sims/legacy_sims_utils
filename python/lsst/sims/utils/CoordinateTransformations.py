@@ -5,7 +5,6 @@ of palpy methods, or that have no dependence on palpy at all
 
 import numpy as np
 import palpy
-from collections import OrderedDict
 
 __all__ = ["_galacticFromEquatorial", "galacticFromEquatorial",
            "_equatorialFromGalactic", "equatorialFromGalactic",
@@ -44,7 +43,6 @@ def calcLmstLast(mjd, longRad):
         if len(longRad) != len(mjd):
             raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
 
-
     valid_type = False
     if isinstance(mjd, np.ndarray) and isinstance(longRad, np.ndarray):
         valid_type = True
@@ -59,7 +57,7 @@ def calcLmstLast(mjd, longRad):
               "mjd as a numpy array and longRad as a float\n" \
               "mjd as a float and longRad as a float\n" \
               "You gave mjd: %s\n" % type(mjd) \
-             + "and longRad: %s\n" % type(longRad)
+              + "and longRad: %s\n" % type(longRad)
 
         raise RuntimeError(msg)
 
@@ -67,7 +65,7 @@ def calcLmstLast(mjd, longRad):
     longDeg0 %= 360.0
 
     if longRadIsArray:
-        longDeg = np.where(longDeg0>180.0, longDeg0-360.0, longDeg0)
+        longDeg = np.where(longDeg0 > 180.0, longDeg0 - 360.0, longDeg0)
     else:
         if longDeg0 > 180.:
             longDeg = longDeg0-360.
@@ -189,9 +187,7 @@ def cartesianFromSpherical(longitude, latitude):
         raise RuntimeError("longitude and latitude must both be either numpy arrays or a floats")
 
     cosDec = np.cos(latitude)
-    return np.array([np.cos(longitude)*cosDec,
-                      np.sin(longitude)*cosDec,
-                      np.sin(latitude)]).transpose()
+    return np.array([np.cos(longitude)*cosDec, np.sin(longitude)*cosDec, np.sin(latitude)]).transpose()
 
 
 def sphericalFromCartesian(xyz):
@@ -209,12 +205,12 @@ def sphericalFromCartesian(xyz):
     if not isinstance(xyz, np.ndarray):
         raise RuntimeError("you need to pass a numpy array to sphericalFromCartesian")
 
-    if len(xyz.shape)>1:
-        rad = np.sqrt(np.power(xyz,2).sum(axis=1))
-        longitude = np.arctan2( xyz[:,1], xyz[:,0])
-        latitude = np.arcsin( xyz[:,2] / rad)
+    if len(xyz.shape) > 1:
+        rad = np.sqrt(np.power(xyz, 2).sum(axis=1))
+        longitude = np.arctan2(xyz[:, 1], xyz[:, 0])
+        latitude = np.arcsin(xyz[:, 2]/rad)
     else:
-        rad = np.sqrt(np.dot(xyz,xyz))
+        rad = np.sqrt(np.dot(xyz, xyz))
         longitude = np.arctan2(xyz[1], xyz[0])
         latitude = np.arcsin(xyz[2]/rad)
 
@@ -231,29 +227,28 @@ def rotationMatrixFromVectors(v1, v2):
 
     '''
 
-    if np.abs(np.sqrt(np.dot(v1,v1))-1.0) > 0.01:
+    if np.abs(np.sqrt(np.dot(v1, v1)) - 1.0) > 0.01:
         raise RuntimeError("v1 in rotationMatrixFromVectors is not a unit vector")
 
-    if np.abs(np.sqrt(np.dot(v2,v2))-1.0) > 0.01:
+    if np.abs(np.sqrt(np.dot(v2, v2)) - 1.0) > 0.01:
         raise RuntimeError("v2 in rotationMatrixFromVectors is not a unit vector")
 
     # Calculate the axis of rotation by the cross product of v1 and v2
-    cross = np.cross(v1,v2)
-    cross = cross / np.sqrt(np.dot(cross,cross))
+    cross = np.cross(v1, v2)
+    cross = cross/np.sqrt(np.dot(cross, cross))
 
     # calculate the angle of rotation via dot product
-    angle  = np.arccos(np.dot(v1,v2))
+    angle = np.arccos(np.dot(v1, v2))
     sinDot = np.sin(angle)
     cosDot = np.cos(angle)
 
     # calculate the corresponding rotation matrix
     # http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-    rot = [[cosDot + cross[0]*cross[0]*(1-cosDot), -cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1], \
-            cross[1]*sinDot + (1-cosDot)*cross[0]*cross[2]],\
-            [cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1], cosDot + (1-cosDot)*cross[1]*cross[1], \
-            -cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2]], \
-            [-cross[1]*sinDot+(1-cosDot)*cross[0]*cross[2], \
-            cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2], \
+    rot = [[cosDot + cross[0]*cross[0]*(1-cosDot), -cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1],
+            cross[1]*sinDot + (1-cosDot)*cross[0]*cross[2]],
+           [cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1], cosDot + (1-cosDot)*cross[1]*cross[1],
+            -cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2]],
+           [-cross[1]*sinDot+(1-cosDot)*cross[0]*cross[2], cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2],
             cosDot + (1-cosDot)*(cross[2]*cross[2])]]
 
     return rot
