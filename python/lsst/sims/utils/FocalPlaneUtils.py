@@ -84,7 +84,7 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
         raise RuntimeError("Cannot call pupilCoordsFromRaDec; epoch is None")
 
     if obs_metadata.rotSkyPos is None:
-        #there is no observation meta data on which to base astrometry
+        # there is no observation meta data on which to base astrometry
         raise RuntimeError("Cannot calculate [x,y]_focal_nominal without obs_metadata.rotSkyPos")
 
     if obs_metadata.pointingRA is None or obs_metadata.pointingDec is None:
@@ -100,8 +100,8 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
                                                   obs_metadata=obs_metadata,
                                                   epoch=epoch, includeRefraction=True)
 
-    #palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
-    #with a tangent point at (pointingRA, pointingDec)
+    # palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
+    # with a tangent point at (pointingRA, pointingDec)
     #
     if not are_arrays:
         try:
@@ -127,7 +127,6 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
                 y.append(yy)
             x = np.array(x)
             y = np.array(y)
-
 
     # The extra negative sign on x_out comes from the following:
     # The Gnomonic projection as calculated by palpy is such that,
@@ -164,8 +163,9 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     row is Dec (both in degrees; both in the International Celestial Reference System)
     """
 
-    output = _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=obs_metadata,
-                                               epoch=epoch)
+    output = _raDecFromPupilCoords(xPupil, yPupil,
+                                   obs_metadata=obs_metadata,
+                                   epoch=epoch)
 
     return np.degrees(output)
 
@@ -188,8 +188,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     row is Dec (both in radians; both in the International Celestial Reference System)
     """
 
-    are_arrays = _validate_inputs([xPupil, yPupil], ['xPupil', 'yPupil'],
-                                 "raDecFromPupilCoords")
+    are_arrays = _validate_inputs([xPupil, yPupil], ['xPupil', 'yPupil'], "raDecFromPupilCoords")
 
     if obs_metadata is None:
         raise RuntimeError("Cannot call raDecFromPupilCoords without obs_metadata")
@@ -198,15 +197,15 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
         raise RuntimeError("Cannot call raDecFromPupilCoords; epoch is None")
 
     if obs_metadata.rotSkyPos is None:
-        raise RuntimeError("Cannot call raDecFromPupilCoords without rotSkyPos " + \
+        raise RuntimeError("Cannot call raDecFromPupilCoords without rotSkyPos " +
                            "in obs_metadata")
 
     if obs_metadata.pointingRA is None or obs_metadata.pointingDec is None:
-        raise RuntimeError("Cannot call raDecFromPupilCoords "+ \
-                          "without pointingRA, pointingDec in obs_metadata")
+        raise RuntimeError("Cannot call raDecFromPupilCoords " +
+                           "without pointingRA, pointingDec in obs_metadata")
 
     if obs_metadata.mjd is None:
-        raise RuntimeError("Cannot calculate x_pupil, y_pupil without mjd " + \
+        raise RuntimeError("Cannot calculate x_pupil, y_pupil without mjd " +
                            "in obs_metadata")
 
     ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
@@ -214,8 +213,8 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
                                                   obs_metadata=obs_metadata,
                                                   epoch=epoch, includeRefraction=True)
 
-    #This is the same as theta in pupilCoordsFromRaDec, except without the minus sign.
-    #This is because we will be reversing the rotation performed in that other method.
+    # This is the same as theta in pupilCoordsFromRaDec, except without the minus sign.
+    # This is because we will be reversing the rotation performed in that other method.
     theta = -1.0*obs_metadata._rotSkyPos
 
     x_g = xPupil*np.cos(theta) - yPupil*np.sin(theta)
