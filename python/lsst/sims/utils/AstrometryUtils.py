@@ -141,7 +141,7 @@ def applyRefraction(zenithDistance, tanzCoeff, tan3zCoeff):
     uses the quick PAL refco routine which approximates the refractin calculation
 
     @param [in] zenithDistance is unrefracted zenith distance of the source in radians.
-    Can either be a float or a numpy array (not a list).
+    Can either be a number or a numpy array (not a list).
 
     @param [in] tanzCoeff is the first output from refractionCoefficients (above)
 
@@ -258,20 +258,20 @@ def applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad,
     The function palpy.pm does not work properly if the parallax is below
     0.00045 arcseconds
 
-    @param [in] ra in degrees.  Can be a float or a numpy array (not a list).
+    @param [in] ra in degrees.  Can be a number or a numpy array (not a list).
 
-    @param [in] dec in degrees.  Can be a float or a numpy array (not a list).
+    @param [in] dec in degrees.  Can be a number or a numpy array (not a list).
 
     @param [in] pm_ra is ra proper motion multiplied by cos(Dec) in arcsec/year.
-    Can be a float or a numpy array (not a list).
+    Can be a number or a numpy array (not a list).
 
     @param [in] pm_dec is dec proper motion in arcsec/year.
-    Can be a float or a numpy array (not a list).
+    Can be a number or a numpy array (not a list).
 
-    @param [in] parallax in arcsec. Can be a float or a numpy array (not a list).
+    @param [in] parallax in arcsec. Can be a number or a numpy array (not a list).
 
     @param [in] v_rad is radial velocity in km/sec (positive if the object is receding).
-    Can be a float or a numpy array (not a list).
+    Can be a number or a numpy array (not a list).
 
     @param [in] epoch is epoch in Julian years (default: 2000.0)
 
@@ -305,20 +305,20 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad,
     The function palpy.pm does not work properly if the parallax is below
     0.00045 arcseconds
 
-    @param [in] ra in radians.  Can be a float or a numpy array (not a list).
+    @param [in] ra in radians.  Can be a number or a numpy array (not a list).
 
-    @param [in] dec in radians.  Can be a float or a numpy array (not a list).
+    @param [in] dec in radians.  Can be a number or a numpy array (not a list).
 
     @param [in] pm_ra is ra proper motion multiplied by cos(Dec) in radians/year.
-    Can be a float or a numpy array (not a list).
+    Can be a number or a numpy array (not a list).
 
     @param [in] pm_dec is dec proper motion in radians/year.
-    Can be a float or a numpy array (not a list).
+    Can be a number or a numpy array (not a list).
 
-    @param [in] parallax in radians. Can be a float or a numpy array (not a list).
+    @param [in] parallax in radians. Can be a number or a numpy array (not a list).
 
     @param [in] v_rad is radial velocity in km/sec (positive if the object is receding).
-    Can be a float or a numpy array (not a list).
+    Can be a number or a numpy array (not a list).
 
     @param [in] epoch is epoch in Julian years (default: 2000.0)
 
@@ -392,9 +392,9 @@ def appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     (arcsec/year), parallax (arcsec), v_rad (km/sec; positive if receding),
     epoch (Julian years)
 
-    @param [in] ra in degrees (ICRS).  Can be a numpy array or a float.
+    @param [in] ra in degrees (ICRS).  Can be a numpy array or a number.
 
-    @param [in] dec in degrees (ICRS).  Can be a numpy array or a float.
+    @param [in] dec in degrees (ICRS).  Can be a numpy array or a number.
 
     @param [in] pm_ra is ra proper motion multiplied by cos(Dec) in arcsec/year
 
@@ -446,20 +446,20 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     (radians/year), parallax (radians), v_rad (km/sec; positive if receding),
     epoch (Julian years)
 
-    @param [in] ra in radians (ICRS).  Can be a numpy array or a float.
+    @param [in] ra in radians (ICRS).  Can be a numpy array or a number.
 
-    @param [in] dec in radians (ICRS).  Can be a numpy array or a float.
+    @param [in] dec in radians (ICRS).  Can be a numpy array or a number.
 
     @param [in] pm_ra is ra proper motion multiplied by cos(Dec) in radians/year.
-    Can be a numpy array or a float or None.
+    Can be a numpy array or a number or None.
 
     @param [in] pm_dec is dec proper motion in radians/year.
-    Can be a numpy array or a float or None.
+    Can be a numpy array or a number or None.
 
-    @param [in] parallax in radians.  Can be a numpy array or a float or None.
+    @param [in] parallax in radians.  Can be a numpy array or a number or None.
 
     @param [in] v_rad is radial velocity in km/sec (positive if the object is receding).
-    Can be a numpy array or a float or None.
+    Can be a numpy array or a number or None.
 
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
@@ -543,9 +543,9 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
 
     This method works in radians.
 
-    @param [in] ra in radians (apparent geocentric).  Can be a numpy array or a float.
+    @param [in] ra in radians (apparent geocentric).  Can be a numpy array or a number.
 
-    @param [in] dec in radians (apparent geocentric).  Can be a numpy array or a float.
+    @param [in] dec in radians (apparent geocentric).  Can be a numpy array or a number.
 
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
@@ -593,9 +593,9 @@ def icrsFromAppGeo(ra, dec, epoch=2000.0, mjd = None):
 
     This method works in degrees.
 
-    @param [in] ra in degrees (apparent geocentric).  Can be a numpy array or a float.
+    @param [in] ra in degrees (apparent geocentric).  Can be a numpy array or a number.
 
-    @param [in] dec in degrees (apparent geocentric).  Can be a numpy array or a float.
+    @param [in] dec in degrees (apparent geocentric).  Can be a numpy array or a number.
 
     @param [in] epoch is the julian epoch (in years) of the equinox against which to
     measure RA (default: 2000.0)
@@ -621,9 +621,9 @@ def observedFromAppGeo(ra, dec, includeRefraction = True,
 
     This method works in degrees.
 
-    @param [in] ra is geocentric apparent RA (degrees).  Can be a numpy array or a float.
+    @param [in] ra is geocentric apparent RA (degrees).  Can be a numpy array or a number.
 
-    @param [in] dec is geocentric apparent Dec (degrees).  Can be a numpy array or a float.
+    @param [in] dec is geocentric apparent Dec (degrees).  Can be a numpy array or a number.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -735,9 +735,9 @@ def _observedFromAppGeo(ra, dec, includeRefraction = True,
 
     This method works in radians.
 
-    @param [in] ra is geocentric apparent RA (radians).  Can be a numpy array or a float.
+    @param [in] ra is geocentric apparent RA (radians).  Can be a numpy array or a number.
 
-    @param [in] dec is geocentric apparent Dec (radians).  Can be a numpy array or a float.
+    @param [in] dec is geocentric apparent Dec (radians).  Can be a numpy array or a number.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -815,9 +815,9 @@ def appGeoFromObserved(ra, dec, includeRefraction = True,
 
     This method works in degrees.
 
-    @param [in] ra is observed RA (degrees).  Can be a numpy array or a float.
+    @param [in] ra is observed RA (degrees).  Can be a numpy array or a number.
 
-    @param [in] dec is observed Dec (degrees).  Can be a numpy array or a float.
+    @param [in] dec is observed Dec (degrees).  Can be a numpy array or a number.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -849,9 +849,9 @@ def _appGeoFromObserved(ra, dec, includeRefraction = True,
 
     This method works in radians.
 
-    @param [in] ra is observed RA (radians).  Can be a numpy array or a float.
+    @param [in] ra is observed RA (radians).  Can be a numpy array or a number.
 
-    @param [in] dec is observed Dec (radians).  Can be a numpy array or a float.
+    @param [in] dec is observed Dec (radians).  Can be a numpy array or a number.
 
     @param [in] includeRefraction is a boolean to turn refraction on and off
 
@@ -897,21 +897,21 @@ def observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=None
 
     This method works in degrees.
 
-    @param [in] ra is the unrefracted RA in degrees (ICRS).  Can be a numpy array or a float.
+    @param [in] ra is the unrefracted RA in degrees (ICRS).  Can be a numpy array or a number.
 
-    @param [in] dec is the unrefracted Dec in degrees (ICRS).  Can be a numpy array or a float.
+    @param [in] dec is the unrefracted Dec in degrees (ICRS).  Can be a numpy array or a number.
 
     @param [in] pm_ra is proper motion in RA multiplied by cos(Dec) (arcsec/yr)
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] pm_dec is proper motion in dec (arcsec/yr)
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] parallax is parallax in arcsec
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] v_rad is radial velocity (km/s)
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.
@@ -959,21 +959,21 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
 
     This method works in radians.
 
-    @param [in] ra is the unrefracted RA in radians (ICRS).  Can be a numpy array or a float.
+    @param [in] ra is the unrefracted RA in radians (ICRS).  Can be a numpy array or a number.
 
-    @param [in] dec is the unrefracted Dec in radians (ICRS).  Can be a numpy array or a float.
+    @param [in] dec is the unrefracted Dec in radians (ICRS).  Can be a numpy array or a number.
 
     @param [in] pm_ra is proper motion in RA multiplied by cos(Dec) (radians/yr)
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] pm_dec is proper motion in dec (radians/yr)
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] parallax is parallax in radians
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] v_rad is radial velocity (km/s)
-    Can be a numpy array or a float or None (default=None).
+    Can be a numpy array or a number or None (default=None).
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.
@@ -1040,9 +1040,9 @@ def icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=T
 
     This method works in degrees.
 
-    @param [in] ra is the observed RA in degrees.  Can be a numpy array or a float.
+    @param [in] ra is the observed RA in degrees.  Can be a numpy array or a number.
 
-    @param [in] dec is the observed Dec in degrees.  Can be a numpy array or a float.
+    @param [in] dec is the observed Dec in degrees.  Can be a numpy array or a number.
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.
@@ -1077,9 +1077,9 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
 
     This method works in radians.
 
-    @param [in] ra is the observed RA in radians.  Can be a numpy array or a float.
+    @param [in] ra is the observed RA in radians.  Can be a numpy array or a number.
 
-    @param [in] dec is the observed Dec in radians.  Can be a numpy array or a float.
+    @param [in] dec is the observed Dec in radians.  Can be a numpy array or a number.
 
     @param [in] obs_metadata is an ObservationMetaData object describing the
     telescope pointing.

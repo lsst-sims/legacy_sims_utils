@@ -4,6 +4,7 @@ of palpy methods, or that have no dependence on palpy at all
 """
 
 import numpy as np
+import numbers
 import palpy
 
 __all__ = ["_galacticFromEquatorial", "galacticFromEquatorial",
@@ -46,16 +47,16 @@ def calcLmstLast(mjd, longRad):
     valid_type = False
     if isinstance(mjd, np.ndarray) and isinstance(longRad, np.ndarray):
         valid_type = True
-    elif isinstance(mjd, np.ndarray) and isinstance(longRad, np.float):
+    elif isinstance(mjd, np.ndarray) and isinstance(longRad, numbers.Number):
         valid_type = True
-    elif isinstance(mjd, np.float) and isinstance(longRad, np.float):
+    elif isinstance(mjd, numbers.Number) and isinstance(longRad, numbers.Number):
         valid_type = True
 
     if not valid_type:
         msg = "Valid input types for calcLmstLast are:\n" \
               "mjd and longRad as numpy arrays of the same length\n" \
-              "mjd as a numpy array and longRad as a float\n" \
-              "mjd as a float and longRad as a float\n" \
+              "mjd as a numpy array and longRad as a number\n" \
+              "mjd as a number and longRad as a number\n" \
               "You gave mjd: %s\n" % type(mjd) \
               + "and longRad: %s\n" % type(longRad)
 
@@ -84,9 +85,9 @@ def calcLmstLast(mjd, longRad):
 def galacticFromEquatorial(ra, dec):
     '''Convert RA,Dec (J2000) to Galactic Coordinates
 
-    @param [in] ra is right ascension in degrees, either a float or a numpy array
+    @param [in] ra is right ascension in degrees, either a number or a numpy array
 
-    @param [in] dec is declination in degrees, either a float or a numpy array
+    @param [in] dec is declination in degrees, either a number or a numpy array
 
     @param [out] gLong is galactic longitude in degrees
 
@@ -102,9 +103,9 @@ def _galacticFromEquatorial(ra, dec):
 
     All angles are in radians
 
-    @param [in] ra is right ascension in radians, either a float or a numpy array
+    @param [in] ra is right ascension in radians, either a number or a numpy array
 
-    @param [in] dec is declination in radians, either a float or a numpy array
+    @param [in] dec is declination in radians, either a number or a numpy array
 
     @param [out] gLong is galactic longitude in radians
 
@@ -122,10 +123,10 @@ def _galacticFromEquatorial(ra, dec):
 def equatorialFromGalactic(gLong, gLat):
     '''Convert Galactic Coordinates to RA, dec (J2000)
 
-    @param [in] gLong is galactic longitude in degrees, either a float or a numpy array
+    @param [in] gLong is galactic longitude in degrees, either a number or a numpy array
     (0 <= gLong <= 360.)
 
-    @param [in] gLat is galactic latitude in degrees, either a float or a numpy array
+    @param [in] gLat is galactic latitude in degrees, either a number or a numpy array
     (-90. <= gLat <= 90.)
 
     @param [out] ra is right ascension in degrees
@@ -140,10 +141,10 @@ def equatorialFromGalactic(gLong, gLat):
 def _equatorialFromGalactic(gLong, gLat):
     '''Convert Galactic Coordinates to RA, dec (J2000)
 
-    @param [in] gLong is galactic longitude in radians, either a float or a numpy array
+    @param [in] gLong is galactic longitude in radians, either a number or a numpy array
     (0 <= gLong <= 2*pi)
 
-    @param [in] gLat is galactic latitude in radians, either a float or a numpy array
+    @param [in] gLat is galactic latitude in radians, either a number or a numpy array
     (-pi/2 <= gLat <= pi/2)
 
     @param [out] ra is right ascension in radians (J2000)
@@ -163,9 +164,9 @@ def cartesianFromSpherical(longitude, latitude):
     """
     Transforms between spherical and Cartesian coordinates.
 
-    @param [in] longitude is a numpy array or a float in radians
+    @param [in] longitude is a numpy array or a number in radians
 
-    @param [in] latitude is a numpy array or float in radians
+    @param [in] latitude is a numpy array or number in radians
 
     @param [out] a numpy array of the (three-dimensional) cartesian coordinates on a unit sphere.
 
@@ -180,11 +181,11 @@ def cartesianFromSpherical(longitude, latitude):
     valid_type = False
     if isinstance(longitude, np.ndarray) and isinstance(latitude, np.ndarray):
         valid_type = True
-    elif isinstance(longitude, np.float) and isinstance(latitude, np.float):
+    elif isinstance(longitude, numbers.Number) and isinstance(latitude, numbers.Number):
         valid_type = True
 
     if not valid_type:
-        raise RuntimeError("longitude and latitude must both be either numpy arrays or a floats")
+        raise RuntimeError("longitude and latitude must both be either numpy arrays or numbers")
 
     cosDec = np.cos(latitude)
     return np.array([np.cos(longitude)*cosDec, np.sin(longitude)*cosDec, np.sin(latitude)]).transpose()
@@ -258,7 +259,7 @@ def equationOfEquinoxes(d):
     """
     The equation of equinoxes. See http://aa.usno.navy.mil/faq/docs/GAST.php
 
-    @param [in] d is either a numpy array or a float that is Terrestrial Time
+    @param [in] d is either a numpy array or a number that is Terrestrial Time
     expressed as an MJD
 
     @param [out] the equation of equinoxes in radians.

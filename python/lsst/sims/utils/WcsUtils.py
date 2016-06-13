@@ -1,4 +1,5 @@
 import numpy as np
+import numbers
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 
 __all__ = ["_nativeLonLatFromPointing", "_lonLatFromNativeLonLat",
@@ -76,7 +77,7 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
 
     _x = -np.sin(_ra)
 
-    if type(_ra) is np.float64:
+    if isinstance(_ra, numbers.Number):
         if np.isnan(_ra):
             lonOut = 0.0
         elif (np.abs(_x) > 1.0e-9 and np.sign(_x) != np.sign(v2[0])) or \
@@ -142,7 +143,7 @@ def _lonLatFromNativeLonLat(nativeLon, nativeLat, lonPointing, latPointing):
     _lonOut = np.arccos(_y)
     _x = -np.sin(_lonOut)
 
-    if type(_lonOut) is np.float64:
+    if isinstance(_lonOut, numbers.Number):
         if np.isnan(_lonOut):
             lonOut = 0.0
         elif (np.abs(_x) > 1.0e-9 and np.sign(_x) != np.sign(v2[0])) or \

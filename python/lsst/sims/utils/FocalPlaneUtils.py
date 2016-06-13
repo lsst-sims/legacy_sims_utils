@@ -24,9 +24,9 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     observers actually see, rather than the idealized, above-the-atmosphere
     coordinates represented by the ICRS.
 
-    @param [in] ra_in is in degrees (ICRS).  Can be either a numpy array or a float.
+    @param [in] ra_in is in degrees (ICRS).  Can be either a numpy array or a number.
 
-    @param [in] dec_in is in degrees (ICRS).  Can be either a numpy array or a float.
+    @param [in] dec_in is in degrees (ICRS).  Can be either a numpy array or a number.
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
@@ -58,9 +58,9 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     observers actually see, rather than the idealized, above-the-atmosphere
     coordinates represented by the ICRS.
 
-    @param [in] ra_in is in radians (ICRS).  Can be either a numpy array or a float.
+    @param [in] ra_in is in radians (ICRS).  Can be either a numpy array or a number.
 
-    @param [in] dec_in is in radians (ICRS).  Can be either a numpy array or a float.
+    @param [in] dec_in is in radians (ICRS).  Can be either a numpy array or a number.
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
@@ -148,10 +148,10 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
 def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     """
     @param [in] xPupil -- pupil coordinates in radians.
-    Can be a numpy array or a float.
+    Can be a numpy array or a number.
 
     @param [in] yPupil -- pupil coordinates in radians.
-    Can be a numpy array or a float.
+    Can be a numpy array or a number.
 
     @param [in] obs_metadata -- an instantiation of ObservationMetaData characterizing
     the state of the telescope
@@ -173,10 +173,10 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     """
     @param [in] xPupil -- pupil coordinates in radians.
-    Can be a numpy array or a float.
+    Can be a numpy array or a number.
 
     @param [in] yPupil -- pupil coordinates in radians.
-    Can be a numpy array or a float.
+    Can be a numpy array or a number.
 
     @param [in] obs_metadata -- an instantiation of ObservationMetaData characterizing
     the state of the telescope
