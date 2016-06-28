@@ -3,6 +3,7 @@ import warnings
 import os
 
 from astropy.time import Time
+from astropy.utils.iers.iers import IERSRangeError
 
 from lsst.utils import getPackageDir
 
@@ -44,6 +45,13 @@ class ModifiedJulianDate(object):
     def __eq__(self, other):
         return self._time == other._time
 
+    def _warn_utc_out_of_bounds(self):
+        """
+        Raise a standard warning if UTC is outside of the range that can
+        be interpolated on the IERS tables.
+        """
+        warnings.warn("UTC is outside of IERS table for UT1-UTC.\n"
+                      "Returning UT1 = UTC for lack of a better idea")
 
     @property
     def TAI(self):
@@ -76,9 +84,8 @@ class ModifiedJulianDate(object):
         if self._ut1 is None:
             try:
                 self._ut1 = self._time.ut1.mjd
-            except:
-                warnings.warn("UTC %e is outside of IERS table for UT1-UTC.\n" % self.UTC
-                              + "Returning UT1 = UTC for lack of a better idea")
+            except IERSRangeError:
+                self._warn_utc_out_of_bounds()
                 self._ut1 = self.UTC
 
         return self._ut1
@@ -97,9 +104,8 @@ class ModifiedJulianDate(object):
                     self._dut1 = intermediate_value.value
                 except:
                     self._dut1 = intermediate_value
-            except:
-                warnings.warn("UTC %e is outside of IERS table for UT1-UTC.\n" % self.UTC
-                              + "Returning UT1 = UTC for lack of a better idea")
+            except IERSRangeError:
+                self._warn_utc_out_of_bounds()
                 self._dut1 = 0.0
 
         return self._dut1
