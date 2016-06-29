@@ -1,12 +1,14 @@
+from __future__ import with_statement
 import unittest
 import warnings
 import numpy as np
 import os
+import warnings
 import lsst.utils.tests as utilsTests
 
 import lsst.sims.utils as utils
 from lsst.utils import getPackageDir
-from lsst.sims.utils import ModifiedJulianDate
+from lsst.sims.utils import ModifiedJulianDate, UTCtoUT1Warning
 
 class MjdTest(unittest.TestCase):
     """
@@ -123,6 +125,19 @@ class MjdTest(unittest.TestCase):
         self.assertEqual(mjd1, mjd2)
         mjd3 = ModifiedJulianDate(TAI=43000.01)
         self.assertNotEqual(mjd1, mjd3)
+
+
+    def test_warnings(self):
+        """
+        Test that warnings raised when trying to interpolate UT1-UTC
+        for UTC too far in the future are of the type UTCtoUT1Warning
+        """
+
+        with warnings.catch_warnings(record=True) as w_list:
+            mjd = ModifiedJulianDate(1000000.0)
+            mjd.UT1
+        self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
+        self.assertEqual(w_list[1].category, UTCtoUT1Warning)
 
 
 def suite():
