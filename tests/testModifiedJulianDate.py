@@ -139,6 +139,14 @@ class MjdTest(unittest.TestCase):
         self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
         self.assertEqual(w_list[1].category, UTCtoUT1Warning)
 
+        with warnings.catch_warnings(record=True) as w_list:
+            warnings.filterwarnings('always')
+            mjd = ModifiedJulianDate(1000000.0)
+            mjd.dut1
+        self.assertEqual(len(w_list), 1)  # The ERFA warning is now suppressed
+        self.assertEqual(w_list[0].category, UTCtoUT1Warning)
+
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
