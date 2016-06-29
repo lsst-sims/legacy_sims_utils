@@ -63,13 +63,16 @@ class ModifiedJulianDate(object):
     def __eq__(self, other):
         return self._time == other._time
 
-    def _warn_utc_out_of_bounds(self):
+    def _warn_utc_out_of_bounds(self, method_name):
         """
         Raise a standard warning if UTC is outside of the range that can
         be interpolated on the IERS tables.
+
+        method_name is the name of the method that caused this warning.
         """
         warnings.warn("UTC is outside of IERS table for UT1-UTC.\n"
-                      "Returning UT1 = UTC for lack of a better idea",
+                      "Returning UT1 = UTC for lack of a better idea\n"
+                      "This warning was caused by calling ModifiedJulianDate.%s\n" % method_name,
                       category=UTCtoUT1Warning)
 
     @property
@@ -104,7 +107,7 @@ class ModifiedJulianDate(object):
             try:
                 self._ut1 = self._time.ut1.mjd
             except IERSRangeError:
-                self._warn_utc_out_of_bounds()
+                self._warn_utc_out_of_bounds('UT1')
                 self._ut1 = self.UTC
 
         return self._ut1
@@ -124,7 +127,7 @@ class ModifiedJulianDate(object):
                 except:
                     self._dut1 = intermediate_value
             except IERSRangeError:
-                self._warn_utc_out_of_bounds()
+                self._warn_utc_out_of_bounds('dut1')
                 self._dut1 = 0.0
 
         return self._dut1
