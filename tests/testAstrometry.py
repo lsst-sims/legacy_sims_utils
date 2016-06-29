@@ -706,7 +706,8 @@ class astrometryUnitTest(unittest.TestCase):
 
     def test_appGeoFromICRS_inputs(self):
         """
-        Test that appGeoFromICRS behaves as expected when given numpy array inputs
+        Test that appGeoFromICRS behaves as expected when given both numpy
+        array and float inputs.
         """
 
         np.random.seed(83)
