@@ -1,11 +1,7 @@
-import numpy as np
 import warnings
-import os
 
 from astropy.time import Time
 from astropy.utils.iers.iers import IERSRangeError
-
-from lsst.utils import getPackageDir
 
 __all__ = ["ModifiedJulianDate", "MJDWarning", "UTCtoUT1Warning"]
 
@@ -18,6 +14,7 @@ class MJDWarning(Warning):
     """
     pass
 
+
 class UTCtoUT1Warning(MJDWarning):
     """
     A sub-class of MJDWarning meant for use when astropy.Time cannot interpolate
@@ -27,8 +24,8 @@ class UTCtoUT1Warning(MJDWarning):
     """
     pass
 
-class ModifiedJulianDate(object):
 
+class ModifiedJulianDate(object):
 
     def __init__(self, TAI=None, UTC=None):
         """
@@ -59,7 +56,6 @@ class ModifiedJulianDate(object):
         self._ut1 = None
         self._dut1 = None
 
-
     def __eq__(self, other):
         return self._time == other._time
 
@@ -85,7 +81,6 @@ class ModifiedJulianDate(object):
 
         return self._tai
 
-
     @property
     def UTC(self):
         """
@@ -95,8 +90,6 @@ class ModifiedJulianDate(object):
             self._utc = self._time.utc.mjd
 
         return self._utc
-
-
 
     @property
     def UT1(self):
@@ -111,7 +104,6 @@ class ModifiedJulianDate(object):
                 self._ut1 = self.UTC
 
         return self._ut1
-
 
     @property
     def dut1(self):
@@ -132,7 +124,6 @@ class ModifiedJulianDate(object):
 
         return self._dut1
 
-
     @property
     def TT(self):
         """
@@ -142,7 +133,6 @@ class ModifiedJulianDate(object):
             self._tt = self._time.tt.mjd
 
         return self._tt
-
 
     @property
     def TDB(self):
