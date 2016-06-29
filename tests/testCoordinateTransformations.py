@@ -67,6 +67,9 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertRaises(RuntimeError, utils.calcLmstLast, mjdFloat, longArr)
         utils.calcLmstLast(mjd2, longFloat)
         utils.calcLmstLast(mjdFloat, longFloat)
+        utils.calcLmstLast(int(mjdFloat), longFloat)
+        utils.calcLmstLast(mjdFloat, int(longFloat))
+        utils.calcLmstLast(int(mjdFloat), int(longFloat))
         utils.calcLmstLast(mjd2, longArr)
 
     def testEquationOfEquinoxes(self):
