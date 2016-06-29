@@ -137,14 +137,16 @@ class MjdTest(unittest.TestCase):
             mjd = ModifiedJulianDate(1000000.0)
             mjd.UT1
         self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
-        self.assertEqual(w_list[1].category, UTCtoUT1Warning)
+        self.assertIsInstance(w_list[1].message, UTCtoUT1Warning)
+        self.assertIn('ModifiedJulianDate.UT1', w_list[1].message.message)
 
         with warnings.catch_warnings(record=True) as w_list:
             warnings.filterwarnings('always')
             mjd = ModifiedJulianDate(1000000.0)
             mjd.dut1
         self.assertEqual(len(w_list), 1)  # The ERFA warning is now suppressed
-        self.assertEqual(w_list[0].category, UTCtoUT1Warning)
+        self.assertIsInstance(w_list[0].message, UTCtoUT1Warning)
+        self.assertIn('ModifiedJulianDate.dut1', w_list[0].message.message)
 
 
 
