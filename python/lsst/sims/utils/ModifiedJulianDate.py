@@ -7,7 +7,25 @@ from astropy.utils.iers.iers import IERSRangeError
 
 from lsst.utils import getPackageDir
 
-__all__ = ["ModifiedJulianDate"]
+__all__ = ["ModifiedJulianDate", "MJDWarning", "UTCtoUT1Warning"]
+
+
+class MJDWarning(Warning):
+    """
+    A sub-class of Warning.  All of the warnings raised by ModifiedJulianDate
+    will be of this class (or its sub-classes), so that users can filter them
+    out by creating a simple filter targeted at category=MJDWarning.
+    """
+    pass
+
+class UTCtoUT1Warning(MJDWarning):
+    """
+    A sub-class of MJDWarning meant for use when astropy.Time cannot interpolate
+    UT1-UTC as a function of UTC because UTC is out of bounds of the data.
+    This class exists so that users can filter these warnings out by creating
+    a simple filter targeted at category=UTCtoUT1Warning.
+    """
+    pass
 
 class ModifiedJulianDate(object):
 
@@ -51,7 +69,8 @@ class ModifiedJulianDate(object):
         be interpolated on the IERS tables.
         """
         warnings.warn("UTC is outside of IERS table for UT1-UTC.\n"
-                      "Returning UT1 = UTC for lack of a better idea")
+                      "Returning UT1 = UTC for lack of a better idea",
+                      category=UTCtoUT1Warning)
 
     @property
     def TAI(self):
