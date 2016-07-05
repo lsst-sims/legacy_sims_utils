@@ -44,6 +44,9 @@ class ObservationMetaData(object):
         * bandpassName : a char (e.g. 'u') or list (e.g. ['u', 'g', 'z'])
           denoting the bandpasses used for this particular observation
 
+        * site: an instantiation of the lsst.sims.utils.Site class characterizing
+          the site of the observatory.
+
         * m5: float or list (optional)
           this should be the 5-sigma limiting magnitude in the bandpass or
           bandpasses specified in bandpassName.  Ultimately, m5 will be stored
