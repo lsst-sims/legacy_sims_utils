@@ -105,7 +105,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.pointingRA, None)
         self.assertEqual(testObsMD.pointingDec, None)
         self.assertEqual(testObsMD.rotSkyPos, None)
-        self.assertEqual(testObsMD.bandpass, 'r')
+        self.assertEqual(testObsMD.bandpass, None)
         self.assertEqual(testObsMD.m5, None)
         self.assertEqual(testObsMD.seeing, None)
         self.assertAlmostEqual(testObsMD.site.longitude, -70.7494, 10)

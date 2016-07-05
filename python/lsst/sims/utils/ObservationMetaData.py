@@ -427,10 +427,7 @@ class ObservationMetaData(object):
         The bandpass associated with this ObservationMetaData.
         Can be a list.
         """
-        if self._bandpass is not None:
-            return self._bandpass
-        else:
-            return 'r'
+        return self._bandpass
 
     def setBandpassM5andSeeing(self, bandpassName=None, m5=None, seeing=None):
         """
