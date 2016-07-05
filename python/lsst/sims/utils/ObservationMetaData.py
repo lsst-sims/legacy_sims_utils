@@ -1,4 +1,5 @@
 import numpy as np
+import numbers
 from .SpatialBounds import SpatialBounds
 from lsst.sims.utils import ModifiedJulianDate
 from lsst.sims.utils import Site
@@ -104,7 +105,7 @@ class ObservationMetaData(object):
         self._phoSimMetadata = {}
 
         if mjd is not None:
-            if isinstance(mjd, float) or isinstance(mjd, int):
+            if isinstance(mjd, numbers.Number):
                 self._mjd = ModifiedJulianDate(TAI=mjd)
             elif isinstance(mjd, ModifiedJulianDate):
                 self._mjd = mjd
