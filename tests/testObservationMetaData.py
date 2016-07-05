@@ -3,7 +3,6 @@ from __future__ import with_statement
 import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
-from collections import OrderedDict
 from lsst.sims.utils import ObservationMetaData, ModifiedJulianDate
 from lsst.sims.utils import Site, BoxBounds, CircleBounds
 
@@ -93,7 +92,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         obsMD.setBandpassM5andSeeing(bandpassName=['w', 'x'], seeing=[0.9, 1.1])
         self.assertAlmostEqual(obsMD.seeing['w'], 0.9, 10)
         self.assertAlmostEqual(obsMD.seeing['x'], 1.1, 10)
-
 
     def testDefault(self):
         """
