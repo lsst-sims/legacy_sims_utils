@@ -16,6 +16,9 @@ class ObservationMetaData(object):
 
     **Parameters**
 
+        All parameters are optional.  It is possible to instantiate an
+        ObservationMetaData that is empty of data.
+
         * pointing[RA,Dec] float
           The coordinates of the pointing (in degrees; in the International
           Celestial Reference System)
@@ -37,7 +40,7 @@ class ObservationMetaData(object):
           can be reasonably expected to return all of the objects within the desired field
           of view once those corrections have been applied.
 
-        * mjd : (optional)
+        * mjd :
           Either a float (in which case, it will be assumed to be in International
           Atomic Time), or an instantiation of the ModifiedJulianDate class representing
           the date of the observation
@@ -48,7 +51,7 @@ class ObservationMetaData(object):
         * site: an instantiation of the lsst.sims.utils.Site class characterizing
           the site of the observatory.
 
-        * m5: float or list (optional)
+        * m5: float or list
           this should be the 5-sigma limiting magnitude in the bandpass or
           bandpasses specified in bandpassName.  Ultimately, m5 will be stored
           in a dict keyed to the bandpassName (or Names) you passed in, i.e.
@@ -57,20 +60,20 @@ class ObservationMetaData(object):
 
           myObservationMetaData.m5['u']
 
-        * skyBrightness: float (optional) the magnitude of the sky in the
+        * skyBrightness: float the magnitude of the sky in the
           filter specified by bandpassName
 
-        * seeing float or list (optional)
+        * seeing float or list
           Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
           bandpassName
 
-        * epoch (optional) is the epoch of the RA, Dec system used to define
+        * epoch is the epoch of the RA, Dec system used to define
           pointingRA/Dec.  This defaults to 2000.0 and should only be changed
           if you plan to use this ObservationMetaData to query a database with meanRA,
           Dec stored in a system that is not measured against the equinox at Julian
           epoch 2000.0
 
-        * rotSkyPos float (optional)
+        * rotSkyPos float
           The orientation of the telescope in degrees.
           This is used by the Astrometry mixins in sims_coordUtils.
 
