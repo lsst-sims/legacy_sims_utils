@@ -31,14 +31,14 @@ class ObservationMetaData(object):
           If boundType is 'circle,' this will be the radius of the circle.
           The bound will be centered on the point (pointingRA, pointingDec),
           however, because objects are stored at their mean RA, Dec in the LSST databases
-          (i.e. they are stored at values of RA, Dec which neglect precession, nutation,
-          aberration, and refraction), the bounds applied to database queries will be made
-          slightly larger so that queries can be reasonably expected to return all of the
-          objects within the desired field of view once those corrections have been applied.
+          (i.e. they are stored at values of RA, Dec which neglect proper motion), the
+          bounds applied to database queries will be made slightly larger so that queries
+          can be reasonably expected to return all of the objects within the desired field
+          of view once those corrections have been applied.
 
         * mjd : (optional)
           Either a float (in which case, it will be assumed to be in International
-          Atomic Time), or an instnatiation of the ModifiedJulianDate class representing
+          Atomic Time), or an instantiation of the ModifiedJulianDate class representing
           the date of the observation
 
         * bandpassName : a char (e.g. 'u') or list (e.g. ['u', 'g', 'z'])
@@ -60,27 +60,27 @@ class ObservationMetaData(object):
           Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
           bandpassName
 
-        * epoch (optional) is the epoch used for converting from pointingRA, Dec to
-          meanRA, Dec when constructing query bounds on a database.  This defaults
-          to 2000.0 and should only be changed if you plan to use this
-          ObservationMetaData to query a database with meanRA, Dec stored in a
-          system that is not measured against the equinox at Julian epoch 2000.0
+        * epoch (optional) is the epoch of the RA, Dec system used to define
+          pointingRA/Dec.  This defaults to 2000.0 and should only be changed
+          if you plan to use this ObservationMetaData to query a database with meanRA,
+          Dec stored in a system that is not measured against the equinox at Julian
+          epoch 2000.0
 
         * rotSkyPos float (optional)
           The orientation of the telescope in degrees.
           This is used by the Astrometry mixins in sims_coordUtils.
 
-        The convention for rotSkyPos is as follows:
+          The convention for rotSkyPos is as follows:
 
-        rotSkyPos = 0 means north is in the +y direction on the focal plane and east is -x
+          rotSkyPos = 0 means north is in the +y direction on the focal plane and east is -x
 
-        rotSkyPos = 90 means north is -x and east is -y
+          rotSkyPos = 90 means north is -x and east is -y
 
-        rotSkyPos = -90 means north is +x and east is +y
+          rotSkyPos = -90 means north is +x and east is +y
 
-        rotSkyPos = 180 means north is -y and east is +x
+          rotSkyPos = 180 means north is -y and east is +x
 
-        This should be consistent with PhoSim conventions.
+          This should be consistent with PhoSim conventions.
 
     **Examples**::
         >>> data = ObservationMetaData(boundType='box', pointingRA=5.0, pointingDec=15.0,
