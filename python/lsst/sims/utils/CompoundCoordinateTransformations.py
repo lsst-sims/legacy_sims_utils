@@ -162,6 +162,7 @@ def _raDecFromAltAz(altRad, azRad, obs):
 
     return raRad, decRad
 
+
 def getRotSkyPos(ra, dec, obs, rotTel):
     """
     @param [in] ra is the RA in degrees.  Can be a numpy array or a single value.
