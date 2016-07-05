@@ -14,7 +14,6 @@ from lsst.sims.utils import ObservationMetaData, Site, haversine
 
 __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
            "_raDecFromAltAz", "raDecFromAltAz",
-           "write_phoSim_header",
            "getRotTelPos", "_getRotTelPos",
            "getRotSkyPos", "_getRotSkyPos",
            "calcObsDefaults", "makeObservationMetadata", "makeObsParamsAzAltTel",
@@ -162,50 +161,6 @@ def _raDecFromAltAz(altRad, azRad, obs):
                                       includeRefraction=True)
 
     return raRad, decRad
-
-
-
-
-def write_phoSim_header(obs, file_handle):
-    """
-    Write the data contained in an ObservationMetaData as a header in a
-    PhoSim InstanceCatalog.
-
-    obs is the ObservationMetaData
-
-    file_handle points to the catalog being written.
-    """
-    try:
-        file_handle.write('Unrefracted_RA %f\n' % obs.pointingRA)
-        file_handle.write('Unrefracted_Dec %f\n' % obs.pointingDec)
-        file_handle.write('Opsim_expmjd %f\n' % obs.mjd.TAI)
-        alt, az, pa = altAzPaFromRaDec(obs.pointingRA, obs.pointingDec, obs)
-        file_handle.write('Opsim_altitude %f\n' % alt)
-        file_handle.write('Opsim_azimuth %f\n' % az)
-        airmass = 1.0/np.cos(np.pi-np.radians(alt))
-        file_handle.write('airmass %f\n' % airmass)
-        file_handle.write('Opsim_filter %d\n' %
-                      {'u':0, 'g':1, 'r':2, 'i':3, 'z':4, 'y':5}[obs.bandpass])
-
-        file_handle.write('Opsim_rotskypos %f\n' % obs.rotSkyPos)
-    except:
-        print "The ObservationMetaData you tried to write a PhoSim header from\n"
-        print "lacks one of the required parameters"
-        print "(pointingRA, pointingDec, mjd, bandpass, rotSkyPos)"
-        raise
-
-
-    already_written = ('Unrefracted_RA', 'Unrefracted_Dec',
-                       'Opsim_expmjd', 'Opsim_altitude',
-                       'Opsim_azimuth', 'airmass', 'Opsim_filter',
-                       'Opsim_rotskypos')
-
-    for kk in obs._phoSimMetadata:
-        if kk in already_written:
-            raise RuntimeError("This ObservationMetaData has conflicting values for "
-                               "%s" % kk)
-
-        file_handle.write('%s %f\n' % (kk, obs._phoSimMetadata[kk]))
 
 def getRotSkyPos(ra, dec, obs, rotTel):
     """
