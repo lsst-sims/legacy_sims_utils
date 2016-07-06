@@ -23,7 +23,7 @@ from collections import OrderedDict
 import lsst.utils.tests as utilsTests
 
 from lsst.sims.utils import ObservationMetaData
-from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
+from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
                             raDecFromAltAz, haversine, ModifiedJulianDate, \
                             _getRotSkyPos
@@ -49,17 +49,12 @@ def makeObservationMetaData():
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
     rotSky = _getRotSkyPos(centerRA, centerDec, obsTemp, rotTel)
 
-    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
-                              testSite.longitude_rad, testSite.latitude_rad)
-
-    obsDict['Opsim_expmjd'] = mjd
     radius = 0.1
-    phoSimMetaData = OrderedDict([(k, (obsDict[k], np.dtype(type(obsDict[k])))) for k in obsDict])
 
     obs_metadata = ObservationMetaData(pointingRA=np.degrees(centerRA),
                                        pointingDec=np.degrees(centerDec),
                                        rotSkyPos=np.degrees(rotSky),
-                                       mjd=obsDict['Opsim_expmjd'],
+                                       mjd=mjd,
                                        boundType='circle', boundLength=2.0*radius,
                                        site=testSite)
 
