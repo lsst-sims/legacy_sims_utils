@@ -40,7 +40,7 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
         raRad, decRad = utils._observedFromICRS(raRad_in, decRad_in,
                                                 obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
-    lst = utils.calcLmstLast(mjd, longRad)
+    lst = utils.calcLmstLast(obs.mjd.UT1, longRad)
     last = lst[1]
     haRad = np.radians(last*15.) - raRad
 
