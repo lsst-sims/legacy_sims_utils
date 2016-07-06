@@ -25,7 +25,8 @@ import lsst.utils.tests as utilsTests
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
-                            raDecFromAltAz, haversine, ModifiedJulianDate
+                            raDecFromAltAz, haversine, ModifiedJulianDate, \
+                            _getRotSkyPos
 
 from lsst.sims.utils import solarRaDec, _solarRaDec, distanceToSun, _distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
@@ -46,6 +47,7 @@ def makeObservationMetaData():
     obsTemp = ObservationMetaData(site=testSite, mjd=mjd)
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
+    rotSky = _getRotSkyPos(centerRA, centerDec, obsTemp, rotTel)
 
     obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
                               testSite.longitude_rad, testSite.latitude_rad)
@@ -54,9 +56,9 @@ def makeObservationMetaData():
     radius = 0.1
     phoSimMetaData = OrderedDict([(k, (obsDict[k], np.dtype(type(obsDict[k])))) for k in obsDict])
 
-    obs_metadata = ObservationMetaData(pointingRA=np.degrees(obsDict['pointingRA']),
-                                       pointingDec=np.degrees(obsDict['pointingDec']),
-                                       rotSkyPos=np.degrees(obsDict['Opsim_rotskypos']),
+    obs_metadata = ObservationMetaData(pointingRA=np.degrees(centerRA),
+                                       pointingDec=np.degrees(centerDec),
+                                       rotSkyPos=np.degrees(rotSky),
                                        mjd=obsDict['Opsim_expmjd'],
                                        boundType='circle', boundLength=2.0*radius,
                                        site=testSite)

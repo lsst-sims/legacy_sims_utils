@@ -336,20 +336,14 @@ def calcObsDefaults(raRad, decRad, altRad, azRad, rotTelRad, mjd, band, longRad,
     sunalt = -np.pi/2.
     moonalt = -np.pi/2.
     dist2moon = haversine(moonra, moondec, raRad, decRad)
-    obsMd['Opsim_moonra'] = moonra
-    obsMd['Opsim_moondec'] = moondec
-    obsMd['Opsim_sunalt'] = sunalt
-    obsMd['Opsim_moonalt'] = moonalt
-    obsMd['Opsim_dist2moon'] = dist2moon
+    obsMd['Opsim_moonra'] = np.degrees(moonra)
+    obsMd['Opsim_moondec'] = np.degrees(moondec)
+    obsMd['Opsim_sunalt'] = np.degrees(sunalt)
+    obsMd['Opsim_moonalt'] = np.degrees(moonalt)
+    obsMd['Opsim_dist2moon'] = np.degrees(dist2moon)
 
     rotSkyPos = _getRotSkyPos(raRad, decRad, obsTemp, rotTelRad)
-    obsMd['Opsim_filter'] = band
-    obsMd['pointingRA'] = raRad
-    obsMd['pointingDec'] = decRad
-    obsMd['Opsim_rotskypos'] = rotSkyPos
-    obsMd['Opsim_rottelpos'] = rotTelRad
-    obsMd['Unrefracted_Altitude'] = altRad
-    obsMd['Unrefracted_Azimuth'] = azRad
+    obsMd['Opsim_rottelpos'] = np.degrees(rotTelRad)
     return obsMd
 
 
