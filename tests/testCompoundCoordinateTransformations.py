@@ -259,6 +259,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
         distance = utils.arcsecFromRadians(utils.haversine(controlAz, controlAlt, testAz, testAlt))
         self.assertLess(distance.max(), 0.0001)
+        self.assertLess(np.abs(np.sin(testPa) - controlSinPa).max(), self.tolerance)
 
         # test non-vectorized version
         for r, d in zip(ra, dec):
