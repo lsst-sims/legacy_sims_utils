@@ -270,8 +270,8 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
                                                      epoch=2000.0, includeRefraction=True)
             hourAngle = np.radians(last*15.0) - r_obs
             controlSinPa = np.sin(hourAngle)*np.cos(lat_rad)/np.cos(controlAlt)
-            self.assertLess(np.abs(testAz - controlAz), self.tolerance)
-            self.assertLess(np.abs(testAlt - controlAlt), self.tolerance)
+            distance = utils.arcsecFromRadians(utils.haversine(controlAz, controlAlt, testAz, testAlt))
+            self.assertLess(distance, 0.0001)
             self.assertLess(np.abs(np.sin(testPa) - controlSinPa), self.tolerance)
 
 
