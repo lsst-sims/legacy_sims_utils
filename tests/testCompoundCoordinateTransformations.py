@@ -251,7 +251,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         ra_obs, dec_obs = utils._observedFromICRS(ra, dec, obs_metadata=obs, epoch=2000.0,
                                                   includeRefraction=True)
 
-        lmst, last = utils.calcLmstLast(self.mjd, lon_rad)
+        lmst, last = utils.calcLmstLast(obs.mjd.UT1, lon_rad)
         hourAngle = np.radians(last*15.0) - ra_obs
         controlSinPa = np.sin(hourAngle)*np.cos(lat_rad)/np.cos(controlAlt)
 
@@ -264,7 +264,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         for r, d in zip(ra, dec):
             controlAlt, controlAz = controlAltAzFromRaDec(r, d, lon_rad, lat_rad, self.mjd)
             testAlt, testAz, testPa = utils._altAzPaFromRaDec(r, d, obs)
-            lmst, last = utils.calcLmstLast(self.mjd, lon_rad)
+            lmst, last = utils.calcLmstLast(obs.mjd.UT1, lon_rad)
             r_obs, dec_obs = utils._observedFromICRS(r, d, obs_metadata=obs,
                                                      epoch=2000.0, includeRefraction=True)
             hourAngle = np.radians(last*15.0) - r_obs
