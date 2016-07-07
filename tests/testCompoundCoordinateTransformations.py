@@ -40,7 +40,7 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
         raRad, decRad = utils._observedFromICRS(raRad_in, decRad_in,
                                                 obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
-    lst = utils.calcLmstLast(mjd, longRad)
+    lst = utils.calcLmstLast(obs.mjd.UT1, longRad)
     last = lst[1]
     haRad = np.radians(last*15.) - raRad
 
@@ -251,7 +251,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         ra_obs, dec_obs = utils._observedFromICRS(ra, dec, obs_metadata=obs, epoch=2000.0,
                                                   includeRefraction=True)
 
-        lmst, last = utils.calcLmstLast(self.mjd, lon_rad)
+        lmst, last = utils.calcLmstLast(obs.mjd.UT1, lon_rad)
         hourAngle = np.radians(last*15.0) - ra_obs
         controlSinPa = np.sin(hourAngle)*np.cos(lat_rad)/np.cos(controlAlt)
 
@@ -259,18 +259,19 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
         distance = utils.arcsecFromRadians(utils.haversine(controlAz, controlAlt, testAz, testAlt))
         self.assertLess(distance.max(), 0.0001)
+        self.assertLess(np.abs(np.sin(testPa) - controlSinPa).max(), self.tolerance)
 
         # test non-vectorized version
         for r, d in zip(ra, dec):
             controlAlt, controlAz = controlAltAzFromRaDec(r, d, lon_rad, lat_rad, self.mjd)
             testAlt, testAz, testPa = utils._altAzPaFromRaDec(r, d, obs)
-            lmst, last = utils.calcLmstLast(self.mjd, lon_rad)
+            lmst, last = utils.calcLmstLast(obs.mjd.UT1, lon_rad)
             r_obs, dec_obs = utils._observedFromICRS(r, d, obs_metadata=obs,
                                                      epoch=2000.0, includeRefraction=True)
             hourAngle = np.radians(last*15.0) - r_obs
             controlSinPa = np.sin(hourAngle)*np.cos(lat_rad)/np.cos(controlAlt)
-            self.assertLess(np.abs(testAz - controlAz), self.tolerance)
-            self.assertLess(np.abs(testAlt - controlAlt), self.tolerance)
+            distance = utils.arcsecFromRadians(utils.haversine(controlAz, controlAlt, testAz, testAlt))
+            self.assertLess(distance, 0.0001)
             self.assertLess(np.abs(np.sin(testPa) - controlSinPa), self.tolerance)
 
 
