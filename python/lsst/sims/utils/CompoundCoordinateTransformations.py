@@ -7,10 +7,9 @@ and ICRS RA, Dec)
 
 import numpy as np
 import palpy
-from collections import OrderedDict
 from lsst.sims.utils.CodeUtilities import _validate_inputs
 from lsst.sims.utils import _icrsFromObserved, _observedFromICRS, calcLmstLast
-from lsst.sims.utils import ObservationMetaData, Site, haversine
+from lsst.sims.utils import ObservationMetaData
 
 __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
            "_raDecFromAltAz", "raDecFromAltAz",
