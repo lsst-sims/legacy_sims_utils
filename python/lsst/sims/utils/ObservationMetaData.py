@@ -383,7 +383,7 @@ class ObservationMetaData(object):
     def seeing(self):
         """
         A dict of seeing values in arcseconds associated
-        with the bandpasses represetned by this ObservationMetaData
+        with the bandpasses represented by this ObservationMetaData
         """
         return self._seeing
 
