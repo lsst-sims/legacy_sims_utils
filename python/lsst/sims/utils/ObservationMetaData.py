@@ -469,10 +469,7 @@ class ObservationMetaData(object):
     def phoSimMetaData(self):
         """
         A dict of parameters expected by PhoSim characterizing this
-        ObservationMetaData.  Note that setting this paramter
-        could overwrite pointingRA, pointingDec, rotSkyPos,
-        MJD, or bandpass and m5 (if they are present in this
-        dict).
+        ObservationMetaData.
         """
         return self._phoSimMetadata
 
