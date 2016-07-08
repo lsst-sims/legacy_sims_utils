@@ -27,14 +27,16 @@ class ObservationMetaData(object):
           are 'box, and 'circle'
 
         * boundLength is the characteristic length scale of the field of view in degrees.
+
           If boundType is 'box', boundLength can be a float(in which case boundLength is
           half the length of the side of each box) or boundLength can be a numpy array
-          in which case the first argument is
-          half the width of the RA side of the box and the second argument is half the
-          Dec side of the box.
+          in which case the first argument is half the width of the RA side of the box
+          and the second argument is half the Dec side of the box.
+
           If boundType is 'circle,' this will be the radius of the circle.
-          The bound will be centered on the point (pointingRA, pointingDec),
-          however, because objects are stored at their mean RA, Dec in the LSST databases
+
+          The bound will be centered on the point (pointingRA, pointingDec), however,
+          because objects are stored at their mean RA, Dec in the LSST databases
           (i.e. they are stored at values of RA, Dec which neglect proper motion), the
           bounds applied to database queries will be made slightly larger so that queries
           can be reasonably expected to return all of the objects within the desired field
