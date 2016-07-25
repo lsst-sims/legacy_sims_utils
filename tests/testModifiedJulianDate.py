@@ -1,12 +1,13 @@
+from __future__ import with_statement
 import unittest
 import warnings
 import numpy as np
 import os
 import lsst.utils.tests as utilsTests
 
-import lsst.sims.utils as utils
 from lsst.utils import getPackageDir
-from lsst.sims.utils import ModifiedJulianDate
+from lsst.sims.utils import ModifiedJulianDate, UTCtoUT1Warning
+
 
 class MjdTest(unittest.TestCase):
     """
@@ -16,7 +17,7 @@ class MjdTest(unittest.TestCase):
     testTimeTransformations.py
     """
 
-    longMessage=True
+    longMessage = True
 
     def test_tai_from_utc(self):
         """
@@ -45,7 +46,6 @@ class MjdTest(unittest.TestCase):
             self.assertLess(dd_sec, 5.0e-5, msg=msg)
             self.assertAlmostEqual(mjd.TAI, tt, 15, msg=msg)
 
-
     def test_tt(self):
         """
         Verify that Terrestrial Time is TAI + 32.184 seconds
@@ -64,7 +64,6 @@ class MjdTest(unittest.TestCase):
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
             self.assertAlmostEqual(mjd.TT, tai+32.184/86400.0, 15)
-
 
     def test_tdb(self):
         """
@@ -85,9 +84,8 @@ class MjdTest(unittest.TestCase):
             mjd = ModifiedJulianDate(TAI=tai)
             g = np.radians(357.53 + 0.9856003*(np.round(tai-51544.5)))
             tdb_test = mjd.TT + (0.001658*np.sin(g) + 0.000014*np.sin(2.0*g))/86400.0
-            dt = np.abs(tdb_test-mjd.TDB)*8.64*1.0e10 # convert to microseconds
+            dt = np.abs(tdb_test-mjd.TDB)*8.64*1.0e10  # convert to microseconds
             self.assertLess(dt, 50)
-
 
     def test_dut1(self):
         """
@@ -116,13 +114,33 @@ class MjdTest(unittest.TestCase):
 
             self.assertLess(np.abs(mjd.dut1), 0.9)
 
-
     def test_eq(self):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
         self.assertEqual(mjd1, mjd2)
         mjd3 = ModifiedJulianDate(TAI=43000.01)
         self.assertNotEqual(mjd1, mjd3)
+
+    def test_warnings(self):
+        """
+        Test that warnings raised when trying to interpolate UT1-UTC
+        for UTC too far in the future are of the type UTCtoUT1Warning
+        """
+
+        with warnings.catch_warnings(record=True) as w_list:
+            mjd = ModifiedJulianDate(1000000.0)
+            mjd.UT1
+        self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
+        self.assertIsInstance(w_list[1].message, UTCtoUT1Warning)
+        self.assertIn('ModifiedJulianDate.UT1', w_list[1].message.message)
+
+        with warnings.catch_warnings(record=True) as w_list:
+            warnings.filterwarnings('always')
+            mjd = ModifiedJulianDate(1000000.0)
+            mjd.dut1
+        self.assertEqual(len(w_list), 1)  # The ERFA warning is now suppressed
+        self.assertIsInstance(w_list[0].message, UTCtoUT1Warning)
+        self.assertIn('ModifiedJulianDate.dut1', w_list[0].message.message)
 
 
 def suite():
@@ -132,6 +150,7 @@ def suite():
     suites += unittest.makeSuite(MjdTest)
 
     return unittest.TestSuite(suites)
+
 
 def run(shouldExit=False):
     """Run the tests"""
