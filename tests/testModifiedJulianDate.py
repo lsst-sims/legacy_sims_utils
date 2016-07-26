@@ -1,4 +1,5 @@
 from __future__ import with_statement
+import astropy
 import unittest
 import warnings
 import numpy as np
@@ -126,6 +127,12 @@ class MjdTest(unittest.TestCase):
         Test that warnings raised when trying to interpolate UT1-UTC
         for UTC too far in the future are of the type UTCtoUT1Warning
         """
+
+        if astropy.__version__ >= '1.2':
+            # astropy 1.2 handles cases of dates too far in the future
+            # on its own in a graceful manner.  Skip this test if the
+            # version of astropy you are running is >= 1.2
+            return
 
         with warnings.catch_warnings(record=True) as w_list:
             mjd = ModifiedJulianDate(1000000.0)
