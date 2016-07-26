@@ -131,15 +131,8 @@ class MjdTest(unittest.TestCase):
             mjd = ModifiedJulianDate(1000000.0)
             mjd.UT1
         self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
-
-        # loop over the warnings and make sure that one of them is a UTCtoUT1Warning
-        number_utc_to_ut1_warnings = 0
-        for ww in w_list:
-            if isinstance(ww.message, UTCtoUT1Warning):
-                number_utc_to_ut1_warnings += 1
-                self.assertIn('ModifiedJulianDate.UT1', ww.message.message)
-        self.assertGreater(number_utc_to_ut1_warnings, 0,
-                           msg="Did not raise a UTCtoUT1Warning")
+        self.assertIsInstance(w_list[1].message, UTCtoUT1Warning)
+        self.assertIn('ModifiedJulianDate.UT1', w_list[1].message.message)
 
         with warnings.catch_warnings(record=True) as w_list:
             warnings.filterwarnings('always')
