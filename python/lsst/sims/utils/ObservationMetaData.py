@@ -1,4 +1,5 @@
 import numpy as np
+import numbers
 from .SpatialBounds import SpatialBounds
 from lsst.sims.utils import ModifiedJulianDate
 from lsst.sims.utils import Site
@@ -15,6 +16,9 @@ class ObservationMetaData(object):
 
     **Parameters**
 
+        All parameters are optional.  It is possible to instantiate an
+        ObservationMetaData that is empty of data.
+
         * pointing[RA,Dec] float
           The coordinates of the pointing (in degrees; in the International
           Celestial Reference System)
@@ -23,31 +27,33 @@ class ObservationMetaData(object):
           are 'box, and 'circle'
 
         * boundLength is the characteristic length scale of the field of view in degrees.
+
           If boundType is 'box', boundLength can be a float(in which case boundLength is
           half the length of the side of each box) or boundLength can be a numpy array
-          in which case the first argument is
-          half the width of the RA side of the box and the second argument is half the
-          Dec side of the box.
-          If boundType is 'circle,' this will be the radius of the circle.
-          The bound will be centered on the point (pointingRA, pointingDec),
-          however, because objects are stored at their mean RA, Dec in the LSST databases
-          (i.e. they are stored at values of RA, Dec which neglect precession, nutation,
-          aberration, and refraction), the bounds applied to database queries will be made
-          slightly larger so that queries can be reasonably expected to return all of the
-          objects within the desired field of view once those corrections have been applied.
+          in which case the first argument is half the width of the RA side of the box
+          and the second argument is half the Dec side of the box.
 
-        * mjd : (optional)
+          If boundType is 'circle,' this will be the radius of the circle.
+
+          The bound will be centered on the point (pointingRA, pointingDec), however,
+          because objects are stored at their mean RA, Dec in the LSST databases
+          (i.e. they are stored at values of RA, Dec which neglect proper motion), the
+          bounds applied to database queries will be made slightly larger so that queries
+          can be reasonably expected to return all of the objects within the desired field
+          of view once those corrections have been applied.
+
+        * mjd :
           Either a float (in which case, it will be assumed to be in International
-          Atomic Time), or an instnatiation of the ModifiedJulianDate class representing
+          Atomic Time), or an instantiation of the ModifiedJulianDate class representing
           the date of the observation
 
         * bandpassName : a char (e.g. 'u') or list (e.g. ['u', 'g', 'z'])
           denoting the bandpasses used for this particular observation
 
-        * phoSimMetaData : dict (optional)
-          a dictionary containing metadata used by PhoSim
+        * site: an instantiation of the lsst.sims.utils.Site class characterizing
+          the site of the observatory.
 
-        * m5: float or list (optional)
+        * m5: float or list
           this should be the 5-sigma limiting magnitude in the bandpass or
           bandpasses specified in bandpassName.  Ultimately, m5 will be stored
           in a dict keyed to the bandpassName (or Names) you passed in, i.e.
@@ -56,34 +62,34 @@ class ObservationMetaData(object):
 
           myObservationMetaData.m5['u']
 
-        * skyBrightness: float (optional) the magnitude of the sky in the
+        * skyBrightness: float the magnitude of the sky in the
           filter specified by bandpassName
 
-        * seeing float or list (optional)
+        * seeing float or list
           Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
           bandpassName
 
-        * epoch (optional) is the epoch used for converting from pointingRA, Dec to
-          meanRA, Dec when constructing query bounds on a database.  This defaults
-          to 2000.0 and should only be changed if you plan to use this
-          ObservationMetaData to query a database with meanRA, Dec stored in a
-          system that is not measured against the equinox at Julian epoch 2000.0
+        * epoch is the epoch of the RA, Dec system used to define
+          pointingRA/Dec.  This defaults to 2000.0 and should only be changed
+          if you plan to use this ObservationMetaData to query a database with meanRA,
+          Dec stored in a system that is not measured against the equinox at Julian
+          epoch 2000.0
 
-        * rotSkyPos float (optional)
+        * rotSkyPos float
           The orientation of the telescope in degrees.
           This is used by the Astrometry mixins in sims_coordUtils.
 
-        The convention for rotSkyPos is as follows:
+          The convention for rotSkyPos is as follows:
 
-        rotSkyPos = 0 means north is in the +y direction on the focal plane and east is -x
+          rotSkyPos = 0 means north is in the +y direction on the focal plane and east is -x
 
-        rotSkyPos = 90 means north is -x and east is -y
+          rotSkyPos = 90 means north is -x and east is -y
 
-        rotSkyPos = -90 means north is +x and east is +y
+          rotSkyPos = -90 means north is +x and east is +y
 
-        rotSkyPos = 180 means north is -y and east is +x
+          rotSkyPos = 180 means north is -y and east is +x
 
-        This should be consistent with PhoSim conventions.
+          This should be consistent with PhoSim conventions.
 
     **Examples**::
         >>> data = ObservationMetaData(boundType='box', pointingRA=5.0, pointingDec=15.0,
@@ -92,7 +98,7 @@ class ObservationMetaData(object):
     """
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, pointingRA=None, pointingDec=None, rotSkyPos=None,
-                 bandpassName=None, phoSimMetaData=None, site=Site(name='LSST'), m5=None, skyBrightness=None,
+                 bandpassName=None, site=Site(name='LSST'), m5=None, skyBrightness=None,
                  seeing=None, epoch=2000.0):
 
         self._bounds = None
@@ -101,9 +107,10 @@ class ObservationMetaData(object):
         self._skyBrightness = skyBrightness
         self._site = site
         self._epoch = epoch
+        self._phoSimMetadata = {}
 
         if mjd is not None:
-            if isinstance(mjd, float) or isinstance(mjd, int):
+            if isinstance(mjd, numbers.Number):
                 self._mjd = ModifiedJulianDate(TAI=mjd)
             elif isinstance(mjd, ModifiedJulianDate):
                 self._mjd = mjd
@@ -133,24 +140,10 @@ class ObservationMetaData(object):
         else:
             self._boundLength = None
 
-        if phoSimMetaData is not None:
-            self._assignPhoSimMetaData(phoSimMetaData)
-        else:
-            self._phoSimMetaData = None
-
         self._m5 = self._assignDictKeyedToBandpass(m5, 'm5')
 
-        # 11 June 2015
-        # I think it is okay to assign seeing after _phoSimMetaData has been
-        # assigned.  Technically, the _phoSimMetaData contains `rawseeing`, which
-        # is some idealized seeing at zenith at 500nm.  This will be different
-        # from seeing.  After instantiation, I don't think users should be
-        # allowed to set seeing (on the assumption that seeing and rawseeing are
-        # somehow in sync).
         self._seeing = self._assignDictKeyedToBandpass(seeing, 'seeing')
 
-        # this should be done after phoSimMetaData is assigned, just in case
-        # self._assignPhoSimMetadata overwrites pointingRA/Dec
         if self._bounds is None:
             self._buildBounds()
 
@@ -174,7 +167,7 @@ class ObservationMetaData(object):
         mydict['skyBrightness'] = self.skyBrightness
         # mydict['m5'] = self.m5
 
-        mydict['phoSimMetaData'] = self.phoSimMetaData
+        mydict['phoSimMetaData'] = self._phoSimMetadata
 
         return mydict
 
@@ -259,68 +252,27 @@ class ObservationMetaData(object):
         self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._pointingRA, self._pointingDec,
                                                       self._boundLength)
 
-    def _assignPhoSimMetaData(self, metaData):
+    def assignPhoSimMetaData(self, metadata):
         """
-        Assign the dict metaData to be the associated phoSimMetaData dict of this object.
+        Assign a dict of extra metadata assumed by PhoSim.
 
-        In doing so, this method will copy pointingRA, pointingDec, rotSkyPos,
-        MJD, and bandpass from the metaData (if present) to the corresponding
-        member variables.  If by doing so you try to overwrite a parameter that you
-        have already set by hand, this method will raise an exception.
+        Optional values that can be included in this dict
+        are:
+
+        SIM_SEED -- an int used to seed a random number generator in PhoSim
+        Opsim_moonra -- RA of the moon in degrees
+        Opsim_moondec -- Dec of the moon in degrees
+        Opsim_rawseeing -- seeing at zenith at 500 nm
+        Opsim_sunalt -- altitude of the sun in degrees
+        Opsim_moonalt -- altitude of the moon in degrees
+        Opsim_dist2moon -- distance from the pointing to the moon in degrees
+        Opsim_moonphase -- phase of the moon from 0 to 100
+        exptime -- exposure time
+
+        None of these entries is required.  No effort is made to ensure that they
+        are consistent with the other data contained in this ObservationMetaData.
         """
-
-        self._phoSimMetaData = metaData
-
-        if self._phoSimMetaData is not None:
-            # overwrite member variables with values from the phoSimMetaData
-            if 'Opsim_expmjd' in self._phoSimMetaData:
-                if self._mjd is not None:
-                    raise RuntimeError('WARNING in ObservationMetaData trying to '
-                                       'overwrite mjd with phoSimMetaData')
-
-                self._mjd = ModifiedJulianDate(TAI=self._phoSimMetaData['Opsim_expmjd'][0])
-
-            if 'Opsim_rotskypos' in self._phoSimMetaData:
-                if self._rotSkyPos is not None:
-                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite rotSkyPos ' +
-                                       'with phoSimMetaData')
-
-                self._rotSkyPos = self._phoSimMetaData['Opsim_rotskypos'][0]
-
-            if 'Opsim_filter' in self._phoSimMetaData:
-                if self._bandpass is not None:
-                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite bandpass ' +
-                                       'with phoSimMetaData')
-
-                self._bandpass = self._phoSimMetaData['Opsim_filter'][0]
-
-            if 'Opsim_rawseeing' in self._phoSimMetaData:
-                if hasattr(self, '_seeing') and self._seeing is not None:
-                    raise RuntimeError('WARNING in ObservationMetaDAta trying to overwrite seeing ' +
-                                       'with phoSimMetaData')
-
-            if 'pointingDec' in self._phoSimMetaData and 'pointingRA' not in self._phoSimMetaData:
-                raise RuntimeError("In ObservationMetaData, your phoSimMetaData specifies pointingDec, "
-                                   "but not pointingRA")
-
-            if 'pointingRA' in self._phoSimMetaData and 'pointingDec' not in self._phoSimMetaData:
-                raise RuntimeError("In ObservationMetaData, your phoSimMetaData specifies pointingRA, "
-                                   "but not pointingDec")
-
-            if 'pointingRA' in self._phoSimMetaData and 'pointingDec' in self._phoSimMetaData:
-                if self._pointingRA is not None:
-                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite pointingRA ' +
-                                       'with phoSimMetaData')
-
-                if self._pointingDec is not None:
-                    raise RuntimeError('WARNING in ObservationMetaData trying to overwrite pointingDec ' +
-                                       'with phoSimMetaData')
-
-                self._pointingRA = self._phoSimMetaData['pointingRA'][0]
-
-                self._pointingDec = self._phoSimMetaData['pointingDec'][0]
-
-        self._buildBounds()
+        self._phoSimMetadata = metadata
 
     @property
     def pointingRA(self):
@@ -335,11 +287,6 @@ class ObservationMetaData(object):
 
     @pointingRA.setter
     def pointingRA(self, value):
-        if self._phoSimMetaData is not None:
-            if 'pointingRA' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting pointingRA ' +
-                                   'which was set by phoSimMetaData')
-
         self._pointingRA = np.radians(value)
         self._buildBounds()
 
@@ -356,11 +303,6 @@ class ObservationMetaData(object):
 
     @pointingDec.setter
     def pointingDec(self, value):
-        if self._phoSimMetaData is not None:
-            if 'pointingDec' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting pointingDec ' +
-                                   'which was set by phoSimMetaData')
-
         self._pointingDec = np.radians(value)
         self._buildBounds()
 
@@ -422,11 +364,6 @@ class ObservationMetaData(object):
 
     @rotSkyPos.setter
     def rotSkyPos(self, value):
-        if self._phoSimMetaData is not None:
-            if 'Opsim_rotskypos' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting rotSkyPos ' +
-                                   'which was set by phoSimMetaData')
-
         self._rotSkyPos = np.radians(value)
 
     @property
@@ -446,17 +383,12 @@ class ObservationMetaData(object):
     def seeing(self):
         """
         A dict of seeing values in arcseconds associated
-        with the bandpasses represetned by this ObservationMetaData
+        with the bandpasses represented by this ObservationMetaData
         """
         return self._seeing
 
     @seeing.setter
     def seeing(self, value):
-        if self._phoSimMetaData is not None:
-            if 'Opsim_rawseeing' in self._phoSimMetaData:
-                raise RuntimeError('In ObservationMetaData trying to overwrite seeing ' +
-                                   'which was set by phoSimMetaData')
-
         self._seeing = self._assignDictKeyedToBandpass(value, 'seeing')
 
     @property
@@ -484,11 +416,6 @@ class ObservationMetaData(object):
         Either a float or a ModifiedJulianDate.  If a float, this setter
         assumes that you are passing in International Atomic Time
         """
-        if self._phoSimMetaData is not None:
-            if 'Opsim_expmjd' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting mjd ' +
-                                   'which was set by phoSimMetaData')
-
         if isinstance(value, float):
             self._mjd = ModifiedJulianDate(TAI=value)
         elif isinstance(value, ModifiedJulianDate):
@@ -502,10 +429,7 @@ class ObservationMetaData(object):
         The bandpass associated with this ObservationMetaData.
         Can be a list.
         """
-        if self._bandpass is not None:
-            return self._bandpass
-        else:
-            return 'r'
+        return self._bandpass
 
     def setBandpassM5andSeeing(self, bandpassName=None, m5=None, seeing=None):
         """
@@ -524,14 +448,6 @@ class ObservationMetaData(object):
         Nothing is returned.  This method just sets member variables of
         this ObservationMetaData.
         """
-        if self._phoSimMetaData is not None:
-            if 'Opsim_filter' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting bandpass ' +
-                                   'which was set by phoSimMetaData')
-
-            if 'Opsim_rawseeing' in self._phoSimMetaData:
-                raise RuntimeError('WARNING overwriting seeing ' +
-                                   'which was set by phoSimMetaData')
 
         self._bandpass = bandpassName
         self._m5 = self._assignDictKeyedToBandpass(m5, 'm5')
@@ -553,30 +469,10 @@ class ObservationMetaData(object):
     def phoSimMetaData(self):
         """
         A dict of parameters expected by PhoSim characterizing this
-        ObservationMetaData.  Note that setting this paramter
-        could overwrite pointingRA, pointingDec, rotSkyPos,
-        MJD, or bandpass and m5 (if they are present in this
-        dict).
+        ObservationMetaData.
         """
-        return self._phoSimMetaData
+        return self._phoSimMetadata
 
     @phoSimMetaData.setter
     def phoSimMetaData(self, value):
-        if 'pointingRA' in value:
-            self._pointingRA = None
-
-        if 'pointingDec' in value:
-            self._pointingDec = None
-
-        if 'Opsim_rotskypos' in value:
-            self._rotSkyPos = None
-
-        if 'Opsim_expmjd' in value:
-            self._mjd = None
-
-        if 'Opsim_filter' in value:
-            self._bandpass = None
-            self._m5 = None
-            self._seeing = None
-
-        self._assignPhoSimMetaData(value)
+        self.assignPhoSimMetaData(value)

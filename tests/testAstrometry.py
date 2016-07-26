@@ -23,9 +23,10 @@ from collections import OrderedDict
 import lsst.utils.tests as utilsTests
 
 from lsst.sims.utils import ObservationMetaData
-from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, calcObsDefaults, \
+from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, \
                             radiansFromArcsec, arcsecFromRadians, Site, \
-                            raDecFromAltAz, haversine, ModifiedJulianDate
+                            raDecFromAltAz, haversine, ModifiedJulianDate, \
+                            _getRotSkyPos
 
 from lsst.sims.utils import solarRaDec, _solarRaDec, distanceToSun, _distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
@@ -46,16 +47,16 @@ def makeObservationMetaData():
     obsTemp = ObservationMetaData(site=testSite, mjd=mjd)
     centerRA, centerDec = _raDecFromAltAz(alt, az, obsTemp)
     rotTel = _getRotTelPos(centerRA, centerDec, obsTemp, 0.0)
+    rotSky = _getRotSkyPos(centerRA, centerDec, obsTemp, rotTel)
 
-    obsDict = calcObsDefaults(centerRA, centerDec, alt, az, rotTel, mjd, band,
-                              testSite.longitude_rad, testSite.latitude_rad)
-
-    obsDict['Opsim_expmjd'] = mjd
     radius = 0.1
-    phoSimMetaData = OrderedDict([(k, (obsDict[k], np.dtype(type(obsDict[k])))) for k in obsDict])
 
-    obs_metadata = ObservationMetaData(boundType='circle', boundLength=2.0*radius,
-                                       phoSimMetaData=phoSimMetaData, site=testSite)
+    obs_metadata = ObservationMetaData(pointingRA=np.degrees(centerRA),
+                                       pointingDec=np.degrees(centerDec),
+                                       rotSkyPos=np.degrees(rotSky),
+                                       mjd=mjd,
+                                       boundType='circle', boundLength=2.0*radius,
+                                       site=testSite)
 
     return obs_metadata
 
@@ -95,15 +96,6 @@ class astrometryUnitTest(unittest.TestCase):
     def setUp(self):
         self.metadata = {}
 
-        # below are metadata values that need to be set in order for
-        # get_getFocalPlaneCoordinates to work.  If we had been querying the database,
-        # these would be set to meaningful values.  Because we are generating
-        # an artificial set of inputs that must comport to the baseline SLALIB
-        # inputs, these are set arbitrarily by hand
-        self.metadata['pointingRA'] = (np.radians(200.0), float)
-        self.metadata['pointingDec'] = (np.radians(-30.0), float)
-        self.metadata['Opsim_rotskypos'] = (1.0, float)
-
         # these were the LSST site parameters as coded when this unit test was written
         self.test_site = Site(longitude=np.degrees(-1.2320792),
                               latitude=np.degrees(-0.517781017),
@@ -113,10 +105,14 @@ class astrometryUnitTest(unittest.TestCase):
                               lapseRate=0.0065,
                               humidity=0.4)
 
-        self.obs_metadata = ObservationMetaData(mjd=50984.371741,
+        # Inputs are consistent with the baseline SLALIB run
+        # used to create this unit test
+        self.obs_metadata = ObservationMetaData(pointingRA=200.0,
+                                                pointingDec=-30.0,
+                                                rotSkyPos=1.0,
+                                                mjd=50984.371741,
                                                 boundType='circle',
                                                 boundLength=0.05,
-                                                phoSimMetaData=self.metadata,
                                                 site=self.test_site)
 
         self.tol = 1.0e-5

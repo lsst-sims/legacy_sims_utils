@@ -3,7 +3,6 @@ from __future__ import with_statement
 import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
-from collections import OrderedDict
 from lsst.sims.utils import ObservationMetaData, ModifiedJulianDate
 from lsst.sims.utils import Site, BoxBounds, CircleBounds
 
@@ -15,40 +14,6 @@ class ObservationMetaDataTest(unittest.TestCase):
 
     It will also test the behavior of the m5 member variable.
     """
-
-    def testExceptions(self):
-        """
-        Test that errors are produced whenever ObservationMetaData
-        parameters are overwritten in an unintentional way
-        """
-
-        metadata = {'pointingRA': [1.5], 'pointingDec': [0.5],
-                    'Opsim_expmjd': [52000.0],
-                    'Opsim_rotskypos': [1.3],
-                    'Opsim_filter': [2],
-                    'Opsim_rawseeing': [0.7]}
-
-        obs_metadata = ObservationMetaData(phoSimMetaData=metadata,
-                                           boundType='circle',
-                                           boundLength=0.1)
-
-        with self.assertRaises(RuntimeError):
-            obs_metadata.pointingRA = 1.2
-
-        with self.assertRaises(RuntimeError):
-            obs_metadata.pointingDec = 1.2
-
-        with self.assertRaises(RuntimeError):
-            obs_metadata.rotSkyPos = 1.5
-
-        with self.assertRaises(RuntimeError):
-            obs_metadata.seeing = 0.5
-
-        with self.assertRaises(RuntimeError):
-            obs_metadata.setBandpassM5andSeeing()
-
-        obs_metadata = ObservationMetaData(pointingRA=1.5,
-                                           pointingDec=1.5)
 
     def testM5(self):
         """
@@ -128,12 +93,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(obsMD.seeing['w'], 0.9, 10)
         self.assertAlmostEqual(obsMD.seeing['x'], 1.1, 10)
 
-        phoSimMD = {'Opsim_filter': [4]}
-        obsMD.phoSimMetaData = phoSimMD
-        self.assertEqual(obsMD.bandpass, 4)
-        self.assertTrue(obsMD.m5 is None)
-        self.assertTrue(obsMD.seeing is None)
-
     def testDefault(self):
         """
         Test that ObservationMetaData's default variables are properly set
@@ -144,7 +103,7 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertEqual(testObsMD.pointingRA, None)
         self.assertEqual(testObsMD.pointingDec, None)
         self.assertEqual(testObsMD.rotSkyPos, None)
-        self.assertEqual(testObsMD.bandpass, 'r')
+        self.assertEqual(testObsMD.bandpass, None)
         self.assertEqual(testObsMD.m5, None)
         self.assertEqual(testObsMD.seeing, None)
         self.assertAlmostEqual(testObsMD.site.longitude, -70.7494, 10)
@@ -224,19 +183,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.boundLength, 2.2, 10)
         self.assertAlmostEqual(testObsMD.mjd.TAI, mjd+10.0, 10)
 
-        phosimMD = OrderedDict([('pointingRA', (-2.0, float)),
-                                ('pointingDec', (0.9, float)),
-                                ('Opsim_rotskypos', (1.1, float)),
-                                ('Opsim_expmjd', (4000.0, float)),
-                                ('Opsim_filter', ('g', str))])
-
-        testObsMD.phoSimMetaData = phosimMD
-        self.assertAlmostEqual(testObsMD.pointingRA, np.degrees(-2.0), 10)
-        self.assertAlmostEqual(testObsMD.pointingDec, np.degrees(0.9), 10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos, np.degrees(1.1))
-        self.assertAlmostEqual(testObsMD.mjd.TAI, 4000.0, 10)
-        self.assertAlmostEqual(testObsMD.bandpass, 'g')
-
         testObsMD = ObservationMetaData(mjd=mjd, pointingRA=RA,
                                         pointingDec=Dec, rotSkyPos=rotSkyPos, bandpassName='z',
                                         skyBrightness=skyBrightness)
@@ -247,28 +193,6 @@ class ObservationMetaDataTest(unittest.TestCase):
         self.assertAlmostEqual(testObsMD.rotSkyPos, -10.0, 10)
         self.assertEqual(testObsMD.bandpass, 'z')
         self.assertAlmostEqual(testObsMD.skyBrightness, skyBrightness, 10)
-
-        testObsMD = ObservationMetaData()
-        testObsMD.phoSimMetaData = phosimMD
-
-        self.assertAlmostEqual(testObsMD.mjd.TAI, 4000.0, 10)
-
-        # recall that pointingRA/Dec are stored as radians in phoSim metadata
-        self.assertAlmostEqual(testObsMD.pointingRA, np.degrees(-2.0), 10)
-        self.assertAlmostEqual(testObsMD.pointingDec, np.degrees(0.9), 10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos, np.degrees(1.1), 10)
-        self.assertEqual(testObsMD.bandpass, 'g')
-
-        testObsMD = ObservationMetaData()
-        testObsMD.phoSimMetaData = phosimMD
-
-        self.assertAlmostEqual(testObsMD.mjd.TAI, 4000.0, 10)
-
-        # recall that pointingRA/Dec are stored as radians in phoSim metadata
-        self.assertAlmostEqual(testObsMD.pointingRA, np.degrees(-2.0), 10)
-        self.assertAlmostEqual(testObsMD.pointingDec, np.degrees(0.9), 10)
-        self.assertAlmostEqual(testObsMD.rotSkyPos, np.degrees(1.1), 10)
-        self.assertEqual(testObsMD.bandpass, 'g')
 
         # test assigning ModifiedJulianDate
         obs = ObservationMetaData()
