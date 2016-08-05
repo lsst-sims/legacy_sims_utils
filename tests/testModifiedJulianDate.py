@@ -246,6 +246,22 @@ class MjdTest(unittest.TestCase):
             self.assertAlmostEqual(mjd.TDB, control.TDB, tol, msg=msg)
             self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
 
+        # Now test the case where we only have dates in the future (this
+        # is an edge case since good_dexes in ModifiedJulianDate._get_ut1_from_utc
+        # will have len = 0
+        tai_list = 60000.0 + 10000.0*rng.random_sample(20)
+        mjd_list = ModifiedJulianDate.get_list(TAI=tai_list)
+        for tai, mjd in zip(tai_list, mjd_list):
+            msg = "Offending TAI: %f" % tai
+            control = ModifiedJulianDate(TAI=tai)
+            self.assertAlmostEqual(mjd.TAI, tai, 11, msg=msg)
+            self.assertAlmostEqual(mjd.TAI, control.TAI, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UTC, control.UTC, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UT1, control.UT1, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TT, control.TT, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TDB, control.TDB, tol, msg=msg)
+            self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""
