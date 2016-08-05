@@ -90,7 +90,8 @@ class MjdTest(unittest.TestCase):
 
     def test_dut1(self):
         """
-        Test that UT1 is within 0.9 seconds of UTC.
+        Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
+        to UT1-UTC to within a microsecond.
 
         (Because calculating UT1-UTC requires loading a lookup
         table, we will just do this somewhat gross unit test to
@@ -117,8 +118,8 @@ class MjdTest(unittest.TestCase):
 
     def test_dut1_future(self):
         """
-        Test that UT1 is within 0.9 seconds of UTC.  Consider times far
-        in the future.
+        Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
+        to UT1-UTC to within a microsecond.  Consider times far in the future.
 
         (Because calculating UT1-UTC requires loading a lookup
         table, we will just do this somewhat gross unit test to
