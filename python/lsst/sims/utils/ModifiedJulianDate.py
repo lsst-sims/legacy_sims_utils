@@ -29,6 +29,38 @@ class UTCtoUT1Warning(MJDWarning):
 class ModifiedJulianDate(object):
 
     @classmethod
+    def _get_ut1_from_utc(cls, UTC):
+        """
+        Take a numpy array of UTC values and return a numpy array of UT1 and dut1 values
+        """
+
+        time_list = Time(UTC, scale='utc', format='mjd')
+
+        try:
+            dut1_out = time_list.delta_ut1_utc
+            ut1_out = time_list.ut1.mjd
+        except IERSRangeError:
+            ut1_out = np.copy(UTC)
+            dut1_out = np.zeros(len(UTC))
+            warnings.warn("ModifiedJulianData.get_list() was given date values that are outside "
+                          "astropy's range of interpolation for converting from UTC to UT1. "
+                          "We will treat UT1=UTC for those dates, lacking a better alternative.",
+                          category=UTCtoUT1Warning)
+            from astropy.utils.iers import TIME_BEFORE_IERS_RANGE, TIME_BEYOND_IERS_RANGE
+            dut1_test, status = time_list.get_delta_ut1_utc(return_status=True)
+            good_dexes = np.where(np.logical_and(status != TIME_BEFORE_IERS_RANGE,
+                                                 status != TIME_BEYOND_IERS_RANGE))
+
+            time_good = Time(UTC[good_dexes], scale='utc', format='mjd')
+            dut1_good = time_good.delta_ut1_utc
+            ut1_good = time_good.ut1.mjd
+
+            ut1_out[good_dexes] = ut1_good
+            dut1_out[good_dexes] = dut1_good
+
+        return ut1_out, dut1_out
+
+    @classmethod
     def get_list(cls, TAI=None, UTC=None):
         """
         Instantiate a list of ModifiedJulianDates from a numpy array of either TAI
@@ -60,11 +92,11 @@ class ModifiedJulianDate(object):
 
         tt_list = time_list.tt.mjd
         tdb_list = time_list.tdb.mjd
-        ut1_list = time_list.ut1.mjd
-        dut_list = time_list.delta_ut1_utc
+
+        ut1_list, dut1_list = cls._get_ut1_from_utc(utc_list)
 
         values = np.array([tai_list, utc_list, tt_list, tdb_list,
-                           ut1_list, dut_list]).transpose()
+                           ut1_list, dut1_list]).transpose()
 
         output = []
         for vv in values:

@@ -215,30 +215,35 @@ class MjdTest(unittest.TestCase):
         """
 
         rng = np.random.RandomState(88)
+        tol = 10  # decimal place tolerance
 
         tai_list = 40000.0 + 10000.0*rng.random_sample(20)
+        tai_list = np.append(tai_list, 59580.0 + 10000.0*rng.random_sample(20))
         mjd_list = ModifiedJulianDate.get_list(TAI=tai_list)
         for tai, mjd in zip(tai_list, mjd_list):
+            msg = "Offending TAI: %f" % tai
             control = ModifiedJulianDate(TAI=tai)
-            self.assertEqual(mjd.TAI, tai)
-            self.assertEqual(mjd.TAI, control.TAI)
-            self.assertEqual(mjd.UTC, control.UTC)
-            self.assertEqual(mjd.UT1, control.UT1)
-            self.assertEqual(mjd.TT, control.TT)
-            self.assertEqual(mjd.TDB, control.TDB)
-            self.assertEqual(mjd.dut1, control.dut1)
+            self.assertAlmostEqual(mjd.TAI, tai, 11, msg=msg)
+            self.assertAlmostEqual(mjd.TAI, control.TAI, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UTC, control.UTC, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UT1, control.UT1, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TT, control.TT, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TDB, control.TDB, tol, msg=msg)
+            self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
 
         utc_list = 40000.0 + 10000.0*rng.random_sample(20)
+        utc_list = np.append(utc_list, 59580.0 + 10000.0*rng.random_sample(20))
         mjd_list = ModifiedJulianDate.get_list(UTC=utc_list)
         for utc, mjd in zip(utc_list, mjd_list):
+            msg = "Offending UTC: %f" % utc
             control = ModifiedJulianDate(UTC=utc)
-            self.assertEqual(mjd.UTC, utc)
-            self.assertEqual(mjd.TAI, control.TAI)
-            self.assertEqual(mjd.UTC, control.UTC)
-            self.assertEqual(mjd.UT1, control.UT1)
-            self.assertEqual(mjd.TT, control.TT)
-            self.assertEqual(mjd.TDB, control.TDB)
-            self.assertEqual(mjd.dut1, control.dut1)
+            self.assertAlmostEqual(mjd.UTC, utc, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TAI, control.TAI, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UTC, control.UTC, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UT1, control.UT1, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TT, control.TT, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TDB, control.TDB, tol, msg=msg)
+            self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
 
 
 def suite():
