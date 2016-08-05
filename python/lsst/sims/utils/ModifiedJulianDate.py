@@ -113,11 +113,7 @@ class ModifiedJulianDate(object):
 
         if self._dut1 is None:
             try:
-                intermediate_value = self._time.get_delta_ut1_utc()
-                try:
-                    self._dut1 = intermediate_value.value
-                except:
-                    self._dut1 = intermediate_value
+                self._dut1 = self._time.delta_ut1_utc
             except IERSRangeError:
                 self._warn_utc_out_of_bounds('dut1')
                 self._dut1 = 0.0
