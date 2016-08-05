@@ -56,6 +56,23 @@ class ModifiedJulianDate(object):
         self._ut1 = None
         self._dut1 = None
 
+    def _force_data(self, values):
+        """
+        Force the properties of this ModifiedJulianDate to have specific values.
+
+        values is a list of [TAI, UTC, TT, TDB, UT1, UT1-UTC] values.
+
+        This method exists so that, when instantiating lists of ModifiedJulianDates,
+        we can use astropy.time.Time's vectorized methods to quickly perform many
+        conversions at once.  Users should not try to use this method by hand.
+        """
+        self._tai = values[0]
+        self._utc = values[1]
+        self._tt = values[2]
+        self._tdb = values[3]
+        self._ut1 = values[4]
+        self._dut1 = values[5]
+
     def __eq__(self, other):
         return self._time == other._time
 
