@@ -171,6 +171,38 @@ class MjdTest(unittest.TestCase):
         self.assertEqual(tt.UT1, 8.0)
         self.assertEqual(tt.dut1, 10.0)
 
+    def test_list(self):
+        """
+        Test that ModifiedJulianDate.get_list() gets results that are consistent
+        with creating a list of ModifiedJulianDates by hand.
+        """
+
+        rng = np.random.RandomState(88)
+
+        tai_list = 40000.0 + 10000.0*rng.random_sample(20)
+        mjd_list = ModifiedJulianDate.get_list(TAI=tai_list)
+        for tai, mjd in zip(tai_list, mjd_list):
+            control = ModifiedJulianDate(TAI=tai)
+            self.assertEqual(mjd.TAI, tai)
+            self.assertEqual(mjd.TAI, control.TAI)
+            self.assertEqual(mjd.UTC, control.UTC)
+            self.assertEqual(mjd.UT1, control.UT1)
+            self.assertEqual(mjd.TT, control.TT)
+            self.assertEqual(mjd.TDB, control.TDB)
+            self.assertEqual(mjd.dut1, control.dut1)
+
+        utc_list = 40000.0 + 10000.0*rng.random_sample(20)
+        mjd_list = ModifiedJulianDate.get_list(UTC=utc_list)
+        for utc, mjd in zip(utc_list, mjd_list):
+            control = ModifiedJulianDate(UTC=utc)
+            self.assertEqual(mjd.UTC, utc)
+            self.assertEqual(mjd.TAI, control.TAI)
+            self.assertEqual(mjd.UTC, control.UTC)
+            self.assertEqual(mjd.UT1, control.UT1)
+            self.assertEqual(mjd.TT, control.TT)
+            self.assertEqual(mjd.TDB, control.TDB)
+            self.assertEqual(mjd.dut1, control.dut1)
+
 
 def suite():
     """Returns a suite containing all the test cases in this module."""

@@ -1,4 +1,5 @@
 import warnings
+import numpy as np
 
 from astropy.time import Time
 from astropy.utils.iers.iers import IERSRangeError
@@ -26,6 +27,52 @@ class UTCtoUT1Warning(MJDWarning):
 
 
 class ModifiedJulianDate(object):
+
+    @classmethod
+    def get_list(cls, TAI=None, UTC=None):
+        """
+        Instantiate a list of ModifiedJulianDates from a numpy array of either TAI
+        or UTC values.
+
+        @param[in] TAI (optional) a numpy array of MJD' in TAI
+
+        @param[in] UTC (optional) a numpy array of MJDs in UTC
+
+        @param[out] a list of ModifiedJulianDate instantiations with all of their
+        properties already set (so the code does not waste time converting from TAI
+        to TT, TDB, etc. when those time scales are called for).
+        """
+
+        if TAI is None and UTC is None:
+            return None
+
+        if TAI is not None and UTC is not None:
+            raise RuntimeError("You should not specify both TAI and UTC in ModifiedJulianDate.get_list()")
+
+        if TAI is not None:
+            time_list = Time(TAI, scale='tai', format='mjd')
+            tai_list = TAI
+            utc_list = time_list.utc.mjd
+        elif UTC is not None:
+            time_list = Time(UTC, scale='utc', format='mjd')
+            utc_list = UTC
+            tai_list = time_list.tai.mjd
+
+        tt_list = time_list.tt.mjd
+        tdb_list = time_list.tdb.mjd
+        ut1_list = time_list.ut1.mjd
+        dut_list = time_list.delta_ut1_utc
+
+        values = np.array([tai_list, utc_list, tt_list, tdb_list,
+                           ut1_list, dut_list]).transpose()
+
+        output = []
+        for vv in values:
+            mjd = ModifiedJulianDate(TAI=40000.0)
+            mjd._force_values(vv)
+            output.append(mjd)
+
+        return output
 
     def __init__(self, TAI=None, UTC=None):
         """
