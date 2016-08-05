@@ -122,17 +122,14 @@ class MjdTest(unittest.TestCase):
         mjd3 = ModifiedJulianDate(TAI=43000.01)
         self.assertNotEqual(mjd1, mjd3)
 
+    @unittest.skipIf(astropy.__version__ >= '1.2',
+                     "astropy 1.2 handles cases of dates too far in the future "
+                     "on its own in a graceful manner. Our warning classes are not needed")
     def test_warnings(self):
         """
         Test that warnings raised when trying to interpolate UT1-UTC
         for UTC too far in the future are of the type UTCtoUT1Warning
         """
-
-        if astropy.__version__ >= '1.2':
-            # astropy 1.2 handles cases of dates too far in the future
-            # on its own in a graceful manner.  Skip this test if the
-            # version of astropy you are running is >= 1.2
-            return
 
         with warnings.catch_warnings(record=True) as w_list:
             mjd = ModifiedJulianDate(1000000.0)
