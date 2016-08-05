@@ -146,14 +146,14 @@ class MjdTest(unittest.TestCase):
         self.assertIsInstance(w_list[0].message, UTCtoUT1Warning)
         self.assertIn('ModifiedJulianDate.dut1', w_list[0].message.message)
 
-    def test_force_data(self):
+    def test_force_values(self):
         """
         Test that we can force the properties of a ModifiedJulianDate to have
         specific values
         """
         tt = ModifiedJulianDate(TAI=59580.0)
         values = np.arange(6)
-        tt._force_data(values)
+        tt._force_values(values)
         self.assertEqual(tt.TAI, 0.0)
         self.assertEqual(tt.UTC, 1.0)
         self.assertEqual(tt.TT, 2.0)
@@ -163,7 +163,7 @@ class MjdTest(unittest.TestCase):
 
         tt = ModifiedJulianDate(UTC=59580.0)
         values = 2.0*np.arange(6)
-        tt._force_data(values)
+        tt._force_values(values)
         self.assertEqual(tt.TAI, 0.0)
         self.assertEqual(tt.UTC, 2.0)
         self.assertEqual(tt.TT, 4.0)

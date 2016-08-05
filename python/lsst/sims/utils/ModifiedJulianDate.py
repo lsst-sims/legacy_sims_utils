@@ -56,7 +56,7 @@ class ModifiedJulianDate(object):
         self._ut1 = None
         self._dut1 = None
 
-    def _force_data(self, values):
+    def _force_values(self, values):
         """
         Force the properties of this ModifiedJulianDate to have specific values.
 
