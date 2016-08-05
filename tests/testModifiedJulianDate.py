@@ -133,6 +133,9 @@ class MjdTest(unittest.TestCase):
 
         with warnings.catch_warnings(record=True) as w_list:
             mjd = ModifiedJulianDate(1000000.0)
+            # clear the warning registry, in case a previous test raised the warnings
+            # we are looking for
+            mjd._warn_utc_out_of_bounds.__globals__['__warningregistry__'].clear()
             mjd.UT1
         self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
         self.assertIsInstance(w_list[1].message, UTCtoUT1Warning)
