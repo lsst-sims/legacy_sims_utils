@@ -165,17 +165,23 @@ class MjdTest(unittest.TestCase):
             # we are looking for
             mjd._warn_utc_out_of_bounds.__globals__['__warningregistry__'].clear()
             mjd.UT1
-        self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
-        self.assertIsInstance(w_list[1].message, UTCtoUT1Warning)
-        self.assertIn('ModifiedJulianDate.UT1', w_list[1].message.message)
+        expected_warnings = 0
+        for ww in w_list:
+            if isinstance(ww.message, UTCtoUT1Warning):
+                if 'ModifiedJulianDate.UT1' in ww.message.message:
+                    expected_warnings += 1
+        self.assertGreater(expected_warnings, 0, msg="UT1 did not emit a UTCtoUT1Warning")
 
+        expected_warnings = 0
         with warnings.catch_warnings(record=True) as w_list:
             warnings.filterwarnings('always')
             mjd = ModifiedJulianDate(1000000.0)
             mjd.dut1
-        self.assertEqual(len(w_list), 1)  # The ERFA warning is now suppressed
-        self.assertIsInstance(w_list[0].message, UTCtoUT1Warning)
-        self.assertIn('ModifiedJulianDate.dut1', w_list[0].message.message)
+        for ww in w_list:
+            if isinstance(ww.message, UTCtoUT1Warning):
+                if 'ModifiedJulianDate.dut1' in ww.message.message:
+                    expected_warnings += 1
+        self.assertGreater(expected_warnings, 0, msg="dut1 did not emit a UTCtoUT1Warning")
 
     def test_force_values(self):
         """
