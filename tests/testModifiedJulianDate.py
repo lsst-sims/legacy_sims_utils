@@ -115,6 +115,34 @@ class MjdTest(unittest.TestCase):
 
             self.assertLess(np.abs(mjd.dut1), 0.9)
 
+    def test_dut1_future(self):
+        """
+        Test that UT1 is within 0.9 seconds of UTC.  Consider times far
+        in the future.
+
+        (Because calculating UT1-UTC requires loading a lookup
+        table, we will just do this somewhat gross unit test to
+        make sure that the astropy.time API doesn't change out
+        from under us in some weird way... for instance, returning
+        dut in units of days rather than seconds, etc.)
+        """
+
+        np.random.seed(117)
+
+        utc_list = np.random.random_sample(1000)*10000.0 + 63000.0
+        for utc in utc_list:
+            mjd = ModifiedJulianDate(UTC=utc)
+
+            # first, test the self-consistency of ModifiedJulianData.dut1
+            # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+            #
+            # this only works for days on which a leap second is not applied
+            dt = (mjd.UT1-mjd.UTC)*86400.0
+
+            self.assertAlmostEqual(dt, mjd.dut1, 6)
+
+            self.assertLess(np.abs(mjd.dut1), 0.9)
+
     def test_eq(self):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
