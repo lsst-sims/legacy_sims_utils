@@ -4,6 +4,7 @@ import unittest
 import warnings
 import numpy as np
 import os
+import copy
 import lsst.utils.tests as utilsTests
 
 from lsst.utils import getPackageDir
@@ -150,6 +151,25 @@ class MjdTest(unittest.TestCase):
         self.assertEqual(mjd1, mjd2)
         mjd3 = ModifiedJulianDate(TAI=43000.01)
         self.assertNotEqual(mjd1, mjd3)
+
+    def test_deepcopy(self):
+        mjd1 = ModifiedJulianDate(TAI=43590.0)
+        mjd1.dut1
+        deep_mjd2 = copy.deepcopy(mjd1)
+        self.assertEqual(mjd1, deep_mjd2)
+        self.assertNotEqual(mjd1.__repr__(), deep_mjd2.__repr__())
+        equiv_mjd2 = mjd1
+        self.assertEqual(mjd1, equiv_mjd2)
+        self.assertEqual(mjd1.__repr__(), equiv_mjd2.__repr__())
+
+        mjd1 = ModifiedJulianDate(UTC=43590.0)
+        mjd1.dut1
+        deep_mjd2 = copy.deepcopy(mjd1)
+        self.assertEqual(mjd1, deep_mjd2)
+        self.assertNotEqual(mjd1.__repr__(), deep_mjd2.__repr__())
+        equiv_mjd2 = mjd1
+        self.assertEqual(mjd1, equiv_mjd2)
+        self.assertEqual(mjd1.__repr__(), equiv_mjd2.__repr__())
 
     @unittest.skipIf(astropy.__version__ >= '1.2',
                      "astropy 1.2 handles cases of dates too far in the future "

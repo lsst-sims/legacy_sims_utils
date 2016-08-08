@@ -1,5 +1,6 @@
 import warnings
 import numpy as np
+import copy
 
 from astropy.time import Time
 from astropy.utils.iers.iers import IERSRangeError
@@ -126,10 +127,12 @@ class ModifiedJulianDate(object):
             self._time = Time(TAI, scale='tai', format='mjd')
             self._tai = TAI
             self._utc = None
+            self._initialized_with = 'TAI'
         else:
             self._time = Time(UTC, scale='utc', format='mjd')
             self._utc = UTC
             self._tai = None
+            self._initialized_with = 'UTC'
 
         self._tt = None
         self._tdb = None
@@ -155,6 +158,21 @@ class ModifiedJulianDate(object):
 
     def __eq__(self, other):
         return self._time == other._time
+
+    def __deepcopy__(self, memo):
+        if self._initialized_with == 'TAI':
+            new_mjd = ModifiedJulianDate(TAI=self.TAI)
+        else:
+            new_mjd = ModifiedJulianDate(UTC=self.UTC)
+
+        new_mjd._tai = copy.deepcopy(self._tai, memo)
+        new_mjd._utc = copy.deepcopy(self._utc, memo)
+        new_mjd._tt = copy.deepcopy(self._tt, memo)
+        new_mjd._tdb = copy.deepcopy(self._tdb, memo)
+        new_mjd._ut1 = copy.deepcopy(self._ut1, memo)
+        new_mjd._dut1 = copy.deepcopy(self._dut1, memo)
+
+        return new_mjd
 
     def _warn_utc_out_of_bounds(self, method_name):
         """
