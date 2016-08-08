@@ -51,7 +51,7 @@ class ModifiedJulianDate(object):
             good_dexes = np.where(np.logical_and(status != TIME_BEFORE_IERS_RANGE,
                                                  status != TIME_BEYOND_IERS_RANGE))
 
-            if len(good_dexes[0])>0:
+            if len(good_dexes[0]) > 0:
                 time_good = Time(UTC[good_dexes], scale='utc', format='mjd')
                 dut1_good = time_good.delta_ut1_utc
                 ut1_good = time_good.ut1.mjd
