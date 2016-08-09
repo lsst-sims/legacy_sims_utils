@@ -4,6 +4,7 @@ import unittest
 import warnings
 import numpy as np
 import os
+import copy
 import lsst.utils.tests as utilsTests
 
 from lsst.utils import getPackageDir
@@ -90,7 +91,8 @@ class MjdTest(unittest.TestCase):
 
     def test_dut1(self):
         """
-        Test that UT1 is within 0.9 seconds of UTC.
+        Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
+        to UT1-UTC to within a microsecond.
 
         (Because calculating UT1-UTC requires loading a lookup
         table, we will just do this somewhat gross unit test to
@@ -115,6 +117,34 @@ class MjdTest(unittest.TestCase):
 
             self.assertLess(np.abs(mjd.dut1), 0.9)
 
+    def test_dut1_future(self):
+        """
+        Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
+        to UT1-UTC to within a microsecond.  Consider times far in the future.
+
+        (Because calculating UT1-UTC requires loading a lookup
+        table, we will just do this somewhat gross unit test to
+        make sure that the astropy.time API doesn't change out
+        from under us in some weird way... for instance, returning
+        dut in units of days rather than seconds, etc.)
+        """
+
+        np.random.seed(117)
+
+        utc_list = np.random.random_sample(1000)*10000.0 + 63000.0
+        for utc in utc_list:
+            mjd = ModifiedJulianDate(UTC=utc)
+
+            # first, test the self-consistency of ModifiedJulianData.dut1
+            # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+            #
+            # this only works for days on which a leap second is not applied
+            dt = (mjd.UT1-mjd.UTC)*86400.0
+
+            self.assertAlmostEqual(dt, mjd.dut1, 6)
+
+            self.assertLess(np.abs(mjd.dut1), 0.9)
+
     def test_eq(self):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
@@ -122,32 +152,159 @@ class MjdTest(unittest.TestCase):
         mjd3 = ModifiedJulianDate(TAI=43000.01)
         self.assertNotEqual(mjd1, mjd3)
 
+    def test_deepcopy(self):
+        # make sure that deepcopy() creates identical
+        # ModifiedJulianDates with different memory addresses
+        mjd1 = ModifiedJulianDate(TAI=43590.0)
+        mjd1.dut1
+        deep_mjd2 = copy.deepcopy(mjd1)
+        self.assertEqual(mjd1, deep_mjd2)
+        self.assertNotEqual(mjd1.__repr__(), deep_mjd2.__repr__())
+        self.assertEqual(mjd1.TAI, deep_mjd2.TAI)
+        self.assertEqual(mjd1.dut1, deep_mjd2.dut1)
+        equiv_mjd2 = mjd1
+        self.assertEqual(mjd1, equiv_mjd2)
+        self.assertEqual(mjd1.__repr__(), equiv_mjd2.__repr__())
+
+        mjd1 = ModifiedJulianDate(UTC=43590.0)
+        mjd1.dut1
+        deep_mjd2 = copy.deepcopy(mjd1)
+        self.assertEqual(mjd1, deep_mjd2)
+        self.assertEqual(mjd1.UTC, deep_mjd2.UTC)
+        self.assertEqual(mjd1.dut1, deep_mjd2.dut1)
+        self.assertNotEqual(mjd1.__repr__(), deep_mjd2.__repr__())
+        equiv_mjd2 = mjd1
+        self.assertEqual(mjd1, equiv_mjd2)
+        self.assertEqual(mjd1.__repr__(), equiv_mjd2.__repr__())
+
+        # make sure that deepcopy() still works, even if you have called
+        # all of the original ModifiedJulianDate's properties
+        mjd1 = ModifiedJulianDate(TAI=42590.0)
+        mjd1.UTC
+        mjd1.dut1
+        mjd1.UT1
+        mjd1.TT
+        mjd1.TDB
+        mjd2 = copy.deepcopy(mjd1)
+        self.assertEqual(mjd1.TAI, mjd2.TAI)
+        self.assertEqual(mjd1.UTC, mjd2.UTC)
+        self.assertEqual(mjd1.dut1, mjd2.dut1)
+        self.assertEqual(mjd1.UT1, mjd2.UT1)
+        self.assertEqual(mjd1.TT, mjd2.TT)
+        self.assertEqual(mjd1.TDB, mjd2.TDB)
+        self.assertEqual(mjd1, mjd2)
+        self.assertNotEqual(mjd1.__repr__(), mjd2.__repr__())
+
+    @unittest.skipIf(astropy.__version__ >= '1.2',
+                     "astropy 1.2 handles cases of dates too far in the future "
+                     "on its own in a graceful manner. Our warning classes are not needed")
     def test_warnings(self):
         """
         Test that warnings raised when trying to interpolate UT1-UTC
         for UTC too far in the future are of the type UTCtoUT1Warning
         """
 
-        if astropy.__version__ >= '1.2':
-            # astropy 1.2 handles cases of dates too far in the future
-            # on its own in a graceful manner.  Skip this test if the
-            # version of astropy you are running is >= 1.2
-            return
-
         with warnings.catch_warnings(record=True) as w_list:
             mjd = ModifiedJulianDate(1000000.0)
+            # clear the warning registry, in case a previous test raised the warnings
+            # we are looking for
+            mjd._warn_utc_out_of_bounds.__globals__['__warningregistry__'].clear()
             mjd.UT1
-        self.assertEqual(len(w_list), 2)  # one MJDWarning; one ERFAWarning
-        self.assertIsInstance(w_list[1].message, UTCtoUT1Warning)
-        self.assertIn('ModifiedJulianDate.UT1', w_list[1].message.message)
+        expected_warnings = 0
+        for ww in w_list:
+            if isinstance(ww.message, UTCtoUT1Warning):
+                if 'ModifiedJulianDate.UT1' in ww.message.message:
+                    expected_warnings += 1
+        self.assertGreater(expected_warnings, 0, msg="UT1 did not emit a UTCtoUT1Warning")
 
+        expected_warnings = 0
         with warnings.catch_warnings(record=True) as w_list:
             warnings.filterwarnings('always')
             mjd = ModifiedJulianDate(1000000.0)
             mjd.dut1
-        self.assertEqual(len(w_list), 1)  # The ERFA warning is now suppressed
-        self.assertIsInstance(w_list[0].message, UTCtoUT1Warning)
-        self.assertIn('ModifiedJulianDate.dut1', w_list[0].message.message)
+        for ww in w_list:
+            if isinstance(ww.message, UTCtoUT1Warning):
+                if 'ModifiedJulianDate.dut1' in ww.message.message:
+                    expected_warnings += 1
+        self.assertGreater(expected_warnings, 0, msg="dut1 did not emit a UTCtoUT1Warning")
+
+    def test_force_values(self):
+        """
+        Test that we can force the properties of a ModifiedJulianDate to have
+        specific values
+        """
+        tt = ModifiedJulianDate(TAI=59580.0)
+        values = np.arange(6)
+        tt._force_values(values)
+        self.assertEqual(tt.TAI, 0.0)
+        self.assertEqual(tt.UTC, 1.0)
+        self.assertEqual(tt.TT, 2.0)
+        self.assertEqual(tt.TDB, 3.0)
+        self.assertEqual(tt.UT1, 4.0)
+        self.assertEqual(tt.dut1, 5.0)
+
+        tt = ModifiedJulianDate(UTC=59580.0)
+        values = 2.0*np.arange(6)
+        tt._force_values(values)
+        self.assertEqual(tt.TAI, 0.0)
+        self.assertEqual(tt.UTC, 2.0)
+        self.assertEqual(tt.TT, 4.0)
+        self.assertEqual(tt.TDB, 6.0)
+        self.assertEqual(tt.UT1, 8.0)
+        self.assertEqual(tt.dut1, 10.0)
+
+    def test_list(self):
+        """
+        Test that ModifiedJulianDate.get_list() gets results that are consistent
+        with creating a list of ModifiedJulianDates by hand.
+        """
+
+        rng = np.random.RandomState(88)
+        tol = 10  # decimal place tolerance
+
+        tai_list = 40000.0 + 10000.0*rng.random_sample(20)
+        tai_list = np.append(tai_list, 59580.0 + 10000.0*rng.random_sample(20))
+        mjd_list = ModifiedJulianDate.get_list(TAI=tai_list)
+        for tai, mjd in zip(tai_list, mjd_list):
+            msg = "Offending TAI: %f" % tai
+            control = ModifiedJulianDate(TAI=tai)
+            self.assertAlmostEqual(mjd.TAI, tai, 11, msg=msg)
+            self.assertAlmostEqual(mjd.TAI, control.TAI, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UTC, control.UTC, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UT1, control.UT1, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TT, control.TT, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TDB, control.TDB, tol, msg=msg)
+            self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
+
+        utc_list = 40000.0 + 10000.0*rng.random_sample(20)
+        utc_list = np.append(utc_list, 59580.0 + 10000.0*rng.random_sample(20))
+        mjd_list = ModifiedJulianDate.get_list(UTC=utc_list)
+        for utc, mjd in zip(utc_list, mjd_list):
+            msg = "Offending UTC: %f" % utc
+            control = ModifiedJulianDate(UTC=utc)
+            self.assertAlmostEqual(mjd.UTC, utc, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TAI, control.TAI, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UTC, control.UTC, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UT1, control.UT1, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TT, control.TT, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TDB, control.TDB, tol, msg=msg)
+            self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
+
+        # Now test the case where we only have dates in the future (this
+        # is an edge case since good_dexes in ModifiedJulianDate._get_ut1_from_utc
+        # will have len = 0
+        tai_list = 60000.0 + 10000.0*rng.random_sample(20)
+        mjd_list = ModifiedJulianDate.get_list(TAI=tai_list)
+        for tai, mjd in zip(tai_list, mjd_list):
+            msg = "Offending TAI: %f" % tai
+            control = ModifiedJulianDate(TAI=tai)
+            self.assertAlmostEqual(mjd.TAI, tai, 11, msg=msg)
+            self.assertAlmostEqual(mjd.TAI, control.TAI, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UTC, control.UTC, tol, msg=msg)
+            self.assertAlmostEqual(mjd.UT1, control.UT1, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TT, control.TT, tol, msg=msg)
+            self.assertAlmostEqual(mjd.TDB, control.TDB, tol, msg=msg)
+            self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
 
 
 def suite():
