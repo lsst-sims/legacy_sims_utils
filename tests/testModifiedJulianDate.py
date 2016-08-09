@@ -153,11 +153,15 @@ class MjdTest(unittest.TestCase):
         self.assertNotEqual(mjd1, mjd3)
 
     def test_deepcopy(self):
+        # make sure that deepcopy() creates identical
+        # ModifiedJulianDates with different memory addresses
         mjd1 = ModifiedJulianDate(TAI=43590.0)
         mjd1.dut1
         deep_mjd2 = copy.deepcopy(mjd1)
         self.assertEqual(mjd1, deep_mjd2)
         self.assertNotEqual(mjd1.__repr__(), deep_mjd2.__repr__())
+        self.assertEqual(mjd1.TAI, deep_mjd2.TAI)
+        self.assertEqual(mjd1.dut1, deep_mjd2.dut1)
         equiv_mjd2 = mjd1
         self.assertEqual(mjd1, equiv_mjd2)
         self.assertEqual(mjd1.__repr__(), equiv_mjd2.__repr__())
@@ -166,10 +170,30 @@ class MjdTest(unittest.TestCase):
         mjd1.dut1
         deep_mjd2 = copy.deepcopy(mjd1)
         self.assertEqual(mjd1, deep_mjd2)
+        self.assertEqual(mjd1.UTC, deep_mjd2.UTC)
+        self.assertEqual(mjd1.dut1, deep_mjd2.dut1)
         self.assertNotEqual(mjd1.__repr__(), deep_mjd2.__repr__())
         equiv_mjd2 = mjd1
         self.assertEqual(mjd1, equiv_mjd2)
         self.assertEqual(mjd1.__repr__(), equiv_mjd2.__repr__())
+
+        # make sure that deepcopy() still works, even if you have called
+        # all of the original ModifiedJulianDate's properties
+        mjd1 = ModifiedJulianDate(TAI=42590.0)
+        mjd1.UTC
+        mjd1.dut1
+        mjd1.UT1
+        mjd1.TT
+        mjd1.TDB
+        mjd2 = copy.deepcopy(mjd1)
+        self.assertEqual(mjd1.TAI, mjd2.TAI)
+        self.assertEqual(mjd1.UTC, mjd2.UTC)
+        self.assertEqual(mjd1.dut1, mjd2.dut1)
+        self.assertEqual(mjd1.UT1, mjd2.UT1)
+        self.assertEqual(mjd1.TT, mjd2.TT)
+        self.assertEqual(mjd1.TDB, mjd2.TDB)
+        self.assertEqual(mjd1, mjd2)
+        self.assertNotEqual(mjd1.__repr__(), mjd2.__repr__())
 
     @unittest.skipIf(astropy.__version__ >= '1.2',
                      "astropy 1.2 handles cases of dates too far in the future "
