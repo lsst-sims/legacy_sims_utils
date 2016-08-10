@@ -1,7 +1,8 @@
 setupRequired(utils)
 setupRequired(python)
 setupRequired(palpy)
-setupRequired(sims_data)
+setupRequired(astropy)
 setupRequired(healpy)
+setupRequired(sims_data)
 
 envPrepend(PYTHONPATH, ${PRODUCT_DIR}/python)
