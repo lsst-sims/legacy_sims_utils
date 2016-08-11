@@ -6,6 +6,7 @@ import lsst.utils.tests as utilsTests
 
 from lsst.sims.utils import Site
 
+
 class SiteTest(unittest.TestCase):
 
     def setUp(self):
@@ -18,7 +19,6 @@ class SiteTest(unittest.TestCase):
         self.pressure = 750.0
         self.lapseRate = 0.0065
 
-
     def testLSST_values(self):
         """
         Test that LSST values are set correctly
@@ -30,12 +30,11 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.latitude, self.latitude)
         self.assertEqual(site.latitude_rad, np.radians(self.latitude))
         self.assertEqual(site.temperature, self.temperature)
-        self.assertEqual(site.temperature_kelvin, self.temperature+273.15)
+        self.assertEqual(site.temperature_kelvin, self.temperature + 273.15)
         self.assertEqual(site.pressure, self.pressure)
         self.assertEqual(site.humidity, self.humidity)
         self.assertEqual(site.lapseRate, self.lapseRate)
         self.assertEqual(site.height, self.height)
-
 
     def testNoDefaults(self):
         """
@@ -66,7 +65,6 @@ class SiteTest(unittest.TestCase):
         self.assertIsNone(site.lapseRate)
         self.assertIsNone(site.height)
 
-
     def testOverrideLSSTdefaults(self):
         """
         Test that, even if LSST is specified, we are capable of overriding
@@ -91,12 +89,11 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.latitude, 88.0)
         self.assertEqual(site.latitude_rad, np.radians(88.0))
         self.assertEqual(site.temperature, self.temperature)
-        self.assertEqual(site.temperature_kelvin, self.temperature+273.15)
+        self.assertEqual(site.temperature_kelvin, self.temperature + 273.15)
         self.assertEqual(site.pressure, self.pressure)
         self.assertEqual(site.humidity, self.humidity)
         self.assertEqual(site.lapseRate, self.lapseRate)
         self.assertEqual(site.height, self.height)
-
 
         site = Site(name='LSST', height=4.0)
         self.assertEqual(site.name, 'LSST')
@@ -105,7 +102,7 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.latitude, self.latitude)
         self.assertEqual(site.latitude_rad, np.radians(self.latitude))
         self.assertEqual(site.temperature, self.temperature)
-        self.assertEqual(site.temperature_kelvin, self.temperature+273.15)
+        self.assertEqual(site.temperature_kelvin, self.temperature + 273.15)
         self.assertEqual(site.pressure, self.pressure)
         self.assertEqual(site.humidity, self.humidity)
         self.assertEqual(site.lapseRate, self.lapseRate)
@@ -131,7 +128,7 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.latitude, self.latitude)
         self.assertEqual(site.latitude_rad, np.radians(self.latitude))
         self.assertEqual(site.temperature, self.temperature)
-        self.assertEqual(site.temperature_kelvin, self.temperature+273.15)
+        self.assertEqual(site.temperature_kelvin, self.temperature + 273.15)
         self.assertEqual(site.pressure, 14.0)
         self.assertEqual(site.humidity, self.humidity)
         self.assertEqual(site.lapseRate, self.lapseRate)
@@ -144,7 +141,7 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.latitude, self.latitude)
         self.assertEqual(site.latitude_rad, np.radians(self.latitude))
         self.assertEqual(site.temperature, self.temperature)
-        self.assertEqual(site.temperature_kelvin, self.temperature+273.15)
+        self.assertEqual(site.temperature_kelvin, self.temperature + 273.15)
         self.assertEqual(site.pressure, self.pressure)
         self.assertEqual(site.humidity, 2.1)
         self.assertEqual(site.lapseRate, self.lapseRate)
@@ -157,7 +154,7 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.latitude, self.latitude)
         self.assertEqual(site.latitude_rad, np.radians(self.latitude))
         self.assertEqual(site.temperature, self.temperature)
-        self.assertEqual(site.temperature_kelvin, self.temperature+273.15)
+        self.assertEqual(site.temperature_kelvin, self.temperature + 273.15)
         self.assertEqual(site.pressure, self.pressure)
         self.assertEqual(site.humidity, self.humidity)
         self.assertEqual(site.lapseRate, 3.2)
@@ -187,7 +184,7 @@ class SiteTest(unittest.TestCase):
         self.assertIsNone(site.humidity)
         self.assertIsNone(site.lapseRate)
         self.assertEqual(site.longitude, 45.0)
-        self.assertEqual(site.longitude_rad, np.pi/4.0)
+        self.assertEqual(site.longitude_rad, np.pi / 4.0)
         self.assertEqual(site.temperature, 20.0)
         self.assertEqual(site.temperature_kelvin, 293.15)
 
@@ -199,6 +196,7 @@ def suite():
     suites += unittest.makeSuite(SiteTest)
 
     return unittest.TestSuite(suites)
+
 
 def run(shouldExit=False):
     """Run the tests"""

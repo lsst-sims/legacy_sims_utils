@@ -168,8 +168,8 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
             ra_test, dec_test = utils._appGeoFromICRS(ra_icrs, dec_icrs, mjd=obs.mjd)
 
             distance = np.degrees(utils.haversine(ra_app, dec_app, ra_test, dec_test))
-            self.assertLess(distance, 0.1)  # since that is all the precision we have in the alt, az
-                                            # data taken from the USNO
+            # this is all the precision we have in the alt,az data taken from the USNO
+            self.assertLess(distance, 0.1)
 
             correction = np.degrees(utils.haversine(ra_test, dec_test, ra_icrs, dec_icrs))
             self.assertLess(distance, correction)
@@ -219,8 +219,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
                 self.assertFalse(np.isnan(pa_out).any())
 
                 for alt_c, az_c, alt_t, az_t in \
-                    zip(np.radians(alt_in), np.radians(az_in), np.radians(alt_out), np.radians(az_out)):
-
+                        zip(np.radians(alt_in), np.radians(az_in), np.radians(alt_out), np.radians(az_out)):
                     distance = utils.arcsecFromRadians(utils.haversine(az_c, alt_c, az_t, alt_t))
                     self.assertLess(distance, 0.2)
                     # not sure why 0.2 arcsec is the limiting precision of this test
