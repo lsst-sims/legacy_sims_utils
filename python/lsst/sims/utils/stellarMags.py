@@ -76,24 +76,24 @@ def stellarMags(stellarType, rmag=19.):
     if not hasattr(stellarMags, 'data'):
         names = ['stellarType', 'Model Name',
                  'u-g', 'g-r', 'r-i', 'i-z', 'z-y']
-        types = ['|S20', '|S20', float, float, float, float, float]
+        types = [('U', 20), ('U', 35), float, float, float, float, float]
         data = np.core.records.fromrecords([
-            ['O', 'kp00_50000[g50]', -0.4835688497, -0.5201721327, -
-                0.3991733698, -0.3106800468, -0.2072290744],
-            ['B', 'kp00_30000[g40]', -0.3457202828, -0.4834762052, -
-             0.3812792176, -0.2906072887, -0.1927230035],
-            ['A', 'kp00_9500[g40]', 0.8823182684, -0.237288029, -
-             0.2280783991, -0.1587960264, -0.03043824335],
-            ['F', 'kp00_7250[g45]', 0.9140316091, 0.1254277486, -
-             0.03419150003, -0.0802010739, -0.03802756413],
+            ['O', 'kp00_50000[g50]', -0.4835688497, -0.5201721327, 
+             -0.3991733698, -0.3106800468, -0.2072290744],
+            ['B', 'kp00_30000[g40]', -0.3457202828, -0.4834762052, 
+             -0.3812792176, -0.2906072887, -0.1927230035],
+            ['A', 'kp00_9500[g40]', 0.8823182684, -0.237288029, 
+             -0.2280783991, -0.1587960264, -0.03043824335],
+            ['F', 'kp00_7250[g45]', 0.9140316091, 0.1254277486, 
+             -0.03419150003, -0.0802010739, -0.03802756413],
             ['G', 'kp00_6000[g45]', 1.198219095, 0.3915608688,
              0.09129426676, 0.002604263747, -0.004659443668],
             ['K', 'kp00_5250[g45]', 1.716635024, 0.6081567546,
              0.1796910856, 0.06492278686, 0.0425155827],
             ['M', 'kp00_3750[g45]', 2.747842719, 1.287599638,
              0.5375622482, 0.4313486709, 0.219308065],
-            ['HeWD_25200_80', 'bergeron_He_24000_80.dat_25200.gz', -
-             0.218959, -0.388374, -0.326946, -0.253573, -0.239460],
+            ['HeWD_25200_80', 'bergeron_He_24000_80.dat_25200.gz', 
+             -0.218959, -0.388374, -0.326946, -0.253573, -0.239460],
             ['WD_11000_85', 'bergeron_10500_85.dat_11000.gz',
              0.286146, -0.109115, -0.178500, -0.185833, -0.186913],
             ['WD_3000_85', 'bergeron_2750_85.dat_3000.gz',
@@ -102,13 +102,15 @@ def stellarMags(stellarType, rmag=19.):
         # Switch to a dict for faster look-up
         stellarMags.data = {}
         for row in data:
-            stellarMags.data[row['stellarType']] = row
+            stellarMags.data['%s' % row['stellarType']] = row
 
     results = {}
     # good = np.where(stellarMags.data['stellarType'] == stellarType)
     if stellarType not in stellarMags.data:
-        raise ValueError('stellarType must be one of ' +
-                         ', '.join(list(stellarMags.data.keys())))
+        message = 'Received stellarType %s' % stellarType
+        message += ' but expected one of %s' % ', '.join(list(stellarMags.data.keys()))
+        raise ValueError(message)
+
     results['r'] = rmag
     results['i'] = rmag - stellarMags.data[stellarType]['r-i']
     results['z'] = results['i'] - stellarMags.data[stellarType]['i-z']
