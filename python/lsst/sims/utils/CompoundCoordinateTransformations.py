@@ -9,7 +9,6 @@ import numpy as np
 import palpy
 from lsst.sims.utils.CodeUtilities import _validate_inputs
 from lsst.sims.utils import _icrsFromObserved, _observedFromICRS, calcLmstLast
-from lsst.sims.utils import ObservationMetaData
 
 __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
            "_raDecFromAltAz", "raDecFromAltAz",
@@ -68,20 +67,22 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     are_arrays = _validate_inputs([raRad, decRad], ['ra', 'dec'],
                                   "altAzPaFromRaDec")
 
-    raObs, decObs = _observedFromICRS(raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
+    raObs, decObs = _observedFromICRS(
+        raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
 
     lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]
-    haRad = np.radians(last*15.0) - raObs
+    haRad = np.radians(last * 15.0) - raObs
 
     if are_arrays:
         az, azd, azdd, \
-        alt, altd, altdd, \
-        pa, pad, padd = palpy.altazVector(haRad, decObs, obs.site.latitude_rad)
+            alt, altd, altdd, \
+            pa, pad, padd = palpy.altazVector(
+                haRad, decObs, obs.site.latitude_rad)
     else:
         az, azd, azdd, \
-        alt, altd, altdd, \
-        pa, pad, padd = palpy.altaz(haRad, decObs, obs.site.latitude_rad)
+            alt, altd, altdd, \
+            pa, pad, padd = palpy.altaz(haRad, decObs, obs.site.latitude_rad)
 
     return alt, az, pa
 
@@ -127,21 +128,24 @@ def _raDecFromAltAz(altRad, azRad, obs):
     Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
 
-    are_arrays = _validate_inputs([altRad, azRad], ['altRad', 'azRad'], "raDecFromAltAz")
+    are_arrays = _validate_inputs(
+        [altRad, azRad], ['altRad', 'azRad'], "raDecFromAltAz")
 
     lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]
     sinAlt = np.sin(altRad)
     cosLat = np.cos(obs.site.latitude_rad)
     sinLat = np.sin(obs.site.latitude_rad)
-    decObs = np.arcsin(sinLat*sinAlt + cosLat*np.cos(altRad)*np.cos(azRad))
-    costheta = (sinAlt - np.sin(decObs)*sinLat)/(np.cos(decObs)*cosLat)
+    decObs = np.arcsin(sinLat * sinAlt + cosLat *
+                       np.cos(altRad) * np.cos(azRad))
+    costheta = (sinAlt - np.sin(decObs) * sinLat) / (np.cos(decObs) * cosLat)
     if are_arrays:
         haRad0 = np.arccos(costheta)
         # Make sure there were no NaNs
         nanSpots = np.where(np.isnan(haRad0))[0]
         if np.size(nanSpots) > 0:
-            haRad0[nanSpots] = 0.5*np.pi*(1.0-np.sign(costheta[nanSpots]))
+            haRad0[nanSpots] = 0.5 * np.pi * \
+                (1.0 - np.sign(costheta[nanSpots]))
     else:
         haRad0 = np.arccos(costheta)
         if np.isnan(haRad0):
@@ -150,8 +154,8 @@ def _raDecFromAltAz(altRad, azRad, obs):
             else:
                 haRad0 = np.pi
 
-    haRad = np.where(np.sin(azRad) >= 0.0, -1.0*haRad0, haRad0)
-    raObs = np.radians(last*15.) - haRad
+    haRad = np.where(np.sin(azRad) >= 0.0, -1.0 * haRad0, haRad0)
+    raObs = np.radians(last * 15.) - haRad
 
     raRad, decRad = _icrsFromObserved(raObs, decObs,
                                       obs_metadata=obs, epoch=2000.0,
@@ -219,7 +223,7 @@ def _getRotSkyPos(raRad, decRad, obs, rotTelRad):
     """
     altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, obs)
 
-    return (rotTelRad - paRad)%(2.*np.pi)
+    return (rotTelRad - paRad) % (2. * np.pi)
 
 
 def getRotTelPos(ra, dec, obs, rotSky):
@@ -283,4 +287,4 @@ def _getRotTelPos(raRad, decRad, obs, rotSkyRad):
     """
     altRad, azRad, paRad = _altAzPaFromRaDec(raRad, decRad, obs)
 
-    return (rotSkyRad + paRad)%(2.*np.pi)
+    return (rotSkyRad + paRad) % (2. * np.pi)
