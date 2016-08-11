@@ -4,6 +4,7 @@ palpy and the contents of AstrometryUtils.py (basically, coordinate
 transformations that need to transform between observed geocentric RA, DEC
 and ICRS RA, Dec)
 """
+from __future__ import division
 
 import numpy as np
 import palpy

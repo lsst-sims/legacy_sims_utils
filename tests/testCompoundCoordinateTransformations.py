@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import unittest
 import numpy as np
 import lsst.utils.tests as utilsTests
@@ -49,7 +53,7 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
     sinLat = np.sin(latRad)
     sinAlt = sinDec*sinLat + np.cos(decRad)*cosLat*np.cos(haRad)
     altRad = np.arcsin(sinAlt)
-    azRad = np.arccos((sinDec - sinAlt*sinLat)/(np.cos(altRad)*cosLat))
+    azRad = np.arccos(old_div((sinDec - sinAlt*sinLat),(np.cos(altRad)*cosLat)))
     azRadOut = np.where(np.sin(haRad) >= 0.0, 2.0*np.pi - azRad, azRad)
     return altRad, azRadOut
 
@@ -112,9 +116,9 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         http://aa.usno.navy.mil/data/docs/JulianDate.php
         """
 
-        hours = np.radians(360.0/24.0)
-        minutes = hours/60.0
-        seconds = minutes/60.0
+        hours = np.radians(old_div(360.0,24.0))
+        minutes = old_div(hours,60.0)
+        seconds = old_div(minutes,60.0)
 
         longitude_list = []
         latitude_list = []
@@ -124,37 +128,37 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         ra_app_list = []
         dec_app_list = []
 
-        longitude_list.append(np.radians(-22.0 - 33.0/60.0))
-        latitude_list.append(np.radians(11.0 + 45.0/60.0))
+        longitude_list.append(np.radians(-22.0 - old_div(33.0,60.0)))
+        latitude_list.append(np.radians(11.0 + old_div(45.0,60.0)))
         mjd_list.append(2457364.958333 - 2400000.5)  # 8 December 2015 11:00 UTC
         alt_list.append(np.radians(41.1))
         az_list.append(np.radians(134.7))
         ra_app_list.append(16.0*hours + 59.0*minutes + 16.665*seconds)
-        dec_app_list.append(np.radians(-22.0 - 42.0/60.0 - 2.94/3600.0))
+        dec_app_list.append(np.radians(-22.0 - old_div(42.0,60.0) - old_div(2.94,3600.0)))
 
-        longitude_list.append(np.radians(-22.0 - 33.0/60.0))
-        latitude_list.append(np.radians(11.0 + 45.0/60.0))
+        longitude_list.append(np.radians(-22.0 - old_div(33.0,60.0)))
+        latitude_list.append(np.radians(11.0 + old_div(45.0,60.0)))
         mjd_list.append(2457368.958333 - 2400000.5)  # 12 December 2015 11:00 UTC
         alt_list.append(np.radians(40.5))
         az_list.append(np.radians(134.7))
         ra_app_list.append(17.0*hours + 16.0*minutes + 51.649*seconds)
-        dec_app_list.append(np.radians(-23.0-3/60.0-50.35/3600.0))
+        dec_app_list.append(np.radians(-23.0-old_div(3,60.0)-old_div(50.35,3600.0)))
 
-        longitude_list.append(np.radians(145.0 + 23.0/60.0))
-        latitude_list.append(np.radians(-64.0 - 5.0/60.0))
+        longitude_list.append(np.radians(145.0 + old_div(23.0,60.0)))
+        latitude_list.append(np.radians(-64.0 - old_div(5.0,60.0)))
         mjd_list.append(2456727.583333-2400000.5)  # 11 March 2014, 02:00 UTC
         alt_list.append(np.radians(29.5))
         az_list.append(np.radians(8.2))
         ra_app_list.append(23.0*hours + 24.0*minutes + 46.634*seconds)
-        dec_app_list.append(np.radians(-3.0-47.0/60.0 - 47.81/3600.0))
+        dec_app_list.append(np.radians(-3.0-old_div(47.0,60.0) - old_div(47.81,3600.0)))
 
-        longitude_list.append(np.radians(145.0 + 23.0/60.0))
-        latitude_list.append(np.radians(-64.0-5.0/60.0))
+        longitude_list.append(np.radians(145.0 + old_div(23.0,60.0)))
+        latitude_list.append(np.radians(-64.0-old_div(5.0,60.0)))
         mjd_list.append(2456731.583333 - 2400000.5)  # 15 March 2014, 02:00 UTC
         alt_list.append(np.radians(28.0))
         az_list.append(np.radians(7.8))
         ra_app_list.append(23.0*hours + 39.0*minutes + 27.695*seconds)
-        dec_app_list.append(np.radians(-2.0 - 13.0/60.0 - 18.32/3600.0))
+        dec_app_list.append(np.radians(-2.0 - old_div(13.0,60.0) - old_div(18.32,3600.0)))
 
         for longitude, latitude, mjd, alt, az, ra_app, dec_app in \
             zip(longitude_list, latitude_list, mjd_list, alt_list, az_list,

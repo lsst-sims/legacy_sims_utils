@@ -2,6 +2,7 @@
 This file contains coordinate transformation methods that are very thin wrappers
 of palpy methods, or that have no dependence on palpy at all
 """
+from __future__ import division
 
 import numpy as np
 import numbers
@@ -74,7 +75,7 @@ def calcLmstLast(mjd, longRad):
         else:
             longDeg = longDeg0
 
-    hrs = longDeg / 15.
+    hrs = longDeg / 15.0
     gmstgast = calcGmstGast(mjd)
     lmst = gmstgast[0] + hrs
     last = gmstgast[1] + hrs
@@ -326,8 +327,8 @@ def haversine(long1, lat1, long2, lat2):
 
     From http://en.wikipedia.org/wiki/Haversine_formula
     """
-    t1 = np.sin(lat2 / 2. - lat1 / 2.)**2
-    t2 = np.cos(lat1) * np.cos(lat2) * np.sin(long2 / 2. - long1 / 2.)**2
+    t1 = np.sin(lat2 / 2.0 - lat1 / 2.0)**2
+    t2 = np.cos(lat1) * np.cos(lat2) * np.sin(long2 / 2.0 - long1 / 2.0)**2
     return 2 * np.arcsin(np.sqrt(t1 + t2))
 
 

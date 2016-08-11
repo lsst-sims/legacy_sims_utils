@@ -8,6 +8,8 @@ prescribed by ObsMetaData
 3. test_samplePatchOnSphere : Check functionality by showing that binning up in
     dec results in numbers in dec bins changing with area.
  """
+from __future__ import division
+from past.utils import old_div
 
 import numpy as np
 import unittest
@@ -95,7 +97,7 @@ class SamplingTests(unittest.TestCase):
 
         theta_samps = np.radians(self.dense_samples[1])
         binnedvals = np.histogram(theta_samps, bins=tvals[:-1], normed=True)[0]
-        resids = area[:-2] / normval - binnedvals
+        resids = old_div(area[:-2], normval) - binnedvals
 
         fiveSigma = np.sqrt(binnedvals) * 5.0
         assert all(resids < fiveSigma)

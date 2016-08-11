@@ -1,4 +1,6 @@
 from __future__ import print_function
+from builtins import zip
+from builtins import range
 import numpy as np
 
 __all__ = ['stellarMags']
@@ -29,7 +31,7 @@ def calcWDColors():
     throughPath = os.path.join(getPackageDir('throughputs'), 'baseline')
     for key in bpNames:
         bp = np.loadtxt(os.path.join(throughPath, 'filter_' + key + '.dat'),
-                        dtype=zip(['wave', 'trans'], [float] * 2))
+                        dtype=list(zip(['wave', 'trans'], [float] * 2)))
         tempB = Bandpass()
         tempB.setBandpass(bp['wave'], bp['trans'])
         bps.append(tempB)
@@ -96,7 +98,7 @@ def stellarMags(stellarType, rmag=19.):
              0.286146, -0.109115, -0.178500, -0.185833, -0.186913],
             ['WD_3000_85', 'bergeron_2750_85.dat_3000.gz',
              3.170620, 1.400062, 0.167195, 0.127024, -0.378069]],
-            dtype=zip(names, types))
+            dtype=list(zip(names, types)))
         # Switch to a dict for faster look-up
         stellarMags.data = {}
         for row in data:
@@ -104,9 +106,9 @@ def stellarMags(stellarType, rmag=19.):
 
     results = {}
     # good = np.where(stellarMags.data['stellarType'] == stellarType)
-    if stellarType not in stellarMags.data.keys():
+    if stellarType not in stellarMags.data:
         raise ValueError('stellarType must be one of ' +
-                         ', '.join(stellarMags.data.keys()))
+                         ', '.join(list(stellarMags.data.keys())))
     results['r'] = rmag
     results['i'] = rmag - stellarMags.data[stellarType]['r-i']
     results['z'] = results['i'] - stellarMags.data[stellarType]['i-z']

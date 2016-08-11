@@ -1,3 +1,4 @@
+from builtins import zip
 import unittest
 import numpy as np
 import lsst.utils.tests as utilsTests

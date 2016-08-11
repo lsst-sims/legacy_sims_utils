@@ -2,11 +2,15 @@
 This file defines classes that control who ObservationMetaData describes
 its field of view (i.e. is it a box in RA, Dec, is it a circle in RA, Dec....?)
 """
+from __future__ import division
+from builtins import str
+from builtins import object
 
 # Hopefully it will be extensible so that we can add different shapes in the
 # future
 
 import numpy as np
+from future.utils import with_metaclass
 
 __all__ = ["SpatialBounds", "CircleBounds", "BoxBounds"]
 
@@ -30,7 +34,7 @@ class SpatialBoundsMetaClass(type):
         return super(SpatialBoundsMetaClass, cls).__init__(name, bases, dct)
 
 
-class SpatialBounds(object):
+class SpatialBounds(with_metaclass(SpatialBoundsMetaClass, object)):
     """
     Classes inheriting from this class define spatial bounds on the objects
     contained within a catalog.  They also translate those bounds into
@@ -50,8 +54,6 @@ class SpatialBounds(object):
     the names of the database columns containing RA and DEc) and which returns
     a string that characterizes the bound as an SQL 'WHERE' statement.
     """
-
-    __metaclass__ = SpatialBoundsMetaClass
 
     def __init__(self, *args):
         """

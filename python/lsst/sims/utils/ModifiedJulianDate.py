@@ -1,3 +1,4 @@
+from builtins import object
 import warnings
 import numpy as np
 import copy

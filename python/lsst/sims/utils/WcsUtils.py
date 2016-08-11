@@ -1,3 +1,5 @@
+from __future__ import division
+from builtins import zip
 import numpy as np
 import numbers
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved

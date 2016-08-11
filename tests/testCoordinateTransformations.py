@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
@@ -20,7 +24,7 @@ def controlEquationOfEquinoxes(mjd):
     deltaPsiHours = -0.000319*np.sin(np.radians(omegaDegrees)) \
                     - 0.000024 * np.sin(2.0*np.radians(Ldegrees))
     epsilonDegrees = 23.4393 - 0.0000004*D
-    return (deltaPsiHours/24.0)*2.0*np.pi*np.cos(np.radians(epsilonDegrees))
+    return (old_div(deltaPsiHours,24.0))*2.0*np.pi*np.cos(np.radians(epsilonDegrees))
 
 
 def controlCalcGmstGast(mjd):
@@ -33,7 +37,7 @@ def controlCalcGmstGast(mjd):
     h = 24.*(jd-jd_o)
     d = jd - jd2000
     d_o = jd_o - jd2000
-    t = d/36525.
+    t = old_div(d,36525.)
     gmst = 6.697374558 + 0.06570982441908*d_o + 1.00273790935*h + 0.000026*t**2
     gast = gmst + 24.0*utils.equationOfEquinoxes(mjd)/(2.0*np.pi)
     gmst %= 24.
@@ -115,7 +119,7 @@ class testCoordinateTransformations(unittest.TestCase):
 
         # test passing a float for longitude and a numpy array for mjd
         for longitude in ll:
-            hours = np.degrees(longitude)/15.0
+            hours = old_div(np.degrees(longitude),15.0)
             if hours > 24.0:
                 hours -= 24.0
             controlLmst = gmst + hours
@@ -132,7 +136,7 @@ class testCoordinateTransformations(unittest.TestCase):
         for longitude in ll:
             for mm in self.mjd:
                 gmst, gast = utils.calcGmstGast(mm)
-                hours = np.degrees(longitude)/15.0
+                hours = old_div(np.degrees(longitude),15.0)
                 if hours > 24.0:
                     hours -= 24.0
                 controlLmst = gmst + hours

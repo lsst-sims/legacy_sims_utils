@@ -1,4 +1,7 @@
 from __future__ import with_statement
+from __future__ import division
+from builtins import zip
+from past.utils import old_div
 import astropy
 import unittest
 import warnings
@@ -65,7 +68,7 @@ class MjdTest(unittest.TestCase):
         tai_list = np.random.random_sample(1000)*7000.0+50000.0
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
-            self.assertAlmostEqual(mjd.TT, tai+32.184/86400.0, 15)
+            self.assertAlmostEqual(mjd.TT, tai+old_div(32.184,86400.0), 15)
 
     def test_tdb(self):
         """
@@ -85,7 +88,7 @@ class MjdTest(unittest.TestCase):
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
             g = np.radians(357.53 + 0.9856003*(np.round(tai-51544.5)))
-            tdb_test = mjd.TT + (0.001658*np.sin(g) + 0.000014*np.sin(2.0*g))/86400.0
+            tdb_test = mjd.TT + old_div((0.001658*np.sin(g) + 0.000014*np.sin(2.0*g)),86400.0)
             dt = np.abs(tdb_test-mjd.TDB)*8.64*1.0e10  # convert to microseconds
             self.assertLess(dt, 50)
 

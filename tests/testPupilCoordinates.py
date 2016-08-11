@@ -1,3 +1,7 @@
+from __future__ import division
+from builtins import zip
+from builtins import range
+from past.utils import old_div
 import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
@@ -149,7 +153,7 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                     raTest, decTest, obs_metadata=obs, epoch=epoch)
 
                 lon, lat = _nativeLonLatFromRaDec(raTest, decTest, obs)
-                rr = np.abs(np.cos(lat) / np.sin(lat))
+                rr = np.abs(old_div(np.cos(lat), np.sin(lat)))
 
                 if np.abs(rotSkyPos) < 0.01:
                     control_x = np.array([-1.0 * rr[0], 1.0 * rr[1], 0.0, 0.0])
@@ -165,9 +169,9 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                     control_y = np.array([0.0, 0.0, -1.0 * rr[2], 1.0 * rr[3]])
 
                 dx = np.array(
-                    [xx / cc if np.abs(cc) > 1.0e-10 else 1.0 - xx for xx, cc in zip(x, control_x)])
+                    [old_div(xx, cc) if np.abs(cc) > 1.0e-10 else 1.0 - xx for xx, cc in zip(x, control_x)])
                 dy = np.array(
-                    [yy / cc if np.abs(cc) > 1.0e-10 else 1.0 - yy for yy, cc in zip(y, control_y)])
+                    [old_div(yy, cc) if np.abs(cc) > 1.0e-10 else 1.0 - yy for yy, cc in zip(y, control_y)])
                 np.testing.assert_array_almost_equal(dx, np.ones(4), decimal=4)
                 np.testing.assert_array_almost_equal(dy, np.ones(4), decimal=4)
 

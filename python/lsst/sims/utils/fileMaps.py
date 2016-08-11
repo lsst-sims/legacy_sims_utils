@@ -1,3 +1,5 @@
+from builtins import object
+from builtins import dict
 import os
 import re
 
@@ -54,12 +56,12 @@ class SpecMap(object):
         if item in self.fileDict:
             return self.fileDict[item]
 
-        for key, val in sorted(self.dirDict.iteritems()):
+        for key, val in sorted(self.dirDict.items()):
             if re.match(key, item):
                 full_name = item if item.endswith('.gz') else item + '.gz'
                 return os.path.join(val, full_name)
 
-        for key, val in sorted(self.subdir_map.iteritems()):
+        for key, val in sorted(self.subdir_map.items()):
             if re.match(key, item):
                 full_name = item if item.endswith('.gz') else item + '.gz'
                 return os.path.join(val, full_name)

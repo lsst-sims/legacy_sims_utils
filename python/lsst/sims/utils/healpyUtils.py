@@ -1,3 +1,4 @@
+from __future__ import division
 import numpy as np
 import healpy as hp
 
@@ -24,7 +25,7 @@ def _hpid2RaDec(nside, hpids):
     """
 
     lat, lon = hp.pix2ang(nside, hpids)
-    decRet = np.pi/2. - lat
+    decRet = np.pi / 2.0 - lat
     raRet = lon
 
     return raRet, decRet
@@ -70,7 +71,7 @@ def _raDec2Hpid(nside, ra, dec):
     hpids : np.array
         Healpixel IDs for the input positions.
     """
-    lat = np.pi/2. - dec
+    lat = np.pi / 2.0 - dec
     hpids = hp.ang2pix(nside, lat, ra)
     return hpids
 
