@@ -1,3 +1,4 @@
+from __future__ import print_function
 import numpy as np
 
 __all__ = ['stellarMags']
@@ -43,7 +44,7 @@ def calcWDColors():
 
     for maglist, fn, name in zip(mags, fns, names):
         format = (name, fn) + tuple(maglist)
-        print "['%s', '%s', %f, %f, %f, %f, %f]" % format
+        print("['%s', '%s', %f, %f, %f, %f, %f]" % format)
 
 
 def stellarMags(stellarType, rmag=19.):
