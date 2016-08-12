@@ -1,7 +1,6 @@
 from __future__ import with_statement
 from __future__ import division
 from builtins import zip
-from past.utils import old_div
 import astropy
 import unittest
 import warnings
@@ -68,7 +67,7 @@ class MjdTest(unittest.TestCase):
         tai_list = np.random.random_sample(1000)*7000.0+50000.0
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
-            self.assertAlmostEqual(mjd.TT, tai+old_div(32.184,86400.0), 15)
+            self.assertAlmostEqual(mjd.TT, tai + 32.184 / 86400.0, 15)
 
     def test_tdb(self):
         """
@@ -87,8 +86,8 @@ class MjdTest(unittest.TestCase):
         tai_list = np.random.random_sample(1000)*10000.0 + 46000.0
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
-            g = np.radians(357.53 + 0.9856003*(np.round(tai-51544.5)))
-            tdb_test = mjd.TT + old_div((0.001658*np.sin(g) + 0.000014*np.sin(2.0*g)),86400.0)
+            g = np.radians(357.53 + 0.9856003*(np.round(tai - 51544.5)))
+            tdb_test = mjd.TT + (0.001658*np.sin(g) + 0.000014*np.sin(2.0*g)) / 86400.0
             dt = np.abs(tdb_test-mjd.TDB)*8.64*1.0e10  # convert to microseconds
             self.assertLess(dt, 50)
 
@@ -206,30 +205,39 @@ class MjdTest(unittest.TestCase):
         Test that warnings raised when trying to interpolate UT1-UTC
         for UTC too far in the future are of the type UTCtoUT1Warning
         """
-
         with warnings.catch_warnings(record=True) as w_list:
             mjd = ModifiedJulianDate(1000000.0)
             # clear the warning registry, in case a previous test raised the warnings
             # we are looking for
-            mjd._warn_utc_out_of_bounds.__globals__['__warningregistry__'].clear()
+            if '__warningregistry__' in mjd._warn_utc_out_of_bounds.__globals__:
+                mjd._warn_utc_out_of_bounds.__globals__['__warningregistry__'].clear()
+            warnings.simplefilter("always")
+            # Trigger a warning.
+            # Note that this may also trigger astropy warnings,
+            # depending on the order in which tests are run.
             mjd.UT1
-        expected_warnings = 0
-        for ww in w_list:
-            if isinstance(ww.message, UTCtoUT1Warning):
-                if 'ModifiedJulianDate.UT1' in ww.message.message:
-                    expected_warnings += 1
-        self.assertGreater(expected_warnings, 0, msg="UT1 did not emit a UTCtoUT1Warning")
+        expected_MJD_warnings = 1
+        MJD_warnings = 0
+        for w in w_list:
+            # Count the number of warnings and test we can filter by category.
+            if w.category == UTCtoUT1Warning:
+                MJD_warnings += 1
+                # Test that the string "ModifiedJulianDate.UT1" actually showed up in the message.
+                # This indicates what method the warning occured from (UT1 vs dut).
+                self.assertTrue("ModifiedJulianDate.UT1" in str(w.message))
+        self.assertEqual(expected_MJD_warnings, MJD_warnings, msg="UT1 did not emit a UTCtoUT1Warning")
 
-        expected_warnings = 0
+        expected_MJD_warnings = 1
+        MJD_warnings = 0
         with warnings.catch_warnings(record=True) as w_list:
-            warnings.filterwarnings('always')
+            warnings.simplefilter('always')
             mjd = ModifiedJulianDate(1000000.0)
             mjd.dut1
-        for ww in w_list:
-            if isinstance(ww.message, UTCtoUT1Warning):
-                if 'ModifiedJulianDate.dut1' in ww.message.message:
-                    expected_warnings += 1
-        self.assertGreater(expected_warnings, 0, msg="dut1 did not emit a UTCtoUT1Warning")
+        for w in w_list:
+            if w.category == UTCtoUT1Warning:
+                MJD_warnings += 1
+                self.assertTrue("ModifiedJulianDate.dut1" in str(w.message))
+        self.assertEqual(expected_MJD_warnings, MJD_warnings, msg="dut1 did not emit a UTCtoUT1Warning")
 
     def test_force_values(self):
         """
