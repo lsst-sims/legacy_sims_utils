@@ -1,3 +1,4 @@
+from builtins import zip
 import unittest
 import numpy as np
 import lsst.utils.tests as utilsTests
@@ -29,7 +30,8 @@ class NativeLonLatTest(unittest.TestCase):
         latControlList = [0.0, 0.0, 0.0, 0.0]
 
         for rr_obs, dd_obs, rp_obs, dp_obs, lonc, latc in \
-            zip(raList_obs, decList_obs, raPointList_obs, decPointList_obs, lonControlList, latControlList):
+                zip(raList_obs, decList_obs, raPointList_obs, decPointList_obs,
+                    lonControlList, latControlList):
 
             obsTemp = ObservationMetaData(mjd=mjd)
 
@@ -38,7 +40,8 @@ class NativeLonLatTest(unittest.TestCase):
                                       obs_metadata=obsTemp,
                                       epoch=2000.0, includeRefraction=True)
 
-            obs = ObservationMetaData(pointingRA=rr[1], pointingDec=dd[1], mjd=mjd)
+            obs = ObservationMetaData(
+                pointingRA=rr[1], pointingDec=dd[1], mjd=mjd)
             lon, lat = nativeLonLatFromRaDec(rr[0], dd[0], obs)
             distance = arcsecFromRadians(haversine(lon, lat, lonc, latc))
             self.assertLess(distance, 1.0)
@@ -51,17 +54,18 @@ class NativeLonLatTest(unittest.TestCase):
 
         np.random.seed(42)
         nPointings = 10
-        raPointingList_icrs = np.random.random_sample(nPointings)*360.0
-        decPointingList_icrs = np.random.random_sample(nPointings)*180.0 - 90.0
-        mjdList = np.random.random_sample(nPointings)*10000.0 + 43000.0
+        raPointingList_icrs = np.random.random_sample(nPointings) * 360.0
+        decPointingList_icrs = np.random.random_sample(
+            nPointings) * 180.0 - 90.0
+        mjdList = np.random.random_sample(nPointings) * 10000.0 + 43000.0
 
         nStars = 10
         for raPointing_icrs, decPointing_icrs, mjd in \
-            zip(raPointingList_icrs, decPointingList_icrs, mjdList):
+                zip(raPointingList_icrs, decPointingList_icrs, mjdList):
 
             obs = ObservationMetaData(pointingRA=raPointing_icrs, pointingDec=decPointing_icrs, mjd=mjd)
-            raList_icrs = np.random.random_sample(nStars)*360.0
-            decList_icrs = np.random.random_sample(nStars)*180.0 - 90.0
+            raList_icrs = np.random.random_sample(nStars) * 360.0
+            decList_icrs = np.random.random_sample(nStars) * 180.0 - 90.0
             raList_obs, decList_obs = observedFromICRS(raList_icrs, decList_icrs, obs_metadata=obs,
                                                        epoch=2000.0, includeRefraction=True)
 
@@ -72,7 +76,7 @@ class NativeLonLatTest(unittest.TestCase):
                                                                includeRefraction=True)
 
             for ra_obs, dec_obs, ra_icrs, dec_icrs in \
-                zip(raList_obs, decList_obs, raList_icrs, decList_icrs):
+                    zip(raList_obs, decList_obs, raList_icrs, decList_icrs):
 
                 raRad = np.radians(ra_obs)
                 decRad = np.radians(dec_obs)
@@ -82,12 +86,12 @@ class NativeLonLatTest(unittest.TestCase):
                 cosDec = np.cos(decRad)
 
                 # the three dimensional position of the star
-                controlPosition = np.array([-cosDec*sinRa, cosDec*cosRa, sinDec])
+                controlPosition = np.array([-cosDec * sinRa, cosDec * cosRa, sinDec])
 
                 # calculate the rotation matrices needed to transform the
                 # x, y, and z axes into the local x, y, and z axes
                 # (i.e. the axes with z lined up with raPointing_obs, decPointing_obs)
-                alpha = 0.5*np.pi - np.radians(decPointing_obs)
+                alpha = 0.5 * np.pi - np.radians(decPointing_obs)
                 ca = np.cos(alpha)
                 sa = np.sin(alpha)
                 rotX = np.array([[1.0, 0.0, 0.0],
@@ -112,18 +116,19 @@ class NativeLonLatTest(unittest.TestCase):
                 cosLat = np.cos(np.radians(lat))
                 sinLat = np.sin(np.radians(lat))
 
-                # the x, y, z position of the star in the local coordinate basis
-                transformedPosition = np.array([-cosLat*sinLon,
-                                                cosLat*cosLon,
+                # the x, y, z position of the star in the local coordinate
+                # basis
+                transformedPosition = np.array([-cosLat * sinLon,
+                                                cosLat * cosLon,
                                                 sinLat])
 
                 # convert that position back into the un-rotated bases
-                testPosition = transformedPosition[0]*xAxis + \
-                               transformedPosition[1]*yAxis + \
-                               transformedPosition[2]*zAxis
+                testPosition = transformedPosition[0] * xAxis + \
+                    transformedPosition[1] * yAxis + \
+                    transformedPosition[2] * zAxis
 
                 # assert that testPosition and controlPosition should be equal
-                distance = np.sqrt(np.power(controlPosition-testPosition, 2).sum())
+                distance = np.sqrt(np.power(controlPosition - testPosition, 2).sum())
                 self.assertLess(distance, 1.0e-12)
 
     def testNativeLonLatVector(self):
@@ -137,8 +142,8 @@ class NativeLonLatTest(unittest.TestCase):
 
         nSamples = 100
         np.random.seed(42)
-        raList = np.random.random_sample(nSamples)*360.0
-        decList = np.random.random_sample(nSamples)*180.0 - 90.0
+        raList = np.random.random_sample(nSamples) * 360.0
+        decList = np.random.random_sample(nSamples) * 180.0 - 90.0
 
         lonList, latList = nativeLonLatFromRaDec(raList, decList, obs)
 
@@ -156,28 +161,29 @@ class NativeLonLatTest(unittest.TestCase):
         """
         np.random.seed(42)
         nSamples = 100
-        rrList = np.random.random_sample(nSamples)*50.0  # because raDecFromNativeLonLat is only good
-                                                         # out to a zenith distance of ~ 70 degrees
+        # because raDecFromNativeLonLat is only good
+        rrList = np.random.random_sample(nSamples) * 50.0
+        # out to a zenith distance of ~ 70 degrees
 
-        thetaList = np.random.random_sample(nSamples)*2.0*np.pi
+        thetaList = np.random.random_sample(nSamples) * 2.0 * np.pi
 
-        rrPointingList = np.random.random_sample(10)*50.0
-        thetaPointingList = np.random.random_sample(10)*2.0*np.pi
-        mjdList = np.random.random_sample(nSamples)*10000.0 + 43000.0
+        rrPointingList = np.random.random_sample(10) * 50.0
+        thetaPointingList = np.random.random_sample(10) * 2.0 * np.pi
+        mjdList = np.random.random_sample(nSamples) * 10000.0 + 43000.0
 
         for rrp, thetap, mjd in \
-            zip(rrPointingList, thetaPointingList, mjdList):
+                zip(rrPointingList, thetaPointingList, mjdList):
 
             site = Site(name='LSST')
             raZenith, decZenith = raDecFromAltAz(180.0, 0.0,
                                                  ObservationMetaData(mjd=mjd, site=site))
 
-            rp = raZenith + rrp*np.cos(thetap)
-            dp = decZenith + rrp*np.sin(thetap)
+            rp = raZenith + rrp * np.cos(thetap)
+            dp = decZenith + rrp * np.sin(thetap)
             obs = ObservationMetaData(pointingRA=rp, pointingDec=dp, mjd=mjd, site=site)
 
-            raList_icrs = (raZenith + rrList*np.cos(thetaList)) % 360.0
-            decList_icrs = decZenith + rrList*np.sin(thetaList)
+            raList_icrs = (raZenith + rrList * np.cos(thetaList)) % 360.0
+            decList_icrs = decZenith + rrList * np.sin(thetaList)
 
             raList_obs, decList_obs = observedFromICRS(raList_icrs, decList_icrs,
                                                        obs_metadata=obs,
@@ -209,7 +215,7 @@ class NativeLonLatTest(unittest.TestCase):
                 # verify that any difference in the round trip is much less
                 # than the distance between the ICRS and the observed geocentric
                 # RA, Dec
-                self.assertLess(distance, dd_icrs_obs*0.01)
+                self.assertLess(distance, dd_icrs_obs * 0.01)
 
     def testRaDecVector(self):
         """
@@ -218,12 +224,13 @@ class NativeLonLatTest(unittest.TestCase):
         """
         np.random.seed(42)
         nSamples = 100
-        latList = np.random.random_sample(nSamples)*360.0
-        lonList = np.random.random_sample(nSamples)*180.0 - 90.0
+        latList = np.random.random_sample(nSamples) * 360.0
+        lonList = np.random.random_sample(nSamples) * 180.0 - 90.0
         raPoint = 95.0
         decPoint = 75.0
 
-        obs = ObservationMetaData(pointingRA=raPoint, pointingDec=decPoint, mjd=53467.89)
+        obs = ObservationMetaData(
+            pointingRA=raPoint, pointingDec=decPoint, mjd=53467.89)
 
         raList, decList = raDecFromNativeLonLat(lonList, latList, obs)
 
@@ -241,9 +248,10 @@ class NativeLonLatTest(unittest.TestCase):
 
         np.random.seed(873)
         nSamples = 1000
-        obs = ObservationMetaData(pointingRA=45.0, pointingDec=-34.5, mjd=54656.76)
-        raList = np.random.random_sample(nSamples)*360.0
-        decList = np.random.random_sample(nSamples)*180.0-90.0
+        obs = ObservationMetaData(
+            pointingRA=45.0, pointingDec=-34.5, mjd=54656.76)
+        raList = np.random.random_sample(nSamples) * 360.0
+        decList = np.random.random_sample(nSamples) * 180.0 - 90.0
 
         lonDeg, latDeg = nativeLonLatFromRaDec(raList, decList, obs)
         lonRad, latRad = _nativeLonLatFromRaDec(np.radians(raList), np.radians(decList), obs)
@@ -264,7 +272,7 @@ def suite():
     return unittest.TestSuite(suites)
 
 
-def run(shouldExit = False):
+def run(shouldExit=False):
     utilsTests.run(suite(), shouldExit)
 
 

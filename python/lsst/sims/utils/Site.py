@@ -8,11 +8,13 @@
     danielsf 1/27/2014
 
 """
+from builtins import object
 
 import numpy as np
 import warnings
 
 __all__ = ["Site"]
+
 
 class LSST_site_parameters(object):
     """
@@ -27,13 +29,13 @@ class LSST_site_parameters(object):
     """
 
     def __init__(self):
-        self.longitude=-70.7494 # in degrees
-        self.latitude=-30.2444 # in degrees
-        self.height=2650.0 # in meters
-        self.temperature=11.5 # in centigrade
-        self.pressure=750.0 # in millibars
-        self.humidity=0.4 # scale 0-1
-        self.lapseRate=0.0065 # in Kelvin per meter
+        self.longitude = -70.7494  # in degrees
+        self.latitude = -30.2444  # in degrees
+        self.height = 2650.0  # in meters
+        self.temperature = 11.5  # in centigrade
+        self.pressure = 750.0  # in millibars
+        self.humidity = 0.4   # scale 0-1
+        self.lapseRate = 0.0065  # in Kelvin per meter
         # the lapse rate was not specified by LSE-30;
         # 0.0065 K/m appears to be the "standard" value
         # see, for example http://mnras.oxfordjournals.org/content/365/4/1235.full
@@ -86,7 +88,6 @@ class Site (object):
         humidity=0.4
         lapseRate=0.0065in Kelvin per meter
     """
-
     def __init__(self,
                  name=None,
                  longitude=None,
@@ -152,7 +153,6 @@ class Site (object):
             if lapseRate is None:
                 lapseRate = default_params.lapseRate
 
-
         if longitude is not None:
             self._longitude_rad = np.radians(longitude)
         else:
@@ -168,9 +168,8 @@ class Site (object):
         self._height = height
         self._pressure = pressure
 
-
         if temperature is not None:
-            self._temperature_kelvin = temperature+273.15 # in Kelvin
+            self._temperature_kelvin = temperature + 273.15  # in Kelvin
         else:
             self._temperature_kelvin = None
 
@@ -217,15 +216,13 @@ class Site (object):
         if self.lapseRate is None:
             list_of_nones.append('lapseRate')
 
-
-        if len(list_of_nones)!=0:
+        if len(list_of_nones) != 0:
             msg = "The following attributes of your Site were None:\n"
             for name in list_of_nones:
                 msg += "%s\n" % name
             msg += "If you want these to just default to LSST values,\n"
             msg += "instantiate your Site with name='LSST'"
             warnings.warn(msg)
-
 
     @property
     def name(self):
@@ -234,14 +231,12 @@ class Site (object):
         """
         return self._name
 
-
     @property
     def longitude_rad(self):
         """
         observatory longitude in radians
         """
         return self._longitude_rad
-
 
     @property
     def longitude(self):
@@ -250,14 +245,12 @@ class Site (object):
         """
         return self._longitude_deg
 
-
     @property
     def latitude_rad(self):
         """
         observatory latitude in radians
         """
         return self._latitude_rad
-
 
     @property
     def latitude(self):
@@ -266,14 +259,12 @@ class Site (object):
         """
         return self._latitude_deg
 
-
     @property
     def temperature(self):
         """
         mean temperature in centigrade
         """
         return self._temperature_centigrade
-
 
     @property
     def temperature_kelvin(self):
@@ -282,14 +273,12 @@ class Site (object):
         """
         return self._temperature_kelvin
 
-
     @property
     def height(self):
         """
         height in meters
         """
         return self._height
-
 
     @property
     def pressure(self):
@@ -298,14 +287,12 @@ class Site (object):
         """
         return self._pressure
 
-
     @property
     def humidity(self):
         """
         mean humidity in the range 0-1
         """
         return self._humidity
-
 
     @property
     def lapseRate(self):

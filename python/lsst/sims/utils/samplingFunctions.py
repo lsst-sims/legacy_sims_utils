@@ -1,8 +1,9 @@
+from __future__ import division
 import numpy as np
-from lsst.sims.utils import ObservationMetaData
 import warnings
 
 __all__ = ['spatiallySample_obsmetadata', 'samplePatchOnSphere']
+
 
 def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
     """
@@ -19,7 +20,7 @@ def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
         number of samples
 
     seed: integer, optional, defaults to 1
-        Random Seed used in generating random values 
+        Random Seed used in generating random values
     Returns
     -------
     tuple of ravals, decvalues in radians
@@ -27,15 +28,15 @@ def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
 
     phi = obsmetadata.pointingRA
     theta = obsmetadata.pointingDec
-        
+
     if obsmetadata.boundType != 'box':
         warnings.warn('Warning: sampling obsmetata with provided boundLen and'
-                      'boundType="box", despite diff boundType specified\n') 
+                      'boundType="box", despite diff boundType specified\n')
     equalrange = obsmetadata.boundLength
     ravals, thetavals = samplePatchOnSphere(phi=phi,
-					    theta=theta,
-					    delta=equalrange,
-					    size=size,
+                                            theta=theta,
+                                            delta=equalrange,
+                                            size=size,
                                             seed=seed)
     return ravals, thetavals
 
@@ -48,15 +49,15 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     patch. Here, the coordinate system is the usual
     spherical coordinate system but with the azimuthal angle theta going from
     90 degrees at the North Pole, to -90 degrees at the South Pole, through
-    0. at the equator. 
-    
+    0. at the equator.
+
     This function is not equipped to handle wrap-around the ranges of theta
     phi and therefore does not work at the poles.
- 
+
     Parameters
     ----------
     phi: float, mandatory, degrees
-	center of the spherical patch in ra with range 
+        center of the spherical patch in ra with range
     theta: float, mandatory, degrees
     delta: float, mandatory, degrees
     size: int, mandatory
@@ -65,7 +66,7 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
         random Seed used for generating values
     Returns
     -------
-    tuple of (phivals, thetavals) where phivals and thetavals are arrays of 
+    tuple of (phivals, thetavals) where phivals and thetavals are arrays of
         size size in degrees.
     """
     np.random.seed(seed)
@@ -77,21 +78,22 @@ def samplePatchOnSphere(phi, theta, delta, size, seed=1):
     delta = np.radians(delta)
 
     phivals = 2. * delta * u + (phi - delta)
-    phivals = np.where ( phivals >= 0., phivals, phivals + 2. * np.pi)
-    
+    phivals = np.where(phivals >= 0., phivals, phivals + 2. * np.pi)
+
     # use conventions in spherical coordinates
-    theta = np.pi/2.0 - theta
- 
+    theta = np.pi / 2.0 - theta
+
     thetamax = theta + delta
     thetamin = theta - delta
 
-    if thetamax > np.pi or thetamin < 0. :
+    if thetamax > np.pi or thetamin < 0.:
         raise ValueError('Function not implemented to cover wrap around poles')
 
-    # Cumulative Density Function is cos(thetamin) - cos(theta) / cos(thetamin) - cos(thetamax)
+    # Cumulative Density Function is cos(thetamin) - cos(theta) /
+    # cos(thetamin) - cos(thetamax)
     a = np.cos(thetamin) - np.cos(thetamax)
     thetavals = np.arccos(-v * a + np.cos(thetamin))
 
     # Get back to -pi/2 to pi/2 range of decs
-    thetavals = np.pi/2.0 - thetavals 
-    return np.degrees(phivals) , np.degrees(thetavals)
+    thetavals = np.pi / 2.0 - thetavals
+    return np.degrees(phivals), np.degrees(thetavals)

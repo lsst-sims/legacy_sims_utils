@@ -1,3 +1,5 @@
+from __future__ import division
+from builtins import zip
 import numpy as np
 import numbers
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
@@ -38,11 +40,11 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     @param [out] the native latitude of the transformed point(s) in radians
     """
 
-    x = -1.0*np.cos(lat)*np.sin(lon)
-    y = np.cos(lat)*np.cos(lon)
+    x = -1.0 * np.cos(lat) * np.sin(lon)
+    y = np.cos(lat) * np.cos(lon)
     z = np.sin(lat)
 
-    alpha = latPointing - 0.5*np.pi
+    alpha = latPointing - 0.5 * np.pi
     beta = lonPointing
 
     ca = np.cos(alpha)
@@ -50,13 +52,13 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     cb = np.cos(beta)
     sb = np.sin(beta)
 
-    v2 = np.dot(np.array([[1.0, 0.0, 0.0], [0.0, ca, sa], [0.0, -1.0*sa, ca]]),
+    v2 = np.dot(np.array([[1.0, 0.0, 0.0], [0.0, ca, sa], [0.0, -1.0 * sa, ca]]),
                 np.dot(np.array([[cb, sb, 0.0], [-sb, cb, 0.0], [0.0, 0.0, 1.0]]), np.array([x, y, z])))
 
-    cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
+    cc = np.sqrt(v2[0] * v2[0] + v2[1] * v2[1])
     latOut = np.arctan2(v2[2], cc)
 
-    _y = v2[1]/np.cos(latOut)
+    _y = v2[1] / np.cos(latOut)
     _ra_raw = np.arccos(_y)
 
     # control for _y=1.0, -1.0 but actually being stored as just outside
@@ -64,7 +66,7 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
     if hasattr(_ra_raw, '__len__'):
         _ra = np.array([rr
                         if not np.isnan(rr)
-                        else 0.5*np.pi*(1.0-np.sign(yy))
+                        else 0.5 * np.pi * (1.0 - np.sign(yy))
                         for rr, yy in zip(_ra_raw, _y)])
     else:
         if np.isnan(_ra_raw):
@@ -83,13 +85,13 @@ def _nativeLonLatFromPointing(lon, lat, lonPointing, latPointing):
         elif (np.abs(_x) > 1.0e-9 and np.sign(_x) != np.sign(v2[0])) or \
              (np.abs(_y) > 1.0e-9 and np.sign(_y) != np.sign(v2[1])):
 
-            lonOut = 2.0*np.pi-_ra
+            lonOut = 2.0 * np.pi - _ra
         else:
             lonOut = _ra
     else:
-        _lonOut = [2.0*np.pi-rr
-                   if (np.abs(xx) > 1.0e-9 and np.sign(xx) != np.sign(v2_0))
-                   or (np.abs(yy) > 1.0e-9 and np.sign(yy) != np.sign(v2_1))
+        _lonOut = [2.0 * np.pi - rr
+                   if (np.abs(xx) > 1.0e-9 and np.sign(xx) != np.sign(v2_0)) or
+                   (np.abs(yy) > 1.0e-9 and np.sign(yy) != np.sign(v2_1))
                    else rr
                    for rr, xx, yy, v2_0, v2_1 in zip(_ra, _x, _y, v2[0], v2[1])]
 
@@ -121,11 +123,11 @@ def _lonLatFromNativeLonLat(nativeLon, nativeLat, lonPointing, latPointing):
     @param [in] latOut is the latitude of the transformed point(s)
     in the same coordinate system as the telescope pointing in radians
     """
-    x = -1.0*np.cos(nativeLat)*np.sin(nativeLon)
-    y = np.cos(nativeLat)*np.cos(nativeLon)
+    x = -1.0 * np.cos(nativeLat) * np.sin(nativeLon)
+    y = np.cos(nativeLat) * np.cos(nativeLon)
     z = np.sin(nativeLat)
 
-    alpha = 0.5*np.pi - latPointing
+    alpha = 0.5 * np.pi - latPointing
     beta = lonPointing
 
     ca = np.cos(alpha)
@@ -133,13 +135,13 @@ def _lonLatFromNativeLonLat(nativeLon, nativeLat, lonPointing, latPointing):
     cb = np.cos(beta)
     sb = np.sin(beta)
 
-    v2 = np.dot(np.array([[cb, -1.0*sb, 0.0], [sb, cb, 0.0], [0.0, 0.0, 1.0]]),
-                np.dot(np.array([[1.0, 0.0, 0.0], [0.0, ca, sa], [0.0, -1.0*sa, ca]]), np.array([x, y, z])))
+    v2 = np.dot(np.array([[cb, -1.0 * sb, 0.0], [sb, cb, 0.0], [0.0, 0.0, 1.0]]),
+                np.dot(np.array([[1.0, 0.0, 0.0], [0.0, ca, sa], [0.0, -1.0 * sa, ca]]), np.array([x, y, z])))
 
-    cc = np.sqrt(v2[0]*v2[0]+v2[1]*v2[1])
+    cc = np.sqrt(v2[0] * v2[0] + v2[1] * v2[1])
     latOut = np.arctan2(v2[2], cc)
 
-    _y = v2[1]/np.cos(latOut)
+    _y = v2[1] / np.cos(latOut)
     _lonOut = np.arccos(_y)
     _x = -np.sin(_lonOut)
 
@@ -149,13 +151,13 @@ def _lonLatFromNativeLonLat(nativeLon, nativeLat, lonPointing, latPointing):
         elif (np.abs(_x) > 1.0e-9 and np.sign(_x) != np.sign(v2[0])) or \
              (np.abs(_y) > 1.0e-9 and np.sign(_y) != np.sign(v2[1])):
 
-            lonOut = 2.0*np.pi-_lonOut
+            lonOut = 2.0 * np.pi - _lonOut
         else:
             lonOut = _lonOut
     else:
-        _lonOut = [2.0*np.pi-rr
-                   if (np.abs(xx) > 1.0e-9 and np.sign(xx) != np.sign(v2_0))
-                   or (np.abs(yy) > 1.0e-9 and np.sign(yy) != np.sign(v2_1))
+        _lonOut = [2.0 * np.pi - rr
+                   if (np.abs(xx) > 1.0e-9 and np.sign(xx) != np.sign(v2_0)) or
+                   (np.abs(yy) > 1.0e-9 and np.sign(yy) != np.sign(v2_1))
                    else rr
                    for rr, xx, yy, v2_0, v2_1 in zip(_lonOut, _x, _y, v2[0], v2[1])]
 

@@ -1,3 +1,5 @@
+from builtins import zip
+from builtins import object
 import numpy as np
 import numbers
 from .SpatialBounds import SpatialBounds
@@ -199,10 +201,10 @@ class ObservationMetaData(object):
                 raise RuntimeError('You cannot set %s if you have not set ' % inputName +
                                    'bandpass in ObservationMetaData')
 
-            if hasattr(self._bandpass, '__iter__'):
+            if hasattr(self._bandpass, '__iter__') and not isinstance(self._bandpass, str):
                 bandpassIsList = True
 
-            if hasattr(inputValue, '__iter__'):
+            if hasattr(inputValue, '__iter__') and not isinstance(inputValue, str):
                 inputIsList = True
 
             if bandpassIsList and not inputIsList:

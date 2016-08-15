@@ -2,6 +2,7 @@
 This file contains coordinate transformation methods that are very thin wrappers
 of palpy methods, or that have no dependence on palpy at all
 """
+from __future__ import division
 
 import numpy as np
 import numbers
@@ -42,7 +43,7 @@ def calcLmstLast(mjd, longRad):
 
     if longRadIsArray and mjdIsArray:
         if len(longRad) != len(mjd):
-            raise RuntimeError("in calcLmstLast mjd and longRad have different lengths")
+            raise RuntimeError("In calcLmstLast mjd and longRad have different lengths")
 
     valid_type = False
     if isinstance(mjd, np.ndarray) and isinstance(longRad, np.ndarray):
@@ -69,14 +70,14 @@ def calcLmstLast(mjd, longRad):
         longDeg = np.where(longDeg0 > 180.0, longDeg0 - 360.0, longDeg0)
     else:
         if longDeg0 > 180.:
-            longDeg = longDeg0-360.
+            longDeg = longDeg0 - 360.
         else:
             longDeg = longDeg0
 
-    hrs = longDeg/15.
+    hrs = longDeg / 15.0
     gmstgast = calcGmstGast(mjd)
-    lmst = gmstgast[0]+hrs
-    last = gmstgast[1]+hrs
+    lmst = gmstgast[0] + hrs
+    last = gmstgast[1] + hrs
     lmst %= 24.
     last %= 24.
     return lmst, last
@@ -185,10 +186,10 @@ def cartesianFromSpherical(longitude, latitude):
         valid_type = True
 
     if not valid_type:
-        raise RuntimeError("longitude and latitude must both be either numpy arrays or numbers")
+        raise RuntimeError("Longitude and latitude must both be either numpy arrays or numbers")
 
     cosDec = np.cos(latitude)
-    return np.array([np.cos(longitude)*cosDec, np.sin(longitude)*cosDec, np.sin(latitude)]).transpose()
+    return np.array([np.cos(longitude) * cosDec, np.sin(longitude) * cosDec, np.sin(latitude)]).transpose()
 
 
 def sphericalFromCartesian(xyz):
@@ -204,16 +205,16 @@ def sphericalFromCartesian(xyz):
     """
 
     if not isinstance(xyz, np.ndarray):
-        raise RuntimeError("you need to pass a numpy array to sphericalFromCartesian")
+        raise RuntimeError("You need to pass a numpy array to sphericalFromCartesian")
 
     if len(xyz.shape) > 1:
         rad = np.sqrt(np.power(xyz, 2).sum(axis=1))
         longitude = np.arctan2(xyz[:, 1], xyz[:, 0])
-        latitude = np.arcsin(xyz[:, 2]/rad)
+        latitude = np.arcsin(xyz[:, 2] / rad)
     else:
         rad = np.sqrt(np.dot(xyz, xyz))
         longitude = np.arctan2(xyz[1], xyz[0])
-        latitude = np.arcsin(xyz[2]/rad)
+        latitude = np.arcsin(xyz[2] / rad)
 
     return longitude, latitude
 
@@ -236,7 +237,7 @@ def rotationMatrixFromVectors(v1, v2):
 
     # Calculate the axis of rotation by the cross product of v1 and v2
     cross = np.cross(v1, v2)
-    cross = cross/np.sqrt(np.dot(cross, cross))
+    cross = cross / np.sqrt(np.dot(cross, cross))
 
     # calculate the angle of rotation via dot product
     angle = np.arccos(np.dot(v1, v2))
@@ -245,12 +246,14 @@ def rotationMatrixFromVectors(v1, v2):
 
     # calculate the corresponding rotation matrix
     # http://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
-    rot = [[cosDot + cross[0]*cross[0]*(1-cosDot), -cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1],
-            cross[1]*sinDot + (1-cosDot)*cross[0]*cross[2]],
-           [cross[2]*sinDot+(1-cosDot)*cross[0]*cross[1], cosDot + (1-cosDot)*cross[1]*cross[1],
-            -cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2]],
-           [-cross[1]*sinDot+(1-cosDot)*cross[0]*cross[2], cross[0]*sinDot+(1-cosDot)*cross[1]*cross[2],
-            cosDot + (1-cosDot)*(cross[2]*cross[2])]]
+    rot = [[cosDot + cross[0] * cross[0] * (1 - cosDot), -cross[2] * sinDot +
+            (1 - cosDot) * cross[0] * cross[1],
+            cross[1] * sinDot + (1 - cosDot) * cross[0] * cross[2]],
+           [cross[2] * sinDot + (1 - cosDot) * cross[0] * cross[1], cosDot +
+            (1 - cosDot) * cross[1] * cross[1],
+            -cross[0] * sinDot + (1 - cosDot) * cross[1] * cross[2]],
+           [-cross[1] * sinDot + (1 - cosDot) * cross[0] * cross[2], cross[0] * sinDot +
+            (1 - cosDot) * cross[1] * cross[2], cosDot + (1 - cosDot) * (cross[2] * cross[2])]]
 
     return rot
 
@@ -284,7 +287,7 @@ def calcGmstGast(mjd):
     """
 
     date = np.floor(mjd)
-    ut1 = mjd-date
+    ut1 = mjd - date
     if isinstance(mjd, np.ndarray):
         gmst = palpy.gmstaVector(date, ut1)
     else:
@@ -293,10 +296,10 @@ def calcGmstGast(mjd):
     eqeq = equationOfEquinoxes(mjd)
     gast = gmst + eqeq
 
-    gmst = gmst*24.0/(2.0*np.pi)
+    gmst = gmst * 24.0 / (2.0 * np.pi)
     gmst %= 24.0
 
-    gast = gast*24.0/(2.0*np.pi)
+    gast = gast * 24.0 / (2.0 * np.pi)
     gast %= 24.0
 
     return gmst, gast
@@ -318,9 +321,9 @@ def haversine(long1, lat1, long2, lat2):
 
     From http://en.wikipedia.org/wiki/Haversine_formula
     """
-    t1 = np.sin(lat2/2.-lat1/2.)**2
-    t2 = np.cos(lat1)*np.cos(lat2)*np.sin(long2/2. - long1/2.)**2
-    return 2*np.arcsin(np.sqrt(t1 + t2))
+    t1 = np.sin(lat2 / 2.0 - lat1 / 2.0)**2
+    t2 = np.cos(lat1) * np.cos(lat2) * np.sin(long2 / 2.0 - long1 / 2.0)**2
+    return 2 * np.arcsin(np.sqrt(t1 + t2))
 
 
 def arcsecFromRadians(value):
@@ -332,7 +335,7 @@ def arcsecFromRadians(value):
     if value is None:
         return None
 
-    return 3600.0*np.degrees(value)
+    return 3600.0 * np.degrees(value)
 
 
 def radiansFromArcsec(value):
@@ -344,7 +347,7 @@ def radiansFromArcsec(value):
     if value is None:
         return None
 
-    return np.radians(value/3600.0)
+    return np.radians(value / 3600.0)
 
 
 def arcsecFromDegrees(value):
@@ -356,7 +359,7 @@ def arcsecFromDegrees(value):
     if value is None:
         return None
 
-    return 3600.0*value
+    return 3600.0 * value
 
 
 def degreesFromArcsec(value):
@@ -368,4 +371,4 @@ def degreesFromArcsec(value):
     if value is None:
         return None
 
-    return value/3600.0
+    return value / 3600.0

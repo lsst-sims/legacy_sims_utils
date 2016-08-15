@@ -1,3 +1,4 @@
+from builtins import zip
 import numpy as np
 import palpy
 from lsst.sims.utils.CodeUtilities import _validate_inputs
