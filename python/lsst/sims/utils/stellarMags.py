@@ -108,7 +108,7 @@ def stellarMags(stellarType, rmag=19.):
     # good = np.where(stellarMags.data['stellarType'] == stellarType)
     if stellarType not in stellarMags.data:
         message = 'Received stellarType %s' % stellarType
-        message += ' but expected one of %s' % ', '.join(list(stellarMags.data.keys()))
+        message += ' but expected one of %s' % ', '.join(stellarMags.data.keys())
         raise ValueError(message)
 
     results['r'] = rmag
