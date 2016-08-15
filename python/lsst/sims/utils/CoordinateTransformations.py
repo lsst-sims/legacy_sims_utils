@@ -43,8 +43,7 @@ def calcLmstLast(mjd, longRad):
 
     if longRadIsArray and mjdIsArray:
         if len(longRad) != len(mjd):
-            raise RuntimeError(
-                "in calcLmstLast mjd and longRad have different lengths")
+            raise RuntimeError("In calcLmstLast mjd and longRad have different lengths")
 
     valid_type = False
     if isinstance(mjd, np.ndarray) and isinstance(longRad, np.ndarray):
@@ -187,8 +186,7 @@ def cartesianFromSpherical(longitude, latitude):
         valid_type = True
 
     if not valid_type:
-        raise RuntimeError(
-            "longitude and latitude must both be either numpy arrays or numbers")
+        raise RuntimeError("Longitude and latitude must both be either numpy arrays or numbers")
 
     cosDec = np.cos(latitude)
     return np.array([np.cos(longitude) * cosDec, np.sin(longitude) * cosDec, np.sin(latitude)]).transpose()
@@ -207,8 +205,7 @@ def sphericalFromCartesian(xyz):
     """
 
     if not isinstance(xyz, np.ndarray):
-        raise RuntimeError(
-            "you need to pass a numpy array to sphericalFromCartesian")
+        raise RuntimeError("You need to pass a numpy array to sphericalFromCartesian")
 
     if len(xyz.shape) > 1:
         rad = np.sqrt(np.power(xyz, 2).sum(axis=1))
@@ -233,12 +230,10 @@ def rotationMatrixFromVectors(v1, v2):
     '''
 
     if np.abs(np.sqrt(np.dot(v1, v1)) - 1.0) > 0.01:
-        raise RuntimeError(
-            "v1 in rotationMatrixFromVectors is not a unit vector")
+        raise RuntimeError("v1 in rotationMatrixFromVectors is not a unit vector")
 
     if np.abs(np.sqrt(np.dot(v2, v2)) - 1.0) > 0.01:
-        raise RuntimeError(
-            "v2 in rotationMatrixFromVectors is not a unit vector")
+        raise RuntimeError("v2 in rotationMatrixFromVectors is not a unit vector")
 
     # Calculate the axis of rotation by the cross product of v1 and v2
     cross = np.cross(v1, v2)
@@ -258,8 +253,7 @@ def rotationMatrixFromVectors(v1, v2):
             (1 - cosDot) * cross[1] * cross[1],
             -cross[0] * sinDot + (1 - cosDot) * cross[1] * cross[2]],
            [-cross[1] * sinDot + (1 - cosDot) * cross[0] * cross[2], cross[0] * sinDot +
-            (1 - cosDot) * cross[1] * cross[2],
-             cosDot + (1 - cosDot) * (cross[2] * cross[2])]]
+            (1 - cosDot) * cross[1] * cross[2], cosDot + (1 - cosDot) * (cross[2] * cross[2])]]
 
     return rot
 

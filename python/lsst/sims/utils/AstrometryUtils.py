@@ -99,8 +99,7 @@ def distanceToSun(ra, dec, mjd, epoch=2000.0):
     @param [out] distance on the sky to the Sun in degrees
     """
 
-    return np.degrees(_distanceToSun(np.radians(ra), np.radians(dec),
-                                     mjd, epoch=epoch))
+    return np.degrees(_distanceToSun(np.radians(ra), np.radians(dec), mjd, epoch=epoch))
 
 
 def refractionCoefficients(wavelength=0.5, site=None):
@@ -120,8 +119,7 @@ def refractionCoefficients(wavelength=0.5, site=None):
     precision = 1.e-10
 
     if site is None:
-        raise RuntimeError(
-            "Cannot call refractionCoefficients; no site information")
+        raise RuntimeError("Cannot call refractionCoefficients; no site information")
 
     # TODO the latitude in refco needs to be astronomical latitude,
     # not geodetic latitude
@@ -380,8 +378,7 @@ def _applyProperMotion(ra, dec, pm_ra, pm_dec, parallax, v_rad,
         raOut, decOut = palpy.pmVector(ra, dec, pm_ra_corrected, pm_dec,
                                        parallaxArcsec, v_rad, epoch, julianEpoch)
     else:
-        raOut, decOut = palpy.pm(
-            ra, dec, pm_ra_corrected, pm_dec, parallaxArcsec, v_rad, epoch, julianEpoch)
+        raOut, decOut = palpy.pm(ra, dec, pm_ra_corrected, pm_dec, parallaxArcsec, v_rad, epoch, julianEpoch)
 
     return np.array([raOut, decOut])
 
@@ -878,23 +875,18 @@ def _appGeoFromObserved(ra, dec, includeRefraction=True,
     in radians)
     """
 
-    are_arrays = _validate_inputs(
-        [ra, dec], ['ra', 'dec'], "appGeoFromObserved")
+    are_arrays = _validate_inputs([ra, dec], ['ra', 'dec'], "appGeoFromObserved")
 
     if obs_metadata is None:
-        raise RuntimeError(
-            "Cannot call appGeoFromObserved without an obs_metadata")
+        raise RuntimeError("Cannot call appGeoFromObserved without an obs_metadata")
 
     if obs_metadata.site is None:
-        raise RuntimeError(
-            "Cannot call appGeoFromObserved: obs_metadata has no site info")
+        raise RuntimeError("Cannot call appGeoFromObserved: obs_metadata has no site info")
 
     if obs_metadata.mjd is None:
-        raise RuntimeError(
-            "Cannot call appGeoFromObserved: obs_metadata has no mjd")
+        raise RuntimeError("Cannot call appGeoFromObserved: obs_metadata has no mjd")
 
-    obsPrms = _calculateObservatoryParameters(
-        obs_metadata, wavelength, includeRefraction)
+    obsPrms = _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
 
     if are_arrays:
         raOut, decOut = palpy.oapqkVector('r', ra, dec, obsPrms)
@@ -1026,16 +1018,13 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
                      "observedFromICRS")
 
     if obs_metadata is None:
-        raise RuntimeError(
-            "cannot call observedFromICRS; obs_metadata is none")
+        raise RuntimeError("Cannot call observedFromICRS; obs_metadata is none")
 
     if obs_metadata.mjd is None:
-        raise RuntimeError(
-            "cannot call observedFromICRS; obs_metadata.mjd is none")
+        raise RuntimeError("Cannot call observedFromICRS; obs_metadata.mjd is none")
 
     if epoch is None:
-        raise RuntimeError(
-            "cannot call observedFromICRS; you have not specified an epoch")
+        raise RuntimeError("Cannot call observedFromICRS; you have not specified an epoch")
 
     ra_apparent, dec_apparent = _appGeoFromICRS(ra, dec, pm_ra=pm_ra,
                                                 pm_dec=pm_dec, parallax=parallax,
@@ -1117,16 +1106,13 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
     _validate_inputs([ra, dec], ['ra', 'dec'], "icrsFromObserved")
 
     if obs_metadata is None:
-        raise RuntimeError(
-            "cannot call icrsFromObserved; obs_metadata is None")
+        raise RuntimeError("Cannot call icrsFromObserved; obs_metadata is None")
 
     if obs_metadata.mjd is None:
-        raise RuntimeError(
-            "cannot call icrsFromObserved; obs_metadata.mjd is None")
+        raise RuntimeError("Cannot call icrsFromObserved; obs_metadata.mjd is None")
 
     if epoch is None:
-        raise RuntimeError(
-            "cannot call icrsFromObserved; you have not specified an epoch")
+        raise RuntimeError("Cannot call icrsFromObserved; you have not specified an epoch")
 
     ra_app, dec_app = _appGeoFromObserved(ra, dec, obs_metadata=obs_metadata,
                                           includeRefraction=includeRefraction)

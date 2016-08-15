@@ -253,7 +253,6 @@ def getRotTelPos(ra, dec, obs, rotSky):
     of the exposure (rotTelPos is calculated at the beginning of the exposure;
     expmjd is reckoned at the middle of the exposure).
     """
-
     rotTel = _getRotTelPos(np.radians(ra), np.radians(dec),
                            obs, np.radians(rotSky))
 

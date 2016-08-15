@@ -30,8 +30,8 @@ def _validate_inputs(input_list, input_names, method_name):
     elif isinstance(input_list[0], numbers.Number):
         desired_type = numbers.Number
     else:
-        raise RuntimeError("The arg %s input to method %s " % (input_names[0], method_name)
-                           + "should be either a number or a numpy array")
+        raise RuntimeError("The arg %s input to method %s " % (input_names[0], method_name) +
+                           "should be either a number or a numpy array")
 
     valid_type = True
     bad_names = []
@@ -55,8 +55,8 @@ def _validate_inputs(input_list, input_names, method_name):
             if len(ii) != len(input_list[0]):
                 same_length = False
         if not same_length:
-            raise RuntimeError("The arrays input to %s " % method_name
-                               + "all need to have the same length")
+            raise RuntimeError("The arrays input to %s " % method_name +
+                               "all need to have the same length")
 
     if desired_type is np.ndarray:
         return True

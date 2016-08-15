@@ -90,8 +90,7 @@ class SpatialBounds(with_metaclass(SpatialBoundsMetaClass, object)):
         if name in self.SBregistry:
             return self.SBregistry[name](*args, **kwargs)
         else:
-            raise RuntimeError(
-                "There is no SpatialBounds class keyed to %s" % name)
+            raise RuntimeError("There is no SpatialBounds class keyed to %s" % name)
 
 
 class CircleBounds(SpatialBounds):
@@ -114,22 +113,19 @@ class CircleBounds(SpatialBounds):
             try:
                 ra = np.float(ra)
             except:
-                raise RuntimeError(
-                    'in CircleBounds, ra must be a float; you have %s' % type(ra))
+                raise RuntimeError('In CircleBounds, ra must be a float; you have %s' % type(ra))
 
         if not (isinstance(dec, float) or isinstance(dec, np.float)):
             try:
                 dec = np.float(dec)
             except:
-                raise RuntimeError(
-                    'in CircleBounds, dec must be a float; you hve %s' % type(dec))
+                raise RuntimeError('In CircleBounds, dec must be a float; you have %s' % type(dec))
 
         if not (isinstance(radius, float) or isinstance(radius, np.float)):
             try:
                 radius = np.float(radius)
             except:
-                raise RuntimeError(
-                    'in CircleBounds, radius must be a float; you have %s' % type(radius))
+                raise RuntimeError('In CircleBounds, radius must be a float; you have %s' % type(radius))
 
         self.RA = ra
         self.DEC = dec
@@ -211,15 +207,13 @@ class BoxBounds(SpatialBounds):
             try:
                 ra = np.float(ra)
             except:
-                raise RuntimeError(
-                    'in BoxBounds ra must be a float; you have %s' % type(ra))
+                raise RuntimeError('In BoxBounds ra must be a float; you have %s' % type(ra))
 
         if not (isinstance(dec, float) or isinstance(dec, np.float)):
             try:
                 dec = np.float(dec)
             except:
-                raise RuntimeError(
-                    'in BoxBounds dec must be a float; you have %s' % type(dec))
+                raise RuntimeError('In BoxBounds dec must be a float; you have %s' % type(dec))
 
         self.RA = ra
         self.DEC = dec
