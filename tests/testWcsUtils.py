@@ -63,8 +63,7 @@ class NativeLonLatTest(unittest.TestCase):
         for raPointing_icrs, decPointing_icrs, mjd in \
                 zip(raPointingList_icrs, decPointingList_icrs, mjdList):
 
-            obs = ObservationMetaData(
-                pointingRA=raPointing_icrs, pointingDec=decPointing_icrs, mjd=mjd)
+            obs = ObservationMetaData(pointingRA=raPointing_icrs, pointingDec=decPointing_icrs, mjd=mjd)
             raList_icrs = np.random.random_sample(nStars) * 360.0
             decList_icrs = np.random.random_sample(nStars) * 180.0 - 90.0
             raList_obs, decList_obs = observedFromICRS(raList_icrs, decList_icrs, obs_metadata=obs,
@@ -87,8 +86,7 @@ class NativeLonLatTest(unittest.TestCase):
                 cosDec = np.cos(decRad)
 
                 # the three dimensional position of the star
-                controlPosition = np.array(
-                    [-cosDec * sinRa, cosDec * cosRa, sinDec])
+                controlPosition = np.array([-cosDec * sinRa, cosDec * cosRa, sinDec])
 
                 # calculate the rotation matrices needed to transform the
                 # x, y, and z axes into the local x, y, and z axes
@@ -130,8 +128,7 @@ class NativeLonLatTest(unittest.TestCase):
                     transformedPosition[2] * zAxis
 
                 # assert that testPosition and controlPosition should be equal
-                distance = np.sqrt(
-                    np.power(controlPosition - testPosition, 2).sum())
+                distance = np.sqrt(np.power(controlPosition - testPosition, 2).sum())
                 self.assertLess(distance, 1.0e-12)
 
     def testNativeLonLatVector(self):
@@ -141,8 +138,7 @@ class NativeLonLatTest(unittest.TestCase):
         and then comparing them to results computed in an element-wise way
         """
 
-        obs = ObservationMetaData(
-            pointingRA=123.0, pointingDec=43.0, mjd=53467.2)
+        obs = ObservationMetaData(pointingRA=123.0, pointingDec=43.0, mjd=53467.2)
 
         nSamples = 100
         np.random.seed(42)
@@ -184,8 +180,7 @@ class NativeLonLatTest(unittest.TestCase):
 
             rp = raZenith + rrp * np.cos(thetap)
             dp = decZenith + rrp * np.sin(thetap)
-            obs = ObservationMetaData(
-                pointingRA=rp, pointingDec=dp, mjd=mjd, site=site)
+            obs = ObservationMetaData(pointingRA=rp, pointingDec=dp, mjd=mjd, site=site)
 
             raList_icrs = (raZenith + rrList * np.cos(thetaList)) % 360.0
             decList_icrs = decZenith + rrList * np.sin(thetaList)
@@ -197,10 +192,8 @@ class NativeLonLatTest(unittest.TestCase):
             # calculate the distance between the ICRS position and the observed
             # geocentric position
             dd_icrs_obs_list = arcsecFromRadians(haversine(np.radians(raList_icrs),
-                                                           np.radians(
-                                                               decList_icrs),
-                                                           np.radians(
-                                                               raList_obs),
+                                                           np.radians(decList_icrs),
+                                                           np.radians(raList_obs),
                                                            np.radians(decList_obs)))
 
             for rr, dd, dd_icrs_obs in zip(raList_icrs, decList_icrs, dd_icrs_obs_list):
@@ -261,14 +254,12 @@ class NativeLonLatTest(unittest.TestCase):
         decList = np.random.random_sample(nSamples) * 180.0 - 90.0
 
         lonDeg, latDeg = nativeLonLatFromRaDec(raList, decList, obs)
-        lonRad, latRad = _nativeLonLatFromRaDec(
-            np.radians(raList), np.radians(decList), obs)
+        lonRad, latRad = _nativeLonLatFromRaDec(np.radians(raList), np.radians(decList), obs)
         np.testing.assert_array_almost_equal(np.radians(lonDeg), lonRad, 15)
         np.testing.assert_array_almost_equal(np.radians(latDeg), latRad, 15)
 
         raDeg, decDeg = raDecFromNativeLonLat(raList, decList, obs)
-        raRad, decRad = _raDecFromNativeLonLat(
-            np.radians(raList), np.radians(decList), obs)
+        raRad, decRad = _raDecFromNativeLonLat(np.radians(raList), np.radians(decList), obs)
         np.testing.assert_array_almost_equal(np.radians(raDeg), raRad, 15)
         np.testing.assert_array_almost_equal(np.radians(decDeg), decRad, 15)
 

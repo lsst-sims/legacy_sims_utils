@@ -183,8 +183,8 @@ class testDegrees(unittest.TestCase):
     def testGetRotTelPos(self):
         rotSkyList = np.random.random_sample(len(self.raList)) * 2.0 * np.pi
         mjd = 56789.3
-        obsTemp = ObservationMetaData(mjd=mjd, site=Site(
-            longitude=self.lon, latitude=self.lat, name='LSST'))
+        obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon,
+                                                         latitude=self.lat, name='LSST'))
 
         rotTelRad = utils._getRotTelPos(self.raList, self.decList,
                                         obsTemp, rotSkyList)
@@ -286,10 +286,9 @@ class AstrometryDegreesTest(unittest.TestCase):
                                                      mjd=ModifiedJulianDate(TAI=self.mjdList[0]))
 
             raDeg, decDeg = utils.applyProperMotion(np.degrees(ra), np.degrees(dec),
-                                                    utils.arcsecFromRadians(
-                                                        pm_ra), utils.arcsecFromRadians(pm_dec),
-                                                    utils.arcsecFromRadians(
-                                                        px), v_rad,
+                                                    utils.arcsecFromRadians(pm_ra),
+                                                    utils.arcsecFromRadians(pm_dec),
+                                                    utils.arcsecFromRadians(px), v_rad,
                                                     mjd=ModifiedJulianDate(TAI=self.mjdList[0]))
 
             self.assertAlmostEqual(utils.arcsecFromRadians(
@@ -309,14 +308,10 @@ class AstrometryDegreesTest(unittest.TestCase):
                                                               mjd=ModifiedJulianDate(TAI=mjd))
 
                         raDeg, decDeg = utils.appGeoFromICRS(np.degrees(self.raList),
-                                                             np.degrees(
-                                                                 self.decList),
-                                                             utils.arcsecFromRadians(
-                                                                 pmRaList),
-                                                             utils.arcsecFromRadians(
-                                                                 pmDecList),
-                                                             utils.arcsecFromRadians(
-                                                                 pxList),
+                                                             np.degrees(self.decList),
+                                                             utils.arcsecFromRadians(pmRaList),
+                                                             utils.arcsecFromRadians(pmDecList),
+                                                             utils.arcsecFromRadians(pxList),
                                                              vRadList,
                                                              mjd=ModifiedJulianDate(TAI=mjd))
 
@@ -400,12 +395,10 @@ class AstrometryDegreesTest(unittest.TestCase):
                                                          obs_metadata=obs)
 
                 dRa = utils.arcsecFromRadians(raRad - np.radians(raDeg))
-                np.testing.assert_array_almost_equal(
-                    dRa, np.zeros(len(dRa)), 9)
+                np.testing.assert_array_almost_equal(dRa, np.zeros(len(dRa)), 9)
 
                 dDec = utils.arcsecFromRadians(decRad - np.radians(decDeg))
-                np.testing.assert_array_almost_equal(
-                    dDec, np.zeros(len(dDec)), 9)
+                np.testing.assert_array_almost_equal(dDec, np.zeros(len(dDec)), 9)
 
     def testIcrsFromAppGeo(self):
 
@@ -420,17 +413,14 @@ class AstrometryDegreesTest(unittest.TestCase):
                                                      np.degrees(self.decList),
                                                      epoch=epoch, mjd=ModifiedJulianDate(TAI=mjd))
 
-                dRa = utils.arcsecFromRadians(
-                    np.abs(raRad - np.radians(raDeg)))
+                dRa = utils.arcsecFromRadians(np.abs(raRad - np.radians(raDeg)))
                 self.assertLess(dRa.max(), 1.0e-9)
 
-                dDec = utils.arcsecFromRadians(
-                    np.abs(decRad - np.radians(decDeg)))
+                dDec = utils.arcsecFromRadians(np.abs(decRad - np.radians(decDeg)))
                 self.assertLess(dDec.max(), 1.0e-9)
 
     def testObservedFromICRS(self):
-        obs = ObservationMetaData(pointingRA=35.0, pointingDec=-45.0,
-                                  mjd=43572.0)
+        obs = ObservationMetaData(pointingRA=35.0, pointingDec=-45.0, mjd=43572.0)
         for pmRaList in [self.pm_raList, None]:
             for pmDecList in [self.pm_decList, None]:
                 for pxList in [self.pxList, None]:
@@ -452,15 +442,11 @@ class AstrometryDegreesTest(unittest.TestCase):
                                                                    obs_metadata=obs, epoch=2000.0,
                                                                    includeRefraction=includeRefraction)
 
-                            dRa = utils.arcsecFromRadians(
-                                raRad - np.radians(raDeg))
-                            np.testing.assert_array_almost_equal(
-                                dRa, np.zeros(self.nStars), 9)
+                            dRa = utils.arcsecFromRadians(raRad - np.radians(raDeg))
+                            np.testing.assert_array_almost_equal(dRa, np.zeros(self.nStars), 9)
 
-                            dDec = utils.arcsecFromRadians(
-                                decRad - np.radians(decDeg))
-                            np.testing.assert_array_almost_equal(
-                                dDec, np.zeros(self.nStars), 9)
+                            dDec = utils.arcsecFromRadians(decRad - np.radians(decDeg))
+                            np.testing.assert_array_almost_equal(dDec, np.zeros(self.nStars), 9)
 
     def testIcrsFromObserved(self):
         obs = ObservationMetaData(pointingRA=35.0, pointingDec=-45.0,
@@ -480,20 +466,16 @@ class AstrometryDegreesTest(unittest.TestCase):
             np.testing.assert_array_almost_equal(dRa, np.zeros(self.nStars), 9)
 
             dDec = utils.arcsecFromRadians(decRad - np.radians(decDeg))
-            np.testing.assert_array_almost_equal(
-                dDec, np.zeros(self.nStars), 9)
+            np.testing.assert_array_almost_equal(dDec, np.zeros(self.nStars), 9)
 
     def testraDecFromPupilCoords(self):
-        obs = ObservationMetaData(
-            pointingRA=23.5, pointingDec=-115.0, mjd=42351.0, rotSkyPos=127.0)
+        obs = ObservationMetaData(pointingRA=23.5, pointingDec=-115.0, mjd=42351.0, rotSkyPos=127.0)
 
         xpList = np.random.random_sample(100) * 0.25 * np.pi
         ypList = np.random.random_sample(100) * 0.25 * np.pi
 
-        raRad, decRad = utils._raDecFromPupilCoords(
-            xpList, ypList, obs_metadata=obs, epoch=2000.0)
-        raDeg, decDeg = utils.raDecFromPupilCoords(
-            xpList, ypList, obs_metadata=obs, epoch=2000.0)
+        raRad, decRad = utils._raDecFromPupilCoords(xpList, ypList, obs_metadata=obs, epoch=2000.0)
+        raDeg, decDeg = utils.raDecFromPupilCoords(xpList, ypList, obs_metadata=obs, epoch=2000.0)
 
         dRa = utils.arcsecFromRadians(raRad - np.radians(raDeg))
         np.testing.assert_array_almost_equal(dRa, np.zeros(len(xpList)), 9)
@@ -502,15 +484,12 @@ class AstrometryDegreesTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(dDec, np.zeros(len(xpList)), 9)
 
     def testpupilCoordsFromRaDec(self):
-        obs = ObservationMetaData(
-            pointingRA=23.5, pointingDec=-115.0, mjd=42351.0, rotSkyPos=127.0)
+        obs = ObservationMetaData(pointingRA=23.5, pointingDec=-115.0, mjd=42351.0, rotSkyPos=127.0)
 
         # need to make sure the test points are tightly distributed around the bore site, or
         # PALPY will throw an error
-        raList = np.random.random_sample(
-            self.nStars) * np.radians(1.0) + np.radians(23.5)
-        decList = np.random.random_sample(
-            self.nStars) * np.radians(1.0) + np.radians(-115.0)
+        raList = np.random.random_sample(self.nStars) * np.radians(1.0) + np.radians(23.5)
+        decList = np.random.random_sample(self.nStars) * np.radians(1.0) + np.radians(-115.0)
 
         xpControl, ypControl = utils._pupilCoordsFromRaDec(raList, decList,
                                                            obs_metadata=obs, epoch=2000.0)

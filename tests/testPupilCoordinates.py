@@ -1,7 +1,6 @@
 from __future__ import division
 from builtins import zip
 from builtins import range
-from past.utils import old_div
 import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
@@ -25,10 +24,8 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                                            mjd=52000.0)
 
         np.random.seed(42)
-        ra = np.random.random_sample(
-            10) * np.radians(1.0) + np.radians(obs_metadata.pointingRA)
-        dec = np.random.random_sample(
-            10) * np.radians(1.0) + np.radians(obs_metadata.pointingDec)
+        ra = np.random.random_sample(10) * np.radians(1.0) + np.radians(obs_metadata.pointingRA)
+        dec = np.random.random_sample(10) * np.radians(1.0) + np.radians(obs_metadata.pointingDec)
         raShort = np.array([1.0])
         decShort = np.array([1.0])
 
@@ -78,14 +75,12 @@ class PupilCoordinateUnitTest(unittest.TestCase):
 
         # test that it actually runs (and that passing in either numpy arrays or floats gives
         # the same results)
-        xx_arr, yy_arr = _pupilCoordsFromRaDec(
-            ra, dec, obs_metadata=obs_metadata)
+        xx_arr, yy_arr = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs_metadata)
         self.assertIsInstance(xx_arr, np.ndarray)
         self.assertIsInstance(yy_arr, np.ndarray)
 
         for ix in range(len(ra)):
-            xx_f, yy_f = _pupilCoordsFromRaDec(
-                ra[ix], dec[ix], obs_metadata=obs_metadata)
+            xx_f, yy_f = _pupilCoordsFromRaDec(ra[ix], dec[ix], obs_metadata=obs_metadata)
             self.assertIsInstance(xx_f, np.float)
             self.assertIsInstance(yy_f, np.float)
             self.assertAlmostEqual(xx_arr[ix], xx_f, 12)
@@ -149,11 +144,10 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                 raTest, decTest = _icrsFromObserved(raTest_obs, decTest_obs, obs_metadata=obs,
                                                     epoch=2000.0, includeRefraction=True)
 
-                x, y = _pupilCoordsFromRaDec(
-                    raTest, decTest, obs_metadata=obs, epoch=epoch)
+                x, y = _pupilCoordsFromRaDec(raTest, decTest, obs_metadata=obs, epoch=epoch)
 
                 lon, lat = _nativeLonLatFromRaDec(raTest, decTest, obs)
-                rr = np.abs(old_div(np.cos(lat), np.sin(lat)))
+                rr = np.abs(np.cos(lat) / np.sin(lat))
 
                 if np.abs(rotSkyPos) < 0.01:
                     control_x = np.array([-1.0 * rr[0], 1.0 * rr[1], 0.0, 0.0])
@@ -168,10 +162,8 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                     control_x = np.array([1.0 * rr[0], -1.0 * rr[1], 0.0, 0.0])
                     control_y = np.array([0.0, 0.0, -1.0 * rr[2], 1.0 * rr[3]])
 
-                dx = np.array(
-                    [old_div(xx, cc) if np.abs(cc) > 1.0e-10 else 1.0 - xx for xx, cc in zip(x, control_x)])
-                dy = np.array(
-                    [old_div(yy, cc) if np.abs(cc) > 1.0e-10 else 1.0 - yy for yy, cc in zip(y, control_y)])
+                dx = np.array([xx / cc if np.abs(cc) > 1.0e-10 else 1.0 - xx for xx, cc in zip(x, control_x)])
+                dy = np.array([yy / cc if np.abs(cc) > 1.0e-10 else 1.0 - yy for yy, cc in zip(y, control_y)])
                 np.testing.assert_array_almost_equal(dx, np.ones(4), decimal=4)
                 np.testing.assert_array_almost_equal(dy, np.ones(4), decimal=4)
 
@@ -197,10 +189,8 @@ class PupilCoordinateUnitTest(unittest.TestCase):
 
         nSamples = 1000
         np.random.seed(42)
-        ra = (np.random.random_sample(nSamples) * 0.1 - 0.2) + \
-            np.radians(raCenter)
-        dec = (np.random.random_sample(nSamples) * 0.1 - 0.2) + \
-            np.radians(decCenter)
+        ra = (np.random.random_sample(nSamples) * 0.1 - 0.2) + np.radians(raCenter)
+        dec = (np.random.random_sample(nSamples) * 0.1 - 0.2) + np.radians(decCenter)
         xp, yp = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs, epoch=2000.0)
         raTest, decTest = _raDecFromPupilCoords(
             xp, yp, obs_metadata=obs, epoch=2000.0)
@@ -209,18 +199,16 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         worstSolarDistance = distanceToSun(
             np.degrees(ra[dex]), np.degrees(dec[dex]), mjd)
         msg = "_raDecFromPupilCoords off by %e arcsec at distance to Sun of %e degrees" % \
-            (distance.max(), worstSolarDistance)
+              (distance.max(), worstSolarDistance)
         self.assertLess(distance.max(), 0.005, msg=msg)
 
         # now check that passing in the xp, yp values one at a time still gives
         # the right answer
         for ix in range(len(ra)):
-            ra_f, dec_f = _raDecFromPupilCoords(
-                xp[ix], yp[ix], obs_metadata=obs, epoch=2000.0)
+            ra_f, dec_f = _raDecFromPupilCoords(xp[ix], yp[ix], obs_metadata=obs, epoch=2000.0)
             self.assertIsInstance(ra_f, np.float)
             self.assertIsInstance(dec_f, np.float)
-            dist_f = arcsecFromRadians(
-                haversine(ra_f, dec_f, raTest[ix], decTest[ix]))
+            dist_f = arcsecFromRadians(haversine(ra_f, dec_f, raTest[ix], decTest[ix]))
             self.assertLess(dist_f, 1.0e-9)
 
     def testNaNs(self):

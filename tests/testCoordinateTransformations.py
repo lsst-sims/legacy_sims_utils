@@ -1,7 +1,6 @@
 from __future__ import division
 from builtins import zip
 from builtins import range
-from past.utils import old_div
 import numpy as np
 import unittest
 import lsst.utils.tests as utilsTests
@@ -21,10 +20,10 @@ def controlEquationOfEquinoxes(mjd):
     D = JD - 2451545.0
     omegaDegrees = 125.04 - 0.052954*D
     Ldegrees = 280.47 + 0.98565*D
-    deltaPsiHours = -0.000319*np.sin(np.radians(omegaDegrees)) \
+    deltaPsiHours = -0.000319 * np.sin(np.radians(omegaDegrees)) \
                     - 0.000024 * np.sin(2.0*np.radians(Ldegrees))
     epsilonDegrees = 23.4393 - 0.0000004*D
-    return (old_div(deltaPsiHours,24.0))*2.0*np.pi*np.cos(np.radians(epsilonDegrees))
+    return (deltaPsiHours / 24.0) * 2.0 * np.pi * np.cos(np.radians(epsilonDegrees))
 
 
 def controlCalcGmstGast(mjd):
@@ -34,12 +33,12 @@ def controlCalcGmstGast(mjd):
     mjd_o = np.floor(mjd)
     jd = mjd + mjdConv
     jd_o = mjd_o + mjdConv
-    h = 24.*(jd-jd_o)
+    h = 24. * (jd - jd_o)
     d = jd - jd2000
     d_o = jd_o - jd2000
-    t = old_div(d,36525.)
-    gmst = 6.697374558 + 0.06570982441908*d_o + 1.00273790935*h + 0.000026*t**2
-    gast = gmst + 24.0*utils.equationOfEquinoxes(mjd)/(2.0*np.pi)
+    t = d / 36525.
+    gmst = 6.697374558 + 0.06570982441908*d_o + 1.00273790935 * h + 0.000026 * t**2
+    gast = gmst + 24.0 * utils.equationOfEquinoxes(mjd) / (2.0 * np.pi)
     gmst %= 24.
     gast %= 24.
     return gmst, gast
@@ -50,7 +49,7 @@ class testCoordinateTransformations(unittest.TestCase):
     def setUp(self):
         np.random.seed(32)
         ntests = 100
-        self.mjd = 57087.0 - 1000.0*(np.random.sample(ntests)-0.5)
+        self.mjd = 57087.0 - 1000.0 * (np.random.sample(ntests) - 0.5)
         self.tolerance = 1.0e-5
 
     def testExceptions(self):
@@ -119,7 +118,7 @@ class testCoordinateTransformations(unittest.TestCase):
 
         # test passing a float for longitude and a numpy array for mjd
         for longitude in ll:
-            hours = old_div(np.degrees(longitude),15.0)
+            hours = np.degrees(longitude) / 15.0
             if hours > 24.0:
                 hours -= 24.0
             controlLmst = gmst + hours
@@ -136,7 +135,7 @@ class testCoordinateTransformations(unittest.TestCase):
         for longitude in ll:
             for mm in self.mjd:
                 gmst, gast = utils.calcGmstGast(mm)
-                hours = old_div(np.degrees(longitude),15.0)
+                hours = np.degrees(longitude) / 15.0
                 if hours > 24.0:
                     hours -= 24.0
                 controlLmst = gmst + hours
@@ -150,7 +149,7 @@ class testCoordinateTransformations(unittest.TestCase):
                 self.assertIsInstance(testLast, np.float)
 
         # test passing two numpy arrays
-        ll = np.random.random_sample(len(self.mjd))*2.0*np.pi
+        ll = np.random.random_sample(len(self.mjd)) * 2.0 * np.pi
         testLmst, testLast = utils.calcLmstLast(self.mjd, ll)
         self.assertIsInstance(testLmst, np.ndarray)
         self.assertIsInstance(testLast, np.ndarray)
@@ -235,15 +234,15 @@ class testCoordinateTransformations(unittest.TestCase):
         """
         np.random.seed(42)
         nsamples = 10
-        radius = np.random.random_sample(nsamples)*10.0
-        theta = np.random.random_sample(nsamples)*np.pi-0.5*np.pi
-        phi = np.random.random_sample(nsamples)*2.0*np.pi
+        radius = np.random.random_sample(nsamples) * 10.0
+        theta = np.random.random_sample(nsamples) * np.pi - 0.5 * np.pi
+        phi = np.random.random_sample(nsamples) * 2.0 * np.pi
 
         points = []
         for ix in range(nsamples):
-            vv = [radius[ix]*np.cos(theta[ix])*np.cos(phi[ix]),
-                  radius[ix]*np.cos(theta[ix])*np.sin(phi[ix]),
-                  radius[ix]*np.sin(theta[ix])]
+            vv = [radius[ix] * np.cos(theta[ix]) * np.cos(phi[ix]),
+                  radius[ix] * np.cos(theta[ix]) * np.sin(phi[ix]),
+                  radius[ix] * np.sin(theta[ix])]
 
             points.append(vv)
 
@@ -266,13 +265,13 @@ class testCoordinateTransformations(unittest.TestCase):
     def testCartesianFromSpherical(self):
         np.random.seed(42)
         nsamples = 10
-        theta = np.random.random_sample(nsamples)*np.pi-0.5*np.pi
-        phi = np.random.random_sample(nsamples)*2.0*np.pi
+        theta = np.random.random_sample(nsamples) * np.pi - 0.5 * np.pi
+        phi = np.random.random_sample(nsamples) * 2.0 * np.pi
 
         points = []
         for ix in range(nsamples):
-            vv = [np.cos(theta[ix])*np.cos(phi[ix]),
-                  np.cos(theta[ix])*np.sin(phi[ix]),
+            vv = [np.cos(theta[ix]) * np.cos(phi[ix]),
+                  np.cos(theta[ix]) * np.sin(phi[ix]),
                   np.sin(theta[ix])]
 
             points.append(vv)

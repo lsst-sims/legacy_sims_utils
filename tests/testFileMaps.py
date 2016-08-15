@@ -13,29 +13,25 @@ class SpecMapTest(unittest.TestCase):
         """
         test_name = testSpecMap[file_name]
         control_name = os.path.join(dir_name, file_name + '.gz')
-        msg = '%s should map to %s; it actually maps to %s' % (
-            file_name, control_name, test_name)
+        msg = '%s should map to %s; it actually maps to %s' % (file_name, control_name, test_name)
         self.assertEqual(test_name, control_name, msg=msg)
 
         add_space = file_name + ' '
         self.assertNotEqual(add_space, file_name)
         test_name = testSpecMap[add_space]
-        msg = '%s should map to %s; it actually maps to %s' % (
-            add_space, control_name, test_name)
+        msg = '%s should map to %s; it actually maps to %s' % (add_space, control_name, test_name)
         self.assertEqual(test_name, control_name, msg=msg)
 
         add_space = ' ' + file_name
         self.assertNotEqual(add_space, file_name)
         test_name = testSpecMap[add_space]
-        msg = '%s should map to %s; it actually maps to %s' % (
-            add_space, control_name, test_name)
+        msg = '%s should map to %s; it actually maps to %s' % (add_space, control_name, test_name)
         self.assertEqual(test_name, control_name, msg=msg)
 
         add_gz = file_name + '.gz'
         self.assertNotEqual(add_gz, file_name)
         test_name = testSpecMap[add_gz]
-        msg = '%s should map to %s; it actually maps to %s' % (
-            add_gz, control_name, test_name)
+        msg = '%s should map to %s; it actually maps to %s' % (add_gz, control_name, test_name)
         self.assertEqual(test_name, control_name, msg=msg)
 
     def testMLT(self):
@@ -122,11 +118,9 @@ class SpecMapTest(unittest.TestCase):
         """
         Test a user-defined SpecMap with a fileDict
         """
-        fileDictTestMap = SpecMap(
-            fileDict={'abcd.txt': 'file_dict_test_dir/abcd.txt.gz'})
+        fileDictTestMap = SpecMap(fileDict={'abcd.txt': 'file_dict_test_dir/abcd.txt.gz'})
 
-        self.assertEqual(
-            fileDictTestMap['abcd.txt'], 'file_dict_test_dir/abcd.txt.gz')
+        self.assertEqual(fileDictTestMap['abcd.txt'], 'file_dict_test_dir/abcd.txt.gz')
         self.verifyFile('lte_11111.txt', 'starSED/mlt',
                         testSpecMap=fileDictTestMap)
         self.verifyFile('Const.79E06.002Z.spec', 'galaxySED',

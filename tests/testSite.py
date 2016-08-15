@@ -1,7 +1,6 @@
 from __future__ import with_statement
 from __future__ import division
 from builtins import str
-from past.utils import old_div
 import numpy as np
 import unittest
 import warnings
@@ -187,7 +186,7 @@ class SiteTest(unittest.TestCase):
         self.assertIsNone(site.humidity)
         self.assertIsNone(site.lapseRate)
         self.assertEqual(site.longitude, 45.0)
-        self.assertEqual(site.longitude_rad, old_div(np.pi, 4.0))
+        self.assertEqual(site.longitude_rad, np.pi / 4.0)
         self.assertEqual(site.temperature, 20.0)
         self.assertEqual(site.temperature_kelvin, 293.15)
 
