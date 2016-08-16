@@ -2,6 +2,11 @@ import numpy as np
 import unittest
 import healpy as hp
 import lsst.sims.utils as utils
+import lsst.utils.tests
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class TestHealUtils(unittest.TestCase):
@@ -77,5 +82,9 @@ class TestHealUtils(unittest.TestCase):
         assert(hp.maptype(map3) == 0)
 
 
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
+
 if __name__ == "__main__":
+    lsst.utils.tests.init()
     unittest.main()
