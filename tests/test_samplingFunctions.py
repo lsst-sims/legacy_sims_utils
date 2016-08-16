@@ -12,12 +12,16 @@ from __future__ import division
 
 import numpy as np
 import unittest
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import samplePatchOnSphere
 from lsst.sims.utils import spatiallySample_obsmetadata
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class SamplingTests(unittest.TestCase):
@@ -102,15 +106,9 @@ class SamplingTests(unittest.TestCase):
         assert all(resids < fiveSigma)
 
 
-def suite():
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(SamplingTests)
-    return unittest.TestSuite(suites)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
-
-def run(shouldExit=False):
-    utilsTests.run(suite(), shouldExit)
-
-if __name__ == '__main__':
-    run(True)
+if __name__ == "__main__":
+    lsst.utils.tests.init()
+    unittest.main()
