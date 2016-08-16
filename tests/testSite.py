@@ -4,9 +4,13 @@ from builtins import str
 import numpy as np
 import unittest
 import warnings
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.sims.utils import Site
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class SiteTest(unittest.TestCase):
@@ -191,18 +195,9 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.temperature_kelvin, 293.15)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(SiteTest)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
