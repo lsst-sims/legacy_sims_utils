@@ -3,8 +3,12 @@ from builtins import zip
 from builtins import range
 import unittest
 import numpy as np
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 import lsst.sims.utils as utils
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
@@ -277,18 +281,9 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
             self.assertLess(np.abs(np.sin(testPa) - controlSinPa), self.tolerance)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(CompoundCoordinateTransformationsTests)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
