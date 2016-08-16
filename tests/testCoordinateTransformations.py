@@ -3,8 +3,12 @@ from builtins import zip
 from builtins import range
 import numpy as np
 import unittest
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 import lsst.sims.utils as utils
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 def controlEquationOfEquinoxes(mjd):
@@ -329,18 +333,9 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertRaises(RuntimeError, utils.rotationMatrixFromVectors, v2, v1)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(testCoordinateTransformations)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
