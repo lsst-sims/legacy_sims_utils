@@ -17,11 +17,11 @@ class testDegrees(unittest.TestCase):
     """
 
     def setUp(self):
-        np.random.seed(87334)
-        self.raList = np.random.random_sample(100) * 2.0 * np.pi
-        self.decList = (np.random.random_sample(100) - 0.5) * np.pi
-        self.lon = np.random.random_sample(1)[0] * 360.0
-        self.lat = (np.random.random_sample(1)[0] - 0.5) * 180.0
+        self.rng = np.random.RandomState(87334)
+        self.raList = self.rng.random_sample(100) * 2.0 * np.pi
+        self.decList = (self.rng.random_sample(100) - 0.5) * np.pi
+        self.lon = self.rng.random_sample(1)[0] * 360.0
+        self.lat = (self.rng.random_sample(1)[0] - 0.5) * 180.0
 
     def testUnitConversion(self):
         """
@@ -30,7 +30,7 @@ class testDegrees(unittest.TestCase):
         self-consistent
         """
 
-        radList = np.random.random_sample(100) * 2.0 * np.pi
+        radList = self.rng.random_sample(100) * 2.0 * np.pi
         degList = np.degrees(radList)
 
         arcsecRadList = utils.arcsecFromRadians(radList)
@@ -38,7 +38,7 @@ class testDegrees(unittest.TestCase):
 
         np.testing.assert_array_equal(arcsecRadList, arcsecDegList)
 
-        arcsecList = np.random.random_sample(100) * 1.0
+        arcsecList = self.rng.random_sample(100) * 1.0
         radList = utils.radiansFromArcsec(arcsecList)
         degList = utils.degreesFromArcsec(arcsecList)
         np.testing.assert_array_equal(np.radians(degList), radList)
@@ -148,7 +148,7 @@ class testDegrees(unittest.TestCase):
             self.assertAlmostEqual(decRad, np.radians(decDeg), 10)
 
     def testGetRotSkyPos(self):
-        rotTelList = np.random.random_sample(len(self.raList)) * 2.0 * np.pi
+        rotTelList = self.rng.random_sample(len(self.raList)) * 2.0 * np.pi
         mjd = 56321.8
 
         obsTemp = ObservationMetaData(mjd=mjd, site=Site(
@@ -185,7 +185,7 @@ class testDegrees(unittest.TestCase):
             self.assertAlmostEqual(rotSkyRad, np.radians(rotSkyDeg), 10)
 
     def testGetRotTelPos(self):
-        rotSkyList = np.random.random_sample(len(self.raList)) * 2.0 * np.pi
+        rotSkyList = self.rng.random_sample(len(self.raList)) * 2.0 * np.pi
         mjd = 56789.3
         obsTemp = ObservationMetaData(mjd=mjd, site=Site(longitude=self.lon,
                                                          latitude=self.lat, name='LSST'))
@@ -228,17 +228,17 @@ class AstrometryDegreesTest(unittest.TestCase):
 
     def setUp(self):
         self.nStars = 10
-        np.random.seed(8273)
-        self.raList = np.random.random_sample(self.nStars) * 2.0 * np.pi
-        self.decList = (np.random.random_sample(self.nStars) - 0.5) * np.pi
-        self.mjdList = np.random.random_sample(10) * 5000.0 + 52000.0
+        self.rng = np.random.RandomState(8273)
+        self.raList = self.rng.random_sample(self.nStars) * 2.0 * np.pi
+        self.decList = (self.rng.random_sample(self.nStars) - 0.5) * np.pi
+        self.mjdList = self.rng.random_sample(10) * 5000.0 + 52000.0
         self.pm_raList = utils.radiansFromArcsec(
-            np.random.random_sample(self.nStars) * 10.0 - 5.0)
+            self.rng.random_sample(self.nStars) * 10.0 - 5.0)
         self.pm_decList = utils.radiansFromArcsec(
-            np.random.random_sample(self.nStars) * 10.0 - 5.0)
+            self.rng.random_sample(self.nStars) * 10.0 - 5.0)
         self.pxList = utils.radiansFromArcsec(
-            np.random.random_sample(self.nStars) * 2.0)
-        self.v_radList = np.random.random_sample(self.nStars) * 500.0 - 250.0
+            self.rng.random_sample(self.nStars) * 2.0)
+        self.v_radList = self.rng.random_sample(self.nStars) * 500.0 - 250.0
 
     def testApplyPrecession(self):
         for mjd in self.mjdList:
@@ -475,8 +475,8 @@ class AstrometryDegreesTest(unittest.TestCase):
     def testraDecFromPupilCoords(self):
         obs = ObservationMetaData(pointingRA=23.5, pointingDec=-115.0, mjd=42351.0, rotSkyPos=127.0)
 
-        xpList = np.random.random_sample(100) * 0.25 * np.pi
-        ypList = np.random.random_sample(100) * 0.25 * np.pi
+        xpList = self.rng.random_sample(100) * 0.25 * np.pi
+        ypList = self.rng.random_sample(100) * 0.25 * np.pi
 
         raRad, decRad = utils._raDecFromPupilCoords(xpList, ypList, obs_metadata=obs, epoch=2000.0)
         raDeg, decDeg = utils.raDecFromPupilCoords(xpList, ypList, obs_metadata=obs, epoch=2000.0)
@@ -492,8 +492,8 @@ class AstrometryDegreesTest(unittest.TestCase):
 
         # need to make sure the test points are tightly distributed around the bore site, or
         # PALPY will throw an error
-        raList = np.random.random_sample(self.nStars) * np.radians(1.0) + np.radians(23.5)
-        decList = np.random.random_sample(self.nStars) * np.radians(1.0) + np.radians(-115.0)
+        raList = self.rng.random_sample(self.nStars) * np.radians(1.0) + np.radians(23.5)
+        decList = self.rng.random_sample(self.nStars) * np.radians(1.0) + np.radians(-115.0)
 
         xpControl, ypControl = utils._pupilCoordsFromRaDec(raList, decList,
                                                            obs_metadata=obs, epoch=2000.0)
