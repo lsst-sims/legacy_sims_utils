@@ -1,8 +1,12 @@
 from __future__ import with_statement
 import unittest
 import numpy as np
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 from lsst.sims.utils.CodeUtilities import _validate_inputs
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class CodeUtilsTest(unittest.TestCase):
@@ -44,19 +48,9 @@ class CodeUtilsTest(unittest.TestCase):
         self.assertIn("either a number or a numpy array",
                       ee.exception.args[0])
 
-
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(CodeUtilsTest)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
