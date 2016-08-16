@@ -228,7 +228,7 @@ class MjdTest(unittest.TestCase):
                 MJD_warnings += 1
                 # Test that the string "ModifiedJulianDate.UT1" actually showed up in the message.
                 # This indicates what method the warning occured from (UT1 vs dut).
-                self.assertTrue("ModifiedJulianDate.UT1" in str(w.message))
+                self.assertIn("ModifiedJulianDate.UT1", str(w.message))
         self.assertEqual(expected_MJD_warnings, MJD_warnings, msg="UT1 did not emit a UTCtoUT1Warning")
 
         expected_MJD_warnings = 1
@@ -240,7 +240,7 @@ class MjdTest(unittest.TestCase):
         for w in w_list:
             if w.category == UTCtoUT1Warning:
                 MJD_warnings += 1
-                self.assertTrue("ModifiedJulianDate.dut1" in str(w.message))
+                self.assertIn("ModifiedJulianDate.dut1", str(w.message))
         self.assertEqual(expected_MJD_warnings, MJD_warnings, msg="dut1 did not emit a UTCtoUT1Warning")
 
     def test_force_values(self):
