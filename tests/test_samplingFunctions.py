@@ -73,10 +73,14 @@ class SamplingTests(unittest.TestCase):
         minTheta = -1.2 - delta
         maxTheta = -1.2 + delta
 
-        assert all(np.radians(self.samples[0]) <= maxPhi)
-        assert all(np.radians(self.samples[0]) >= minPhi)
-        assert all(np.radians(self.samples[1]) >= minTheta)
-        assert all(np.radians(self.samples[1]) <= maxTheta)
+        self.assertTrue(all(np.radians(self.samples[0]) <= maxPhi),
+                        msg='samples are not <= maxPhi')
+        self.assertTrue(all(np.radians(self.samples[0]) >= minPhi),
+                        msg='samples are not >= minPhi')
+        self.assertTrue(all(np.radians(self.samples[1]) >= minTheta),
+                        msg='samples are not >= minTheta')
+        self.assertTrue(all(np.radians(self.samples[1]) <= maxTheta),
+                        msg='samples are not <= maxTheta')
 
     def test_samplePatchOnSphere(self):
 
@@ -95,7 +99,7 @@ class SamplingTests(unittest.TestCase):
         area = A(tvals, tvalsShifted)
 
         binsize = np.unique(np.diff(tvals))
-        assert binsize.size == 1
+        self.assertEqual(binsize.size, 1)
         normval = np.sum(area) * binsize[0]
 
         theta_samps = np.radians(self.dense_samples[1])
@@ -103,7 +107,7 @@ class SamplingTests(unittest.TestCase):
         resids = area[:-2] / normval - binnedvals
 
         fiveSigma = np.sqrt(binnedvals) * 5.0
-        assert all(resids < fiveSigma)
+        np.testing.assert_array_less(resids, fiveSigma)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
