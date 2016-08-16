@@ -51,9 +51,9 @@ def controlCalcGmstGast(mjd):
 class testCoordinateTransformations(unittest.TestCase):
 
     def setUp(self):
-        np.random.seed(32)
+        self.rng = np.random.RandomState(32)
         ntests = 100
-        self.mjd = 57087.0 - 1000.0 * (np.random.sample(ntests) - 0.5)
+        self.mjd = 57087.0 - 1000.0 * (self.rng.random_sample(ntests) - 0.5)
         self.tolerance = 1.0e-5
 
     def testExceptions(self):
@@ -153,7 +153,7 @@ class testCoordinateTransformations(unittest.TestCase):
                 self.assertIsInstance(testLast, np.float)
 
         # test passing two numpy arrays
-        ll = np.random.random_sample(len(self.mjd)) * 2.0 * np.pi
+        ll = self.rng.random_sample(len(self.mjd)) * 2.0 * np.pi
         testLmst, testLast = utils.calcLmstLast(self.mjd, ll)
         self.assertIsInstance(testLmst, np.ndarray)
         self.assertIsInstance(testLast, np.ndarray)
@@ -236,11 +236,10 @@ class testCoordinateTransformations(unittest.TestCase):
 
         Each column of xyz is a vector
         """
-        np.random.seed(42)
         nsamples = 10
-        radius = np.random.random_sample(nsamples) * 10.0
-        theta = np.random.random_sample(nsamples) * np.pi - 0.5 * np.pi
-        phi = np.random.random_sample(nsamples) * 2.0 * np.pi
+        radius = self.rng.random_sample(nsamples) * 10.0
+        theta = self.rng.random_sample(nsamples) * np.pi - 0.5 * np.pi
+        phi = self.rng.random_sample(nsamples) * 2.0 * np.pi
 
         points = []
         for ix in range(nsamples):
@@ -267,10 +266,9 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertAlmostEqual(np.sin(lat), np.sin(th), 5)
 
     def testCartesianFromSpherical(self):
-        np.random.seed(42)
         nsamples = 10
-        theta = np.random.random_sample(nsamples) * np.pi - 0.5 * np.pi
-        phi = np.random.random_sample(nsamples) * 2.0 * np.pi
+        theta = self.rng.random_sample(nsamples) * np.pi - 0.5 * np.pi
+        phi = self.rng.random_sample(nsamples) * 2.0 * np.pi
 
         points = []
         for ix in range(nsamples):
