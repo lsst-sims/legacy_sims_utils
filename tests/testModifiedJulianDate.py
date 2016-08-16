@@ -7,10 +7,14 @@ import warnings
 import numpy as np
 import os
 import copy
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.utils import getPackageDir
 from lsst.sims.utils import ModifiedJulianDate, UTCtoUT1Warning
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class MjdTest(unittest.TestCase):
@@ -318,18 +322,9 @@ class MjdTest(unittest.TestCase):
             self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(MjdTest)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
