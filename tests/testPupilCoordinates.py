@@ -3,13 +3,17 @@ from builtins import zip
 from builtins import range
 import numpy as np
 import unittest
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.sims.utils import ObservationMetaData, _nativeLonLatFromRaDec
 from lsst.sims.utils import _pupilCoordsFromRaDec
 from lsst.sims.utils import _raDecFromPupilCoords
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import haversine, arcsecFromRadians, solarRaDec, ModifiedJulianDate, distanceToSun
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class PupilCoordinateUnitTest(unittest.TestCase):
@@ -248,15 +252,9 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                 self.assertTrue(np.isnan(yt))
 
 
-def suite():
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(PupilCoordinateUnitTest)
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
