@@ -248,8 +248,8 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                 self.assertFalse(np.isnan(xt))
                 self.assertFalse(np.isnan(yt))
             else:
-                self.assertTrue(np.isnan(xt))
-                self.assertTrue(np.isnan(yt))
+                np.testing.assert_equal(xt, np.NaN)
+                np.testing.assert_equal(yt, np.NaN)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
