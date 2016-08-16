@@ -64,7 +64,7 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
 class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
     def setUp(self):
-        np.random.seed(32)
+        self.rng = np.random.RandomState(32)
         self.mjd = 57087.0
         self.tolerance = 1.0e-5
 
@@ -186,7 +186,6 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         Test that altAzPaFromRaDec and raDecFromAltAz really invert each other
         """
 
-        np.random.seed(42)
         mjd = 58350.0
 
         alt_in = []
@@ -236,10 +235,9 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         Test conversion from RA, Dec to Alt, Az
         """
 
-        np.random.seed(32)
         nSamples = 100
-        ra = np.random.sample(nSamples)*2.0*np.pi
-        dec = (np.random.sample(nSamples)-0.5)*np.pi
+        ra = self.rng.random_sample(nSamples)*2.0*np.pi
+        dec = (self.rng.random_sample(nSamples)-0.5)*np.pi
         lon_rad = 1.467
         lat_rad = -0.234
         controlAlt, controlAz = controlAltAzFromRaDec(ra, dec,
