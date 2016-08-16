@@ -50,14 +50,14 @@ class TestHealUtils(unittest.TestCase):
         hpid = utils._raDec2Hpid(nside, ra[0], dec[0])
 
         map1 = utils._healbin(ra, dec, values, nside=nside)
-        assert(map1[hpid] == 1.)
-        assert(hp.maptype(map1) == 0)
+        self.assertEqual(map1[hpid], 1.)
+        self.assertEqual(hp.maptype(map1), 0)
         map2 = utils._healbin(ra, dec, values, nside=nside, reduceFunc=np.sum)
-        assert(map2[hpid] == 3.)
-        assert(hp.maptype(map2) == 0)
+        self.assertEqual(map2[hpid], 3.)
+        self.assertEqual(hp.maptype(map2), 0)
         map3 = utils._healbin(ra, dec, values, nside=nside, reduceFunc=np.std)
-        assert(map3[hpid] == 0.)
-        assert(hp.maptype(map3) == 0)
+        self.assertEqual(map3[hpid], 0.)
+        self.assertEqual(hp.maptype(map3), 0)
 
     def testBinDeg(self):
         """
@@ -72,14 +72,14 @@ class TestHealUtils(unittest.TestCase):
         hpid = utils.raDec2Hpid(nside, ra[0], dec[0])
 
         map1 = utils.healbin(ra, dec, values, nside=nside)
-        assert(map1[hpid] == 1.)
-        assert(hp.maptype(map1) == 0)
+        self.assertEqual(map1[hpid], 1.)
+        self.assertEqual(hp.maptype(map1), 0)
         map2 = utils.healbin(ra, dec, values, nside=nside, reduceFunc=np.sum)
-        assert(map2[hpid] == 3.)
-        assert(hp.maptype(map2) == 0)
+        self.assertEqual(map2[hpid], 3.)
+        self.assertEqual(hp.maptype(map2), 0)
         map3 = utils.healbin(ra, dec, values, nside=nside, reduceFunc=np.std)
-        assert(map3[hpid] == 0.)
-        assert(hp.maptype(map3) == 0)
+        self.assertEqual(map3[hpid], 0.)
+        self.assertEqual(hp.maptype(map3), 0)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
