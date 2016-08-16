@@ -1,13 +1,17 @@
 from builtins import zip
 import unittest
 import numpy as np
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.sims.utils import raDecFromNativeLonLat, nativeLonLatFromRaDec
 from lsst.sims.utils import _raDecFromNativeLonLat, _nativeLonLatFromRaDec
 from lsst.sims.utils import observedFromICRS, icrsFromObserved
 from lsst.sims.utils import ObservationMetaData, haversine
 from lsst.sims.utils import arcsecFromRadians, raDecFromAltAz, Site
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class NativeLonLatTest(unittest.TestCase):
@@ -264,17 +268,9 @@ class NativeLonLatTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(np.radians(decDeg), decRad, 15)
 
 
-def suite():
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(NativeLonLatTest)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    utilsTests.run(suite(), shouldExit)
-
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
