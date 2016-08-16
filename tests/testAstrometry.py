@@ -881,8 +881,8 @@ class astrometryUnitTest(unittest.TestCase):
             ra_icrs, dec_icrs = _icrsFromAppGeo(ra_app, dec_app,
                                                 epoch=2000.0, mjd=mjd)
 
-            self.assertFalse(np.isnan(ra_icrs).any())
-            self.assertFalse(np.isnan(dec_icrs).any())
+            self.assertFalse(np.isnan(ra_icrs).any(), msg='There were NaNs in ra_icrs; should not be')
+            self.assertFalse(np.isnan(dec_icrs).any(), msg='There were NaNs in dec_icrs; should not be')
 
             valid_pts = np.where(_distanceToSun(
                 ra_in, dec_in, mjd) > 0.25 * np.pi)[0]
