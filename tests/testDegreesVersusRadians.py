@@ -1,9 +1,13 @@
 from builtins import zip
 import unittest
 import numpy as np
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 import lsst.sims.utils as utils
 from lsst.sims.utils import ObservationMetaData, Site, ModifiedJulianDate
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class testDegrees(unittest.TestCase):
@@ -504,19 +508,9 @@ class AstrometryDegreesTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(dy, np.zeros(self.nStars), 9)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(testDegrees)
-    suites += unittest.makeSuite(AstrometryDegreesTest)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
