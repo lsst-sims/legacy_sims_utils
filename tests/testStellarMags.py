@@ -23,9 +23,10 @@ class StellarMagsTest(unittest.TestCase):
         for key in keys:
             result = utils.stellarMags(key)
             for fn in filterNames:
-                assert(fn in result)
-                assert((isinstance(result[fn], float)) |
-                       (isinstance(result[fn], np.float64)))
+                self.assertIn(fn, result)
+                self.assertTrue((isinstance(result[fn], float)) |
+                                (isinstance(result[fn], np.float64)),
+                                msg='result is neither a float nor a numpy float64')
 
         # Check the exception gets raised
         self.assertRaises(ValueError, utils.stellarMags, 'ack')
