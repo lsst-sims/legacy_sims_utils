@@ -67,8 +67,8 @@ class MjdTest(unittest.TestCase):
         changes in astropy.time
         """
 
-        np.random.seed(115)
-        tai_list = np.random.random_sample(1000)*7000.0+50000.0
+        rng = np.random.RandomState(115)
+        tai_list = rng.random_sample(1000)*7000.0+50000.0
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
             self.assertAlmostEqual(mjd.TT, tai + 32.184 / 86400.0, 15)
@@ -86,8 +86,8 @@ class MjdTest(unittest.TestCase):
         changes in astropy.time
         """
 
-        np.random.seed(117)
-        tai_list = np.random.random_sample(1000)*10000.0 + 46000.0
+        rng = np.random.RandomState(117)
+        tai_list = rng.random_sample(1000)*10000.0 + 46000.0
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
             g = np.radians(357.53 + 0.9856003 * (np.round(tai - 51544.5)))
@@ -107,9 +107,9 @@ class MjdTest(unittest.TestCase):
         dut in units of days rather than seconds, etc.)
         """
 
-        np.random.seed(117)
+        rng = np.random.RandomState(117)
 
-        utc_list = np.random.random_sample(1000) * 10000.0 + 43000.0
+        utc_list = rng.random_sample(1000) * 10000.0 + 43000.0
         for utc in utc_list:
             mjd = ModifiedJulianDate(UTC=utc)
 
@@ -135,9 +135,9 @@ class MjdTest(unittest.TestCase):
         dut in units of days rather than seconds, etc.)
         """
 
-        np.random.seed(117)
+        rng = np.random.RandomState(117)
 
-        utc_list = np.random.random_sample(1000) * 10000.0 + 63000.0
+        utc_list = rng.random_sample(1000) * 10000.0 + 63000.0
         for utc in utc_list:
             mjd = ModifiedJulianDate(UTC=utc)
 
