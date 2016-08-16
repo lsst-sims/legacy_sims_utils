@@ -70,21 +70,21 @@ def makeRandomSample(raCenter=None, decCenter=None, radius=None):
     # create a random sample of object data
 
     nsamples = 100
-    np.random.seed(32)
+    rng = np.random.RandomState(32)
 
     if raCenter is None or decCenter is None or radius is None:
-        ra = np.random.sample(nsamples) * 2.0 * np.pi
-        dec = (np.random.sample(nsamples) - 0.5) * np.pi
+        ra = rng.random_sample(nsamples) * 2.0 * np.pi
+        dec = (rng.random_sample(nsamples) - 0.5) * np.pi
     else:
-        rr = np.random.sample(nsamples) * radius
-        theta = np.random.sample(nsamples) * 2.0 * np.pi
+        rr = rng.random_sample(nsamples) * radius
+        theta = rng.random_sample(nsamples) * 2.0 * np.pi
         ra = raCenter + rr * np.cos(theta)
         dec = decCenter + rr * np.cos(theta)
 
-    pm_ra = (np.random.sample(nsamples) - 0.5) * 0.1
-    pm_dec = (np.random.sample(nsamples) - 0.5) * 0.1
-    parallax = np.random.sample(nsamples) * 0.01
-    v_rad = np.random.sample(nsamples) * 1000.0
+    pm_ra = (rng.random_sample(nsamples) - 0.5) * 0.1
+    pm_dec = (rng.random_sample(nsamples) - 0.5) * 0.1
+    parallax = rng.random_sample(nsamples) * 0.01
+    v_rad = rng.random_sample(nsamples) * 1000.0
 
     return ra, dec, pm_ra, pm_dec, parallax, v_rad
 
@@ -204,10 +204,10 @@ class astrometryUnitTest(unittest.TestCase):
                 self.assertLess(np.abs(arcsecFromRadians(dd - hh)), 5.0)
 
         # Test passing in numpy arrays of RA, Dec
-        np.random.seed(87)
+        rng = np.random.RandomState(87)
         nSamples = 100
-        ra = np.random.random_sample(nSamples) * 2.0 * np.pi
-        dec = (np.random.random_sample(nSamples) - 0.5) * np.pi
+        ra = rng.random_sample(nSamples) * 2.0 * np.pi
+        dec = (rng.random_sample(nSamples) - 0.5) * np.pi
         mjd = ModifiedJulianDate(TAI=59580.0)
         control_distance = _distanceToSun(ra, dec, mjd)
         self.assertIsInstance(control_distance, np.ndarray)
@@ -247,7 +247,7 @@ class astrometryUnitTest(unittest.TestCase):
         http://aa.usno.navy.mil/data/docs/geocentric.php
         """
 
-        np.random.seed(77)
+        rng = np.random.RandomState(77)
         nStars = 100
 
         hour = np.radians(360.0 / 24.0)
@@ -264,8 +264,8 @@ class astrometryUnitTest(unittest.TestCase):
 
         for tai, raS, decS in zip(mjd_list, sun_ra_list, sun_dec_list):
             mjd = ModifiedJulianDate(TAI=tai)
-            ra_list = np.random.random_sample(nStars) * 2.0 * np.pi
-            dec_list = (np.random.random_sample(nStars) - 0.5) * np.pi
+            ra_list = rng.random_sample(nStars) * 2.0 * np.pi
+            dec_list = (rng.random_sample(nStars) - 0.5) * np.pi
             distance_list = _distanceToSun(ra_list, dec_list, mjd)
             distance_control = haversine(ra_list, dec_list, raS, decS)
             np.testing.assert_array_almost_equal(
@@ -499,25 +499,25 @@ class astrometryUnitTest(unittest.TestCase):
         VF = 0.21094502
         pal_das2r = 4.8481368110953599358991410235794797595635330237270e-6
 
-        np.random.seed(18)
+        rng = np.random.RandomState(18)
         nSamples = 1000
 
-        mjdList = np.random.random_sample(20) * 20000.0 + 45000.0
+        mjdList = rng.random_sample(20) * 20000.0 + 45000.0
 
         for mjd in mjdList:
 
-            raList_icrs = np.random.random_sample(nSamples) * 2.0 * np.pi
-            decList_icrs = (np.random.random_sample(nSamples) - 0.5) * np.pi
+            raList_icrs = rng.random_sample(nSamples) * 2.0 * np.pi
+            decList_icrs = (rng.random_sample(nSamples) - 0.5) * np.pi
 
             # stars' original position in Cartesian space
             x_list_icrs = np.cos(decList_icrs) * np.cos(raList_icrs)
             y_list_icrs = np.cos(decList_icrs) * np.sin(raList_icrs)
             z_list_icrs = np.sin(decList_icrs)
 
-            pm_ra = (np.random.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
-            pm_dec = (np.random.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
-            px = np.random.random_sample(nSamples) * radiansFromArcsec(1.0)
-            v_rad = np.random.random_sample(nSamples) * 200.0
+            pm_ra = (rng.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
+            pm_dec = (rng.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
+            px = rng.random_sample(nSamples) * radiansFromArcsec(1.0)
+            v_rad = rng.random_sample(nSamples) * 200.0
 
             ra_list_pm, dec_list_pm = _applyProperMotion(raList_icrs, decList_icrs,
                                                          pm_ra * np.cos(decList_icrs),
@@ -588,16 +588,16 @@ class astrometryUnitTest(unittest.TestCase):
         """
         Verify that _applyProperMotion handles both floats and numpy arrays as inputs
         """
-        np.random.seed(7134)
+        rng = np.random.RandomState(7134)
         nSamples = 100
-        pm_ra = (np.random.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
-        pm_dec = (np.random.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
-        px = np.random.random_sample(nSamples) * radiansFromArcsec(1.0)
-        v_rad = np.random.random_sample(nSamples) * 200.0
+        pm_ra = (rng.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
+        pm_dec = (rng.random_sample(nSamples) - 0.5) * radiansFromArcsec(1.0)
+        px = rng.random_sample(nSamples) * radiansFromArcsec(1.0)
+        v_rad = rng.random_sample(nSamples) * 200.0
         mjd = ModifiedJulianDate(TAI=59580.0)
 
-        ra_icrs = np.random.random_sample(nSamples) * 2.0 * np.pi
-        dec_icrs = (np.random.random_sample(nSamples) - 0.5) * np.pi
+        ra_icrs = rng.random_sample(nSamples) * 2.0 * np.pi
+        dec_icrs = (rng.random_sample(nSamples) - 0.5) * np.pi
 
         ra_arr, dec_arr = _applyProperMotion(ra_icrs, dec_icrs,
                                              pm_ra, pm_dec, px, v_rad, mjd=mjd)
@@ -739,16 +739,16 @@ class astrometryUnitTest(unittest.TestCase):
         array and float inputs.
         """
 
-        np.random.seed(83)
+        rng = np.random.RandomState(83)
         nSamples = 100
-        ra_icrs = 2.0 * np.pi * np.random.random_sample(nSamples)
-        dec_icrs = (np.random.random_sample(nSamples) - 0.5) * np.pi
+        ra_icrs = 2.0 * np.pi * rng.random_sample(nSamples)
+        dec_icrs = (rng.random_sample(nSamples) - 0.5) * np.pi
         pm_ra = radiansFromArcsec(
-            (np.random.random_sample(nSamples) - 0.5) * 0.02)
+            (rng.random_sample(nSamples) - 0.5) * 0.02)
         pm_dec = radiansFromArcsec(
-            (np.random.random_sample(nSamples) - 0.5) * 0.02)
-        parallax = radiansFromArcsec(np.random.random_sample(nSamples) * 0.01)
-        v_rad = (np.random.random_sample(nSamples) - 0.5) * 1200.0
+            (rng.random_sample(nSamples) - 0.5) * 0.02)
+        parallax = radiansFromArcsec(rng.random_sample(nSamples) * 0.01)
+        v_rad = (rng.random_sample(nSamples) - 0.5) * 1200.0
         mjd = ModifiedJulianDate(TAI=59580.0)
 
         ra_control, dec_control = _appGeoFromICRS(ra_icrs, dec_icrs,
@@ -866,15 +866,15 @@ class astrometryUnitTest(unittest.TestCase):
         from the sun.
         """
 
-        np.random.seed(412)
+        rng = np.random.RandomState(412)
         nSamples = 100
 
         for tai in (53000.0, 53241.6, 58504.6):
 
             mjd = ModifiedJulianDate(TAI=tai)
 
-            ra_in = np.random.random_sample(nSamples) * 2.0 * np.pi
-            dec_in = (np.random.random_sample(nSamples) - 0.5) * np.pi
+            ra_in = rng.random_sample(nSamples) * 2.0 * np.pi
+            dec_in = (rng.random_sample(nSamples) - 0.5) * np.pi
 
             ra_app, dec_app = _appGeoFromICRS(ra_in, dec_in, mjd=mjd)
 
@@ -913,7 +913,7 @@ class astrometryUnitTest(unittest.TestCase):
         45 degrees from the sun and at zenith distances less than 70 degrees.
         """
 
-        np.random.seed(412)
+        rng = np.random.RandomState(412)
         nSamples = 100
 
         site = Site(name='LSST')
@@ -931,9 +931,9 @@ class astrometryUnitTest(unittest.TestCase):
                         obs = ObservationMetaData(pointingRA=raPointing, pointingDec=decPointing,
                                                   mjd=tai, site=site)
 
-                        rr = np.random.random_sample(
+                        rr = rng.random_sample(
                             nSamples) * np.radians(50.0)
-                        theta = np.random.random_sample(nSamples) * 2.0 * np.pi
+                        theta = rng.random_sample(nSamples) * 2.0 * np.pi
 
                         ra_in = raZenith + rr * np.cos(theta)
                         dec_in = decZenith + rr * np.sin(theta)
@@ -1009,9 +1009,9 @@ class astrometryUnitTest(unittest.TestCase):
         """
         Test that _icrsFromObserved raises exceptions when it is supposed to.
         """
-        np.random.seed(33)
-        ra_in = np.random.random_sample(10)
-        dec_in = np.random.random_sample(10)
+        rng = np.random.RandomState(33)
+        ra_in = rng.random_sample(10)
+        dec_in = rng.random_sample(10)
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _icrsFromObserved(ra_in, dec_in, epoch=2000.0)
         self.assertEqual(context.exception.args[0],
@@ -1049,15 +1049,15 @@ class astrometryUnitTest(unittest.TestCase):
                                   mjd=ModifiedJulianDate(TAI=58350.0),
                                   site=site)
 
-        np.random.seed(125543)
+        rng = np.random.RandomState(125543)
         nSamples = 200
 
         # Note: the PALPY routines in question start to become inaccurate at
         # a zenith distance of about 75 degrees, so we restrict our test points
         # to be within 50 degrees of the telescope pointing, which is at zenith
         # in a flat sky approximation
-        rr = np.random.random_sample(nSamples) * np.radians(50.0)
-        theta = np.random.random_sample(nSamples) * 2.0 * np.pi
+        rr = rng.random_sample(nSamples) * np.radians(50.0)
+        theta = rng.random_sample(nSamples) * 2.0 * np.pi
         ra_in = np.radians(raCenter) + rr * np.cos(theta)
         dec_in = np.radians(decCenter) + rr * np.sin(theta)
 
@@ -1089,9 +1089,9 @@ class astrometryUnitTest(unittest.TestCase):
         """
         Test that _appGeoFromObserved raises exceptions where expected
         """
-        np.random.seed(12)
-        ra_in = np.random.random_sample(10) * 2.0 * np.pi
-        dec_in = (np.random.random_sample(10) - 0.5) * np.pi
+        rng = np.random.RandomState(12)
+        ra_in = rng.random_sample(10) * 2.0 * np.pi
+        dec_in = (rng.random_sample(10) - 0.5) * np.pi
 
         with self.assertRaises(RuntimeError) as context:
             ra_out, dec_out = _appGeoFromObserved(ra_in, dec_in)
@@ -1139,8 +1139,8 @@ class astrometryUnitTest(unittest.TestCase):
 
         # test that passing in a numpy array and passing in floats
         # give the same results
-        np.random.seed(712)
-        zd_arr = np.random.random_sample(20) * np.pi * 0.2
+        rng = np.random.RandomState(712)
+        zd_arr = rng.random_sample(20) * np.pi * 0.2
         control_refraction = applyRefraction(zd_arr, coeffs[0], coeffs[1])
         for ix, zz in enumerate(zd_arr):
             test_refraction = applyRefraction(zz, coeffs[0], coeffs[1])
