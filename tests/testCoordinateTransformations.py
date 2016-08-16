@@ -87,13 +87,13 @@ class testCoordinateTransformations(unittest.TestCase):
         # test vectorized version
         control = controlEquationOfEquinoxes(self.mjd)
         test = utils.equationOfEquinoxes(self.mjd)
-        self.assertTrue(np.abs(test-control).max() < self.tolerance)
+        self.assertLess(np.abs(test-control).max(), self.tolerance)
 
         # test non-vectorized version
         for mm in self.mjd:
             control = controlEquationOfEquinoxes(mm)
             test = utils.equationOfEquinoxes(mm)
-            self.assertTrue(np.abs(test-control) < self.tolerance)
+            self.assertLess(np.abs(test-control), self.tolerance)
 
     def testGmstGast(self):
         """
@@ -102,15 +102,15 @@ class testCoordinateTransformations(unittest.TestCase):
 
         controlGmst, controlGast = controlCalcGmstGast(self.mjd)
         testGmst, testGast = utils.calcGmstGast(self.mjd)
-        self.assertTrue(np.abs(testGmst - controlGmst).max() < self.tolerance)
-        self.assertTrue(np.abs(testGast - controlGast).max() < self.tolerance)
+        self.assertLess(np.abs(testGmst - controlGmst).max(), self.tolerance)
+        self.assertLess(np.abs(testGast - controlGast).max(), self.tolerance)
 
         # test non-vectorized version
         for mm in self.mjd:
             controlGmst, controlGast = controlCalcGmstGast(mm)
             testGmst, testGast = utils.calcGmstGast(mm)
-            self.assertTrue(np.abs(testGmst - controlGmst) < self.tolerance)
-            self.assertTrue(np.abs(testGast - controlGast) < self.tolerance)
+            self.assertLess(np.abs(testGmst - controlGmst), self.tolerance)
+            self.assertLess(np.abs(testGast - controlGast), self.tolerance)
 
     def testLmstLast(self):
         """
@@ -130,8 +130,8 @@ class testCoordinateTransformations(unittest.TestCase):
             controlLmst %= 24.0
             controlLast %= 24.0
             testLmst, testLast = utils.calcLmstLast(self.mjd, longitude)
-            self.assertTrue(np.abs(testLmst - controlLmst).max() < self.tolerance)
-            self.assertTrue(np.abs(testLast - controlLast).max() < self.tolerance)
+            self.assertLess(np.abs(testLmst - controlLmst).max(), self.tolerance)
+            self.assertLess(np.abs(testLast - controlLast).max(), self.tolerance)
             self.assertIsInstance(testLmst, np.ndarray)
             self.assertIsInstance(testLast, np.ndarray)
 
@@ -147,8 +147,8 @@ class testCoordinateTransformations(unittest.TestCase):
                 controlLmst %= 24.0
                 controlLast %= 24.0
                 testLmst, testLast = utils.calcLmstLast(mm, longitude)
-                self.assertTrue(np.abs(testLmst - controlLmst) < self.tolerance)
-                self.assertTrue(np.abs(testLast - controlLast) < self.tolerance)
+                self.assertLess(np.abs(testLmst - controlLmst), self.tolerance)
+                self.assertLess(np.abs(testLast - controlLast), self.tolerance)
                 self.assertIsInstance(testLmst, np.float)
                 self.assertIsInstance(testLast, np.float)
 
