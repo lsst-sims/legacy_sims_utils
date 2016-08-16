@@ -2,6 +2,12 @@ import unittest
 import lsst.sims.utils as utils
 import numpy as np
 
+import lsst.utils.tests
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
+
 
 class StellarMagsTest(unittest.TestCase):
     """
@@ -32,5 +38,9 @@ class StellarMagsTest(unittest.TestCase):
             self.assertLess(mags[key], mags2[key])
 
 
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
+
 if __name__ == "__main__":
+    lsst.utils.tests.init()
     unittest.main()
