@@ -22,7 +22,7 @@ import numpy as np
 
 import unittest
 import palpy as pal
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, \
@@ -36,6 +36,10 @@ from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import _appGeoFromObserved, _icrsFromAppGeo
 from lsst.sims.utils import refractionCoefficients, applyRefraction
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 def makeObservationMetaData():
@@ -1143,15 +1147,9 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertAlmostEqual(test_refraction, control_refraction[ix], 12)
 
 
-def suite():
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(astrometryUnitTest)
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
