@@ -48,6 +48,7 @@ class CodeUtilsTest(unittest.TestCase):
         self.assertIn("either a number or a numpy array",
                       ee.exception.args[0])
 
+
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
 
