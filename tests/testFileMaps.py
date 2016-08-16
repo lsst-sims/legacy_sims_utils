@@ -172,7 +172,6 @@ class SpecMapTest(unittest.TestCase):
         self.verifyFile('m5.1Full.dat', 'starSED/old_mlt', testSpecMap=testMap)
 
 
-
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
 
