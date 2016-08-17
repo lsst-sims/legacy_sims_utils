@@ -3,8 +3,12 @@ from builtins import zip
 from builtins import range
 import numpy as np
 import unittest
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 import lsst.sims.utils as utils
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 def controlEquationOfEquinoxes(mjd):
@@ -47,9 +51,9 @@ def controlCalcGmstGast(mjd):
 class testCoordinateTransformations(unittest.TestCase):
 
     def setUp(self):
-        np.random.seed(32)
+        self.rng = np.random.RandomState(32)
         ntests = 100
-        self.mjd = 57087.0 - 1000.0 * (np.random.sample(ntests) - 0.5)
+        self.mjd = 57087.0 - 1000.0 * (self.rng.random_sample(ntests) - 0.5)
         self.tolerance = 1.0e-5
 
     def testExceptions(self):
@@ -83,13 +87,13 @@ class testCoordinateTransformations(unittest.TestCase):
         # test vectorized version
         control = controlEquationOfEquinoxes(self.mjd)
         test = utils.equationOfEquinoxes(self.mjd)
-        self.assertTrue(np.abs(test-control).max() < self.tolerance)
+        self.assertLess(np.abs(test-control).max(), self.tolerance)
 
         # test non-vectorized version
         for mm in self.mjd:
             control = controlEquationOfEquinoxes(mm)
             test = utils.equationOfEquinoxes(mm)
-            self.assertTrue(np.abs(test-control) < self.tolerance)
+            self.assertLess(np.abs(test-control), self.tolerance)
 
     def testGmstGast(self):
         """
@@ -98,15 +102,15 @@ class testCoordinateTransformations(unittest.TestCase):
 
         controlGmst, controlGast = controlCalcGmstGast(self.mjd)
         testGmst, testGast = utils.calcGmstGast(self.mjd)
-        self.assertTrue(np.abs(testGmst - controlGmst).max() < self.tolerance)
-        self.assertTrue(np.abs(testGast - controlGast).max() < self.tolerance)
+        self.assertLess(np.abs(testGmst - controlGmst).max(), self.tolerance)
+        self.assertLess(np.abs(testGast - controlGast).max(), self.tolerance)
 
         # test non-vectorized version
         for mm in self.mjd:
             controlGmst, controlGast = controlCalcGmstGast(mm)
             testGmst, testGast = utils.calcGmstGast(mm)
-            self.assertTrue(np.abs(testGmst - controlGmst) < self.tolerance)
-            self.assertTrue(np.abs(testGast - controlGast) < self.tolerance)
+            self.assertLess(np.abs(testGmst - controlGmst), self.tolerance)
+            self.assertLess(np.abs(testGast - controlGast), self.tolerance)
 
     def testLmstLast(self):
         """
@@ -126,8 +130,8 @@ class testCoordinateTransformations(unittest.TestCase):
             controlLmst %= 24.0
             controlLast %= 24.0
             testLmst, testLast = utils.calcLmstLast(self.mjd, longitude)
-            self.assertTrue(np.abs(testLmst - controlLmst).max() < self.tolerance)
-            self.assertTrue(np.abs(testLast - controlLast).max() < self.tolerance)
+            self.assertLess(np.abs(testLmst - controlLmst).max(), self.tolerance)
+            self.assertLess(np.abs(testLast - controlLast).max(), self.tolerance)
             self.assertIsInstance(testLmst, np.ndarray)
             self.assertIsInstance(testLast, np.ndarray)
 
@@ -143,13 +147,13 @@ class testCoordinateTransformations(unittest.TestCase):
                 controlLmst %= 24.0
                 controlLast %= 24.0
                 testLmst, testLast = utils.calcLmstLast(mm, longitude)
-                self.assertTrue(np.abs(testLmst - controlLmst) < self.tolerance)
-                self.assertTrue(np.abs(testLast - controlLast) < self.tolerance)
+                self.assertLess(np.abs(testLmst - controlLmst), self.tolerance)
+                self.assertLess(np.abs(testLast - controlLast), self.tolerance)
                 self.assertIsInstance(testLmst, np.float)
                 self.assertIsInstance(testLast, np.float)
 
         # test passing two numpy arrays
-        ll = np.random.random_sample(len(self.mjd)) * 2.0 * np.pi
+        ll = self.rng.random_sample(len(self.mjd)) * 2.0 * np.pi
         testLmst, testLast = utils.calcLmstLast(self.mjd, ll)
         self.assertIsInstance(testLmst, np.ndarray)
         self.assertIsInstance(testLast, np.ndarray)
@@ -232,11 +236,10 @@ class testCoordinateTransformations(unittest.TestCase):
 
         Each column of xyz is a vector
         """
-        np.random.seed(42)
         nsamples = 10
-        radius = np.random.random_sample(nsamples) * 10.0
-        theta = np.random.random_sample(nsamples) * np.pi - 0.5 * np.pi
-        phi = np.random.random_sample(nsamples) * 2.0 * np.pi
+        radius = self.rng.random_sample(nsamples) * 10.0
+        theta = self.rng.random_sample(nsamples) * np.pi - 0.5 * np.pi
+        phi = self.rng.random_sample(nsamples) * 2.0 * np.pi
 
         points = []
         for ix in range(nsamples):
@@ -263,10 +266,9 @@ class testCoordinateTransformations(unittest.TestCase):
             self.assertAlmostEqual(np.sin(lat), np.sin(th), 5)
 
     def testCartesianFromSpherical(self):
-        np.random.seed(42)
         nsamples = 10
-        theta = np.random.random_sample(nsamples) * np.pi - 0.5 * np.pi
-        phi = np.random.random_sample(nsamples) * 2.0 * np.pi
+        theta = self.rng.random_sample(nsamples) * np.pi - 0.5 * np.pi
+        phi = self.rng.random_sample(nsamples) * 2.0 * np.pi
 
         points = []
         for ix in range(nsamples):
@@ -329,18 +331,9 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertRaises(RuntimeError, utils.rotationMatrixFromVectors, v2, v1)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(testCoordinateTransformations)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()

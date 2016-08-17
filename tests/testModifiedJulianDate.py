@@ -7,10 +7,14 @@ import warnings
 import numpy as np
 import os
 import copy
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.utils import getPackageDir
 from lsst.sims.utils import ModifiedJulianDate, UTCtoUT1Warning
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class MjdTest(unittest.TestCase):
@@ -63,8 +67,8 @@ class MjdTest(unittest.TestCase):
         changes in astropy.time
         """
 
-        np.random.seed(115)
-        tai_list = np.random.random_sample(1000)*7000.0+50000.0
+        rng = np.random.RandomState(115)
+        tai_list = rng.random_sample(1000)*7000.0+50000.0
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
             self.assertAlmostEqual(mjd.TT, tai + 32.184 / 86400.0, 15)
@@ -82,8 +86,8 @@ class MjdTest(unittest.TestCase):
         changes in astropy.time
         """
 
-        np.random.seed(117)
-        tai_list = np.random.random_sample(1000)*10000.0 + 46000.0
+        rng = np.random.RandomState(117)
+        tai_list = rng.random_sample(1000)*10000.0 + 46000.0
         for tai in tai_list:
             mjd = ModifiedJulianDate(TAI=tai)
             g = np.radians(357.53 + 0.9856003 * (np.round(tai - 51544.5)))
@@ -103,9 +107,9 @@ class MjdTest(unittest.TestCase):
         dut in units of days rather than seconds, etc.)
         """
 
-        np.random.seed(117)
+        rng = np.random.RandomState(117)
 
-        utc_list = np.random.random_sample(1000) * 10000.0 + 43000.0
+        utc_list = rng.random_sample(1000) * 10000.0 + 43000.0
         for utc in utc_list:
             mjd = ModifiedJulianDate(UTC=utc)
 
@@ -131,9 +135,9 @@ class MjdTest(unittest.TestCase):
         dut in units of days rather than seconds, etc.)
         """
 
-        np.random.seed(117)
+        rng = np.random.RandomState(117)
 
-        utc_list = np.random.random_sample(1000) * 10000.0 + 63000.0
+        utc_list = rng.random_sample(1000) * 10000.0 + 63000.0
         for utc in utc_list:
             mjd = ModifiedJulianDate(UTC=utc)
 
@@ -224,7 +228,7 @@ class MjdTest(unittest.TestCase):
                 MJD_warnings += 1
                 # Test that the string "ModifiedJulianDate.UT1" actually showed up in the message.
                 # This indicates what method the warning occured from (UT1 vs dut).
-                self.assertTrue("ModifiedJulianDate.UT1" in str(w.message))
+                self.assertIn("ModifiedJulianDate.UT1", str(w.message))
         self.assertEqual(expected_MJD_warnings, MJD_warnings, msg="UT1 did not emit a UTCtoUT1Warning")
 
         expected_MJD_warnings = 1
@@ -236,7 +240,7 @@ class MjdTest(unittest.TestCase):
         for w in w_list:
             if w.category == UTCtoUT1Warning:
                 MJD_warnings += 1
-                self.assertTrue("ModifiedJulianDate.dut1" in str(w.message))
+                self.assertIn("ModifiedJulianDate.dut1", str(w.message))
         self.assertEqual(expected_MJD_warnings, MJD_warnings, msg="dut1 did not emit a UTCtoUT1Warning")
 
     def test_force_values(self):
@@ -318,18 +322,9 @@ class MjdTest(unittest.TestCase):
             self.assertAlmostEqual(mjd.dut1, control.dut1, tol, msg=msg)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(MjdTest)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()

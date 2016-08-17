@@ -1,13 +1,17 @@
 from builtins import zip
 import unittest
 import numpy as np
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.sims.utils import raDecFromNativeLonLat, nativeLonLatFromRaDec
 from lsst.sims.utils import _raDecFromNativeLonLat, _nativeLonLatFromRaDec
 from lsst.sims.utils import observedFromICRS, icrsFromObserved
 from lsst.sims.utils import ObservationMetaData, haversine
 from lsst.sims.utils import arcsecFromRadians, raDecFromAltAz, Site
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class NativeLonLatTest(unittest.TestCase):
@@ -52,20 +56,20 @@ class NativeLonLatTest(unittest.TestCase):
         at non-intuitive locations.
         """
 
-        np.random.seed(42)
+        rng = np.random.RandomState(42)
         nPointings = 10
-        raPointingList_icrs = np.random.random_sample(nPointings) * 360.0
-        decPointingList_icrs = np.random.random_sample(
+        raPointingList_icrs = rng.random_sample(nPointings) * 360.0
+        decPointingList_icrs = rng.random_sample(
             nPointings) * 180.0 - 90.0
-        mjdList = np.random.random_sample(nPointings) * 10000.0 + 43000.0
+        mjdList = rng.random_sample(nPointings) * 10000.0 + 43000.0
 
         nStars = 10
         for raPointing_icrs, decPointing_icrs, mjd in \
                 zip(raPointingList_icrs, decPointingList_icrs, mjdList):
 
             obs = ObservationMetaData(pointingRA=raPointing_icrs, pointingDec=decPointing_icrs, mjd=mjd)
-            raList_icrs = np.random.random_sample(nStars) * 360.0
-            decList_icrs = np.random.random_sample(nStars) * 180.0 - 90.0
+            raList_icrs = rng.random_sample(nStars) * 360.0
+            decList_icrs = rng.random_sample(nStars) * 180.0 - 90.0
             raList_obs, decList_obs = observedFromICRS(raList_icrs, decList_icrs, obs_metadata=obs,
                                                        epoch=2000.0, includeRefraction=True)
 
@@ -141,9 +145,9 @@ class NativeLonLatTest(unittest.TestCase):
         obs = ObservationMetaData(pointingRA=123.0, pointingDec=43.0, mjd=53467.2)
 
         nSamples = 100
-        np.random.seed(42)
-        raList = np.random.random_sample(nSamples) * 360.0
-        decList = np.random.random_sample(nSamples) * 180.0 - 90.0
+        rng = np.random.RandomState(42)
+        raList = rng.random_sample(nSamples) * 360.0
+        decList = rng.random_sample(nSamples) * 180.0 - 90.0
 
         lonList, latList = nativeLonLatFromRaDec(raList, decList, obs)
 
@@ -159,17 +163,17 @@ class NativeLonLatTest(unittest.TestCase):
         Test that raDecFromNativeLonLat does invert
         nativeLonLatFromRaDec
         """
-        np.random.seed(42)
+        rng = np.random.RandomState(42)
         nSamples = 100
         # because raDecFromNativeLonLat is only good
-        rrList = np.random.random_sample(nSamples) * 50.0
+        rrList = rng.random_sample(nSamples) * 50.0
         # out to a zenith distance of ~ 70 degrees
 
-        thetaList = np.random.random_sample(nSamples) * 2.0 * np.pi
+        thetaList = rng.random_sample(nSamples) * 2.0 * np.pi
 
-        rrPointingList = np.random.random_sample(10) * 50.0
-        thetaPointingList = np.random.random_sample(10) * 2.0 * np.pi
-        mjdList = np.random.random_sample(nSamples) * 10000.0 + 43000.0
+        rrPointingList = rng.random_sample(10) * 50.0
+        thetaPointingList = rng.random_sample(10) * 2.0 * np.pi
+        mjdList = rng.random_sample(nSamples) * 10000.0 + 43000.0
 
         for rrp, thetap, mjd in \
                 zip(rrPointingList, thetaPointingList, mjdList):
@@ -222,10 +226,10 @@ class NativeLonLatTest(unittest.TestCase):
         Test that raDecFromNativeLonLat does invert
         nativeLonLatFromRaDec (make sure it works in a vectorized way)
         """
-        np.random.seed(42)
+        rng = np.random.RandomState(42)
         nSamples = 100
-        latList = np.random.random_sample(nSamples) * 360.0
-        lonList = np.random.random_sample(nSamples) * 180.0 - 90.0
+        latList = rng.random_sample(nSamples) * 360.0
+        lonList = rng.random_sample(nSamples) * 180.0 - 90.0
         raPoint = 95.0
         decPoint = 75.0
 
@@ -246,12 +250,12 @@ class NativeLonLatTest(unittest.TestCase):
         and raDecFromNativeLonLat are consistent with each other
         """
 
-        np.random.seed(873)
+        rng = np.random.RandomState(873)
         nSamples = 1000
         obs = ObservationMetaData(
             pointingRA=45.0, pointingDec=-34.5, mjd=54656.76)
-        raList = np.random.random_sample(nSamples) * 360.0
-        decList = np.random.random_sample(nSamples) * 180.0 - 90.0
+        raList = rng.random_sample(nSamples) * 360.0
+        decList = rng.random_sample(nSamples) * 180.0 - 90.0
 
         lonDeg, latDeg = nativeLonLatFromRaDec(raList, decList, obs)
         lonRad, latRad = _nativeLonLatFromRaDec(np.radians(raList), np.radians(decList), obs)
@@ -264,17 +268,9 @@ class NativeLonLatTest(unittest.TestCase):
         np.testing.assert_array_almost_equal(np.radians(decDeg), decRad, 15)
 
 
-def suite():
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(NativeLonLatTest)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    utilsTests.run(suite(), shouldExit)
-
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()

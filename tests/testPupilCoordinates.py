@@ -3,13 +3,17 @@ from builtins import zip
 from builtins import range
 import numpy as np
 import unittest
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 
 from lsst.sims.utils import ObservationMetaData, _nativeLonLatFromRaDec
 from lsst.sims.utils import _pupilCoordsFromRaDec
 from lsst.sims.utils import _raDecFromPupilCoords
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import haversine, arcsecFromRadians, solarRaDec, ModifiedJulianDate, distanceToSun
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 class PupilCoordinateUnitTest(unittest.TestCase):
@@ -23,9 +27,9 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                                            rotSkyPos=25.0,
                                            mjd=52000.0)
 
-        np.random.seed(42)
-        ra = np.random.random_sample(10) * np.radians(1.0) + np.radians(obs_metadata.pointingRA)
-        dec = np.random.random_sample(10) * np.radians(1.0) + np.radians(obs_metadata.pointingDec)
+        rng = np.random.RandomState(42)
+        ra = rng.random_sample(10) * np.radians(1.0) + np.radians(obs_metadata.pointingRA)
+        dec = rng.random_sample(10) * np.radians(1.0) + np.radians(obs_metadata.pointingDec)
         raShort = np.array([1.0])
         decShort = np.array([1.0])
 
@@ -121,9 +125,9 @@ class PupilCoordinateUnitTest(unittest.TestCase):
 
         epoch = 2000.0
         mjd = 42350.0
-        np.random.seed(42)
-        raList = np.random.random_sample(10) * 360.0
-        decList = np.random.random_sample(10) * 180.0 - 90.0
+        rng = np.random.RandomState(42)
+        raList = rng.random_sample(10) * 360.0
+        decList = rng.random_sample(10) * 180.0 - 90.0
 
         for rotSkyPos in np.arange(-90.0, 181.0, 90.0):
             for ra, dec in zip(raList, decList):
@@ -188,9 +192,9 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                                   mjd=mjd)
 
         nSamples = 1000
-        np.random.seed(42)
-        ra = (np.random.random_sample(nSamples) * 0.1 - 0.2) + np.radians(raCenter)
-        dec = (np.random.random_sample(nSamples) * 0.1 - 0.2) + np.radians(decCenter)
+        rng = np.random.RandomState(42)
+        ra = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(raCenter)
+        dec = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(decCenter)
         xp, yp = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs, epoch=2000.0)
         raTest, decTest = _raDecFromPupilCoords(
             xp, yp, obs_metadata=obs, epoch=2000.0)
@@ -218,9 +222,9 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         obs = ObservationMetaData(pointingRA=42.0, pointingDec=-28.0,
                                   rotSkyPos=111.0, mjd=42356.0)
         nSamples = 100
-        np.random.seed(42)
-        raList = np.radians(np.random.random_sample(nSamples) * 2.0 + 42.0)
-        decList = np.radians(np.random.random_sample(nSamples) * 2.0 - 28.0)
+        rng = np.random.RandomState(42)
+        raList = np.radians(rng.random_sample(nSamples) * 2.0 + 42.0)
+        decList = np.radians(rng.random_sample(nSamples) * 2.0 - 28.0)
 
         xControl, yControl = _pupilCoordsFromRaDec(raList, decList,
                                                    obs_metadata=obs,
@@ -244,19 +248,13 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                 self.assertFalse(np.isnan(xt))
                 self.assertFalse(np.isnan(yt))
             else:
-                self.assertTrue(np.isnan(xt))
-                self.assertTrue(np.isnan(yt))
+                np.testing.assert_equal(xt, np.NaN)
+                np.testing.assert_equal(yt, np.NaN)
 
 
-def suite():
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(PupilCoordinateUnitTest)
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()

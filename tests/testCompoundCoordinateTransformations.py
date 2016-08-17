@@ -3,8 +3,12 @@ from builtins import zip
 from builtins import range
 import unittest
 import numpy as np
-import lsst.utils.tests as utilsTests
+import lsst.utils.tests
 import lsst.sims.utils as utils
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
 
 
 def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
@@ -60,7 +64,7 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
 class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
     def setUp(self):
-        np.random.seed(32)
+        self.rng = np.random.RandomState(32)
         self.mjd = 57087.0
         self.tolerance = 1.0e-5
 
@@ -182,7 +186,6 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         Test that altAzPaFromRaDec and raDecFromAltAz really invert each other
         """
 
-        np.random.seed(42)
         mjd = 58350.0
 
         alt_in = []
@@ -206,8 +209,8 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
                 self.assertIsInstance(ra_in, np.ndarray)
                 self.assertIsInstance(dec_in, np.ndarray)
 
-                self.assertFalse(np.isnan(ra_in).any())
-                self.assertFalse(np.isnan(dec_in).any())
+                self.assertFalse(np.isnan(ra_in).any(), msg='there were NaNs in ra_in')
+                self.assertFalse(np.isnan(dec_in).any(), msg='there were NaNs in dec_in')
 
                 # test that passing them in one at a time gives the same answer
                 for ix in range(len(alt_in)):
@@ -219,7 +222,7 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
 
                 alt_out, az_out, pa_out = utils.altAzPaFromRaDec(ra_in, dec_in, obs)
 
-                self.assertFalse(np.isnan(pa_out).any())
+                self.assertFalse(np.isnan(pa_out).any(), msg='there were NaNs in pa_out')
 
                 for alt_c, az_c, alt_t, az_t in \
                         zip(np.radians(alt_in), np.radians(az_in), np.radians(alt_out), np.radians(az_out)):
@@ -232,10 +235,9 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
         Test conversion from RA, Dec to Alt, Az
         """
 
-        np.random.seed(32)
         nSamples = 100
-        ra = np.random.sample(nSamples)*2.0*np.pi
-        dec = (np.random.sample(nSamples)-0.5)*np.pi
+        ra = self.rng.random_sample(nSamples)*2.0*np.pi
+        dec = (self.rng.random_sample(nSamples)-0.5)*np.pi
         lon_rad = 1.467
         lat_rad = -0.234
         controlAlt, controlAz = controlAltAzFromRaDec(ra, dec,
@@ -277,18 +279,9 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
             self.assertLess(np.abs(np.sin(testPa) - controlSinPa), self.tolerance)
 
 
-def suite():
-    """Returns a suite containing all the test cases in this module."""
-    utilsTests.init()
-    suites = []
-    suites += unittest.makeSuite(CompoundCoordinateTransformationsTests)
-
-    return unittest.TestSuite(suites)
-
-
-def run(shouldExit=False):
-    """Run the tests"""
-    utilsTests.run(suite(), shouldExit)
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
 
 if __name__ == "__main__":
-    run(True)
+    lsst.utils.tests.init()
+    unittest.main()
