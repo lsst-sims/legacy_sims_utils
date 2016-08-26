@@ -278,6 +278,66 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
             self.assertLess(distance, 0.0001)
             self.assertLess(np.abs(np.sin(testPa) - controlSinPa), self.tolerance)
 
+    def test_altAzPaFromRaDec_no_refraction(self):
+        """
+        Test that altAzPaFromRaDec gives a sane answer when you turn off
+        refraction.
+        """
+
+        rng = np.random.RandomState(44)
+        n_samples = 10
+        n_batches = 10
+        for i_batch in range(n_batches):
+            # first, generate some sane RA, Dec values by generating sane
+            # Alt, Az values with refraction and converting them into
+            # RA, Dec
+            alt_sane = rng.random_sample(n_samples)*45.0 + 45.0
+            az_sane = rng.random_sample(n_samples)*360.0
+            mjd_input = rng.random_sample(n_samples)*10000.0 + 40000.0
+            mjd_list = utils.ModifiedJulianDate.get_list(TAI=mjd_input)
+
+            ra_sane = []
+            dec_sane = []
+            obs_sane = []
+            for alt, az, mjd in zip(alt_sane, az_sane, mjd_list):
+                obs = utils.ObservationMetaData(mjd=mjd)
+                ra, dec = utils.raDecFromAltAz(alt, az, obs)
+                ra_sane.append(ra)
+                dec_sane.append(dec)
+                obs_sane.append(obs)
+
+            # Now, loop over our refracted RA, Dec, Alt, Az values.
+            # Convert from RA, Dec to unrefracted Alt, Az.  Then, apply refraction
+            # with our applyRefraction method.  Check that the resulting refracted
+            # zenith distance is:
+            #    1) within 0.1 arcsec of the zenith distance of the already refracted
+            #       alt value calculated above
+            #
+            #    2) closer to the zenith distance calculated above than to the
+            #       unrefracted zenith distance
+            for ra, dec, obs, alt_ref, az_ref in \
+            zip(ra_sane, dec_sane, obs_sane, alt_sane, az_sane):
+
+                alt, az, pa = utils.altAzPaFromRaDec(ra, dec, obs,
+                                                     includeRefraction = False)
+
+                tanz, tanz3 = utils.refractionCoefficients(site=obs.site)
+                refracted_zd = utils.applyRefraction(np.radians(90.0-alt), tanz, tanz3)
+
+                # Check that the two independently refracted zenith distances agree
+                # to within 0.1 arcsec
+                self.assertLess(np.abs(utils.arcsecFromRadians(refracted_zd) -
+                                       utils.arcsecFromRadians(np.radians(90.0-alt_ref))),
+                                0.1)
+
+                # Check that the two refracted zenith distances are closer to each other
+                # than to the unrefracted zenith distance
+                self.assertLess(np.abs(np.degrees(refracted_zd)-(90.0-alt_ref)),
+                                np.abs((90.0-alt_ref) - (90.0-alt)))
+
+                self.assertLess(np.abs(np.degrees(refracted_zd)-(90.0-alt_ref)),
+                                np.abs(np.degrees(refracted_zd) - (90.0-alt)))
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
