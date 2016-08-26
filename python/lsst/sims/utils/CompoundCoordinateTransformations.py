@@ -95,7 +95,7 @@ def _altAzPaFromRaDec(raRad, decRad, obs, includeRefraction=True):
     return alt, az, pa
 
 
-def raDecFromAltAz(alt, az, obs):
+def raDecFromAltAz(alt, az, obs, includeRefraction=True):
     """
     Convert altitude and azimuth to RA and Dec
 
@@ -106,6 +106,9 @@ def raDecFromAltAz(alt, az, obs):
     @param [in] obs is an ObservationMetaData characterizing
     the site of the telescope and the MJD of the observation
 
+    @param [in] includeRefraction is a boolean that turns refraction on and off
+    (default True)
+
     @param [out] RA in degrees (in the International Celestial Reference System)
 
     @param [out] Dec in degrees (in the International Celestial Reference System)
@@ -113,12 +116,13 @@ def raDecFromAltAz(alt, az, obs):
     Note: This method is only accurate to within 0.01 arcsec near azimuth = 0 or pi
     """
 
-    ra, dec = _raDecFromAltAz(np.radians(alt), np.radians(az), obs)
+    ra, dec = _raDecFromAltAz(np.radians(alt), np.radians(az), obs,
+                              includeRefraction=includeRefraction)
 
     return np.degrees(ra), np.degrees(dec)
 
 
-def _raDecFromAltAz(altRad, azRad, obs):
+def _raDecFromAltAz(altRad, azRad, obs, includeRefraction=True):
     """
     Convert altitude and azimuth to RA and Dec
 
@@ -128,6 +132,9 @@ def _raDecFromAltAz(altRad, azRad, obs):
 
     @param [in] obs is an ObservationMetaData characterizing
     the site of the telescope and the MJD of the observation
+
+    @param [in] includeRefraction is a boolean that turns refraction on and off
+    (default True)
 
     @param [out] RA in radians (in the International Celestial Reference System)
 
@@ -167,7 +174,7 @@ def _raDecFromAltAz(altRad, azRad, obs):
 
     raRad, decRad = _icrsFromObserved(raObs, decObs,
                                       obs_metadata=obs, epoch=2000.0,
-                                      includeRefraction=True)
+                                      includeRefraction=includeRefraction)
 
     return raRad, decRad
 
