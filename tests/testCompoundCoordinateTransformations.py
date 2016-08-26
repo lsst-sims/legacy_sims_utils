@@ -338,6 +338,34 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
                 self.assertLess(np.abs(np.degrees(refracted_zd)-(90.0-alt_ref)),
                                 np.abs(np.degrees(refracted_zd) - (90.0-alt)))
 
+    def test_raDecFromAltAz_noref(self):
+        """
+        test that raDecFromAltAz correctly inverts altAzPaFromRaDec, even when
+        refraction is turned off
+        """
+
+        rng = np.random.RandomState(55)
+        n_samples = 10
+        n_batches = 10
+
+        for i_batch in range(n_batches):
+            d_sun = 0.0
+            while d_sun < 45.0:  # because ICRS->Observed transformation breaks down close to the sun
+
+                alt_in = rng.random_sample(n_samples)*50.0 + 20.0
+                az_in = rng.random_sample(n_samples)*360.0
+                obs = utils.ObservationMetaData(mjd=43000.0)
+                ra_in, dec_in = utils.raDecFromAltAz(alt_in, az_in, obs=obs, includeRefraction=False)
+
+                d_sun = utils.distanceToSun(ra_in, dec_in, obs.mjd).min()
+
+            alt_out, az_out, pa_out = utils.altAzPaFromRaDec(ra_in, dec_in, obs=obs,
+                                                             includeRefraction=False)
+
+            dd = utils.haversine(np.radians(alt_out), np.radians(az_out),
+                                 np.radians(alt_in), np.radians(az_in))
+            self.assertLess(utils.arcsecFromRadians(dd).max(), 0.01)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
