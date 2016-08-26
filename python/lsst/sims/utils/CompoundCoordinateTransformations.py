@@ -17,7 +17,7 @@ __all__ = ["_altAzPaFromRaDec", "altAzPaFromRaDec",
            "getRotSkyPos", "_getRotSkyPos"]
 
 
-def altAzPaFromRaDec(ra, dec, obs):
+def altAzPaFromRaDec(ra, dec, obs, includeRefraction=True):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
@@ -31,6 +31,9 @@ def altAzPaFromRaDec(ra, dec, obs):
     @param [in] obs is an ObservationMetaData characterizing
     the site of the telescope and the MJD of the observation
 
+    @param [in] includeRefraction is a boolean that turns refraction on and off
+    (default True)
+
     @param [out] altitude in degrees
 
     @param [out] azimuth in degrees
@@ -39,12 +42,12 @@ def altAzPaFromRaDec(ra, dec, obs):
     """
 
     alt, az, pa = _altAzPaFromRaDec(np.radians(ra), np.radians(dec),
-                                    obs)
+                                    obs, includeRefraction=includeRefraction)
 
     return np.degrees(alt), np.degrees(az), np.degrees(pa)
 
 
-def _altAzPaFromRaDec(raRad, decRad, obs):
+def _altAzPaFromRaDec(raRad, decRad, obs, includeRefraction=True):
     """
     Convert RA, Dec, longitude, latitude and MJD into altitude, azimuth
     and parallactic angle using PALPY
@@ -58,6 +61,9 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     @param [in] obs is an ObservationMetaData characterizing
     the site of the telescope and the MJD of the observation
 
+    @param [in] includeRefraction is a boolean that turns refraction on and off
+    (default True)
+
     @param [out] altitude in radians
 
     @param [out] azimuth in radians
@@ -68,8 +74,9 @@ def _altAzPaFromRaDec(raRad, decRad, obs):
     are_arrays = _validate_inputs([raRad, decRad], ['ra', 'dec'],
                                   "altAzPaFromRaDec")
 
-    raObs, decObs = _observedFromICRS(
-        raRad, decRad, obs_metadata=obs, epoch=2000.0, includeRefraction=True)
+    raObs, decObs = \
+    _observedFromICRS(raRad, decRad, obs_metadata=obs,
+                      epoch=2000.0, includeRefraction=includeRefraction)
 
     lst = calcLmstLast(obs.mjd.UT1, obs.site.longitude_rad)
     last = lst[1]
