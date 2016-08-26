@@ -1015,7 +1015,7 @@ class astrometryUnitTest(unittest.TestCase):
         n_samples = 10
         for i_batch in range(n_batches):
             _d_sun = 0.0
-            while _d_sun < 0.25*np.pi:
+            while _d_sun < 0.25*np.pi:  # because ICRS -> Observed conversion breaks close to the sun
                 mjd = rng.random_sample(1)[0]*10000.0 + 40000.0
                 obs = ObservationMetaData(mjd=mjd)
                 ra_in = rng.random_sample(n_samples)*np.pi*2.0
