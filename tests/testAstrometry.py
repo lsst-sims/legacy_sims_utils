@@ -1005,6 +1005,34 @@ class astrometryUnitTest(unittest.TestCase):
                             dist_f = arcsecFromRadians(pal.dsep(ra_app[ix], dec_app[ix], ra_f, dec_f))
                             self.assertLess(dist_f, 1.0e-9)
 
+    def test_icrsFromObserved_noRefraction(self):
+        """
+        Test that _icrsFromObserved really does invert _observedFromICRS
+        in the case of no refraction.
+        """
+        rng = np.random.RandomState(85)
+        n_batches = 10
+        n_samples = 10
+        for i_batch in range(n_batches):
+            _d_sun = 0.0
+            while _d_sun < 0.25*np.pi:
+                mjd = rng.random_sample(1)[0]*10000.0 + 40000.0
+                obs = ObservationMetaData(mjd=mjd)
+                ra_in = rng.random_sample(n_samples)*np.pi*2.0
+                dec_in = rng.random_sample(n_samples)*np.pi - 0.5*np.pi
+
+                _d_sun = _distanceToSun(ra_in, dec_in, obs.mjd).min()
+
+            ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in, obs_metadata=obs,
+                                                includeRefraction=False,
+                                                epoch=2000.0)
+            ra_icrs, dec_icrs = _icrsFromObserved(ra_obs, dec_obs, obs_metadata=obs,
+                                                  includeRefraction=False,
+                                                  epoch=2000.0)
+            distance = pal.dsepVector(ra_in, dec_in, ra_icrs, dec_icrs)
+
+            self.assertLess(arcsecFromRadians(distance).max(), 0.01)
+
     def test_icrsFromObservedExceptions(self):
         """
         Test that _icrsFromObserved raises exceptions when it is supposed to.
