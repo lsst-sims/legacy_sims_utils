@@ -109,7 +109,7 @@ class ObservationMetaData(object):
         self._skyBrightness = skyBrightness
         self._site = site
         self._epoch = epoch
-        self._phoSimMetadata = {}
+        self._OpsimMetaData = None
 
         if mjd is not None:
             if isinstance(mjd, numbers.Number):
@@ -169,7 +169,7 @@ class ObservationMetaData(object):
         mydict['skyBrightness'] = self.skyBrightness
         # mydict['m5'] = self.m5
 
-        mydict['phoSimMetaData'] = self._phoSimMetadata
+        mydict['OpsimMetaData'] = self._OpsimMetaData
 
         return mydict
 
@@ -253,28 +253,6 @@ class ObservationMetaData(object):
 
         self._bounds = SpatialBounds.getSpatialBounds(self._boundType, self._pointingRA, self._pointingDec,
                                                       self._boundLength)
-
-    def assignPhoSimMetaData(self, metadata):
-        """
-        Assign a dict of extra metadata assumed by PhoSim.
-
-        Optional values that can be included in this dict
-        are:
-
-        SIM_SEED -- an int used to seed a random number generator in PhoSim
-        Opsim_moonra -- RA of the moon in degrees
-        Opsim_moondec -- Dec of the moon in degrees
-        Opsim_rawseeing -- seeing at zenith at 500 nm
-        Opsim_sunalt -- altitude of the sun in degrees
-        Opsim_moonalt -- altitude of the moon in degrees
-        Opsim_dist2moon -- distance from the pointing to the moon in degrees
-        Opsim_moonphase -- phase of the moon from 0 to 100
-        exptime -- exposure time
-
-        None of these entries is required.  No effort is made to ensure that they
-        are consistent with the other data contained in this ObservationMetaData.
-        """
-        self._phoSimMetadata = metadata
 
     @property
     def pointingRA(self):
@@ -468,13 +446,15 @@ class ObservationMetaData(object):
         self._skyBrightness = value
 
     @property
-    def phoSimMetaData(self):
+    def OpsimMetaData(self):
         """
-        A dict of parameters expected by PhoSim characterizing this
-        ObservationMetaData.
+        A dict of all of the columns taken from OpSim when constructing this
+        ObservationMetaData
         """
-        return self._phoSimMetadata
+        return self._OpsimMetaData
 
-    @phoSimMetaData.setter
-    def phoSimMetaData(self, value):
-        self.assignPhoSimMetaData(value)
+    @OpsimMetaData.setter
+    def OpsimMetaData(self, value):
+        if not isinstance(value, dict):
+            raise RuntimeError('OpsimMetaData must be a dict')
+        self._OpsimMetaData = value
