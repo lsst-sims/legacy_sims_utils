@@ -366,6 +366,33 @@ class CompoundCoordinateTransformationsTests(unittest.TestCase):
                                  np.radians(alt_in), np.radians(az_in))
             self.assertLess(utils.arcsecFromRadians(dd).max(), 0.01)
 
+    def test_raDecAltAz_noRefraction_degVsRadians(self):
+        """
+        Check that raDecFromAltAz and altAzPaFromRaDec are consistent in a degrees-versus-radians
+        sense when refraction is turned off
+        """
+
+        rng = np.random.RandomState(34)
+        n_samples = 10
+        ra_in = rng.random_sample(n_samples)*360.0
+        dec_in = rng.random_sample(n_samples)*180.0 - 90.0
+        mjd = 43000.0
+        obs = utils.ObservationMetaData(mjd=mjd)
+        alt, az, pa = utils.altAzPaFromRaDec(ra_in, dec_in, obs, includeRefraction=False)
+        alt_rad, az_rad, pa_rad = utils._altAzPaFromRaDec(np.radians(ra_in),
+                                                          np.radians(dec_in),
+                                                          obs, includeRefraction=False)
+
+        distance = utils.haversine(az_rad, alt_rad,
+                                   np.radians(az), np.radians(alt))
+        self.assertLess(utils.arcsecFromRadians(distance).min(), 0.001)
+        np.testing.assert_array_almost_equal(pa, np.degrees(pa_rad), decimal=12)
+
+        ra, dec = utils.raDecFromAltAz(alt, az, obs, includeRefraction=False)
+        ra_rad, dec_rad = utils._raDecFromAltAz(alt_rad, az_rad, obs, includeRefraction=False)
+        distance = utils.haversine(ra_rad, dec_rad, np.radians(ra), np.radians(dec))
+        self.assertLess(utils.arcsecFromRadians(distance).min(), 0.001)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
