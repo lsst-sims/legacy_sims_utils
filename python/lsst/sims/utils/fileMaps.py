@@ -67,7 +67,7 @@ class SpecMap(object):
 
         raise KeyError("No path found for spectrum name: %s" % (item))
 
-    def has_key(self, item):
+    def __contains__(self, item):
         """
         Returns True if there is a map for 'item'; False if not.
 
