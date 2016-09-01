@@ -262,6 +262,31 @@ class ObservationMetaDataTest(unittest.TestCase):
         obs = ObservationMetaData()
         obs.summary
 
+    def testOpsimMetaData(self):
+        """
+        Make sure that an exception is raised if you pass a non-dict
+        object in as OpsimMetaData
+        """
+        obs = ObservationMetaData(pointingRA=23.0, pointingDec=-11.0)
+
+        with self.assertRaises(RuntimeError) as ee:
+            obs.OpsimMetaData = 5.0
+        self.assertIn("must be a dict", ee.exception.args[0])
+
+        with self.assertRaises(RuntimeError) as ee:
+            obs.OpsimMetaData = 5
+        self.assertIn("must be a dict", ee.exception.args[0])
+
+        with self.assertRaises(RuntimeError) as ee:
+            obs.OpsimMetaData = [5.0, 3.0]
+        self.assertIn("must be a dict", ee.exception.args[0])
+
+        with self.assertRaises(RuntimeError) as ee:
+            obs.OpsimMetaData = (5.0, 3.0)
+        self.assertIn("must be a dict", ee.exception.args[0])
+
+        obs.OpsimMetaData = {'a': 1, 'b': 2}
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass

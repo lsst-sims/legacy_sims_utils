@@ -171,6 +171,18 @@ class SpecMapTest(unittest.TestCase):
         self.verifyFile('L2_0Full.dat', 'starSED/old_mlt', testSpecMap=testMap)
         self.verifyFile('m5.1Full.dat', 'starSED/old_mlt', testSpecMap=testMap)
 
+    def test_contains(self):
+        """
+        Test that 'k in SpecMap' works as it should
+        """
+
+        testMap = SpecMap(fileDict={'abcd.txt': 'file_dir/abcd.txt.gz'},
+                          dirDict={'(^burrows)': 'dir_dir'})
+
+        self.assertFalse('banana' in testMap)
+        self.assertTrue('abcd.txt' in testMap)
+        self.assertTrue('burrows_123.txt' in testMap)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass

@@ -695,10 +695,6 @@ def _calculateObservatoryParameters(obs_metadata, wavelength, includeRefraction)
     # converting apparent place into observed place
     # i.e. it calculates geodetic latitude, magnitude of diurnal aberration,
     # refraction coefficients and the like based on data about the observation site
-    #
-    # TODO: palpy.aoppa requires as its first argument
-    # the UTC time expressed as an MJD.  It is not clear to me
-    # how to actually calculate that.
     if includeRefraction:
         obsPrms = palpy.aoppa(obs_metadata.mjd.UTC, obs_metadata.mjd.dut1,
                               obs_metadata.site.longitude_rad,
