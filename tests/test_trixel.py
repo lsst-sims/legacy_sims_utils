@@ -1,5 +1,5 @@
 import unittest
-from lsst.sims.utils.htmModule import findHtmId
+from lsst.sims.utils import findHtmId, trixelFromLabel
 import time
 import numpy as np
 
@@ -102,6 +102,20 @@ class TrixelFinderTest(unittest.TestCase):
         # N333
         self.check_pt(pt, '11111111')
 
+
+    def test_trixel_from_label(self):
+        rng = np.random.RandomState(88)
+        n_tests = 100
+        for i_test in range(n_tests):
+            pt = rng.normal(0.0, 1.0, 3)
+            ra, dec = sphericalFromCartesian(pt)
+            ii = findHtmId(np.degrees(ra), np.degrees(dec), 5)
+            tt = trixelFromLabel(ii)
+            self.assertTrue(tt.contains(pt))
+            tt1 = trixelFromLabel(ii-1)
+            self.assertFalse(tt1.contains(pt))
+            tt2 = trixelFromLabel(ii+1)
+            self.assertFalse(tt2.contains(pt))
 
 if __name__ == "__main__":
     unittest.main()

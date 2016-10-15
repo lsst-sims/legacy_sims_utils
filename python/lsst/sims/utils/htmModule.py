@@ -1,7 +1,7 @@
 import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
-__all__ = ["Trixel", "findHtmId"]
+__all__ = ["Trixel", "findHtmId", "trixelFromLabel"]
 
 class Trixel(object):
 
@@ -114,6 +114,50 @@ _S2_trixel = Trixel(10, [np.array([-1.0, 0.0, 0.0]),
 _S3_trixel = Trixel(11, [np.array([0.0, -1.0, 0.0]),
                          np.array([0.0, 0.0, -1.0]),
                          np.array([1.0, 0.0, 0.0])])
+
+
+def trixelFromLabel(label):
+    label_0 = label
+    tree = []
+    reduced_label = label
+    while reduced_label > 0:
+        reduced_label = label >> 2
+        d_label = label - (reduced_label << 2)
+        tree.append(d_label)
+        label = reduced_label
+
+    tree.reverse()
+
+    ans = None
+
+    if tree[0] == 3:
+        if tree[1] == 0:
+            ans = _N0_trixel
+        elif tree[1] == 1:
+            ans = _N1_trixel
+        elif tree[1] == 2:
+            ans = _N2_trixel
+        elif tree[1] == 3:
+            ans = _N3_trixel
+    elif tree[0] == 2:
+        if tree[1] == 0:
+            ans = _S0_trixel
+        elif tree[1] == 1:
+            ans = _S1_trixel
+        elif tree[1] == 2:
+            ans = _S2_trixel
+        elif tree[1] == 3:
+            ans = _S3_trixel
+
+    if ans is None:
+        raise RuntimeError("Unable to find trixel for id %d\n %s"
+                           % (label_0, str(tree)))
+
+    for ix in range(2, len(tree)):
+        ans = ans.get_child(tree[ix])
+
+    return ans
+
 
 def _iterateTrixelFinder(pt, parent, max_level):
     children = parent.get_children()
