@@ -15,6 +15,8 @@ class Trixel(object):
         self._cross01 = None
         self._cross12 = None
         self._cross20 = None
+        self._w_arr = None
+
 
     def contains(self, pt):
 
@@ -33,9 +35,7 @@ class Trixel(object):
 
         return False
 
-    def get_children(self):
-
-        base_child = self._label << 2
+    def _create_w(self):
 
         w0 = self._corners[1]+self._corners[2]
         w0 = w0/np.sqrt(np.power(w0, 2).sum())
@@ -44,10 +44,19 @@ class Trixel(object):
         w2 = self._corners[0]+self._corners[1]
         w2 = w2/np.sqrt(np.power(w2, 2).sum())
 
-        t0 = Trixel(base_child, [self._corners[0], w2, w1])
-        t1 = Trixel(base_child+1, [self._corners[1], w0, w2])
-        t2 = Trixel(base_child+2, [self._corners[2], w1, w0])
-        t3 = Trixel(base_child+3, [w0, w1, w2])
+        self._w_arr = [w0, w1, w2]
+
+    def get_children(self):
+
+        if self._w_arr is None:
+            self._create_w()
+
+        base_child = self._label << 2
+
+        t0 = Trixel(base_child, [self._corners[0], self._w_arr[2], self._w_arr[1]])
+        t1 = Trixel(base_child+1, [self._corners[1], self._w_arr[0],self._w_arr[2]])
+        t2 = Trixel(base_child+2, [self._corners[2], self._w_arr[1],self._w_arr[0]])
+        t3 = Trixel(base_child+3, [self._w_arr[0], self._w_arr[1], self._w_arr[2]])
 
         return [t0, t1, t2, t3]
 
