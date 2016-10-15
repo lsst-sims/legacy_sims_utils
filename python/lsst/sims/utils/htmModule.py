@@ -64,6 +64,38 @@ class Trixel(object):
         return self._corners
 
 
+_N0_trixel = Trixel(12, [np.array([1.0, 0.0, 0.0]),
+                         np.array([0.0, 0.0, 1.0]),
+                         np.array([0.0, -1.0, 0.0])])
+
+_N1_trixel = Trixel(13,[np.array([0.0, -1.0, 0.0]),
+                        np.array([0.0, 0.0, 1.0]),
+                        np.array([-1.0, 0.0, 0.0])])
+
+_N2_trixel = Trixel(14, [np.array([-1.0, 0.0, 0.0]),
+                         np.array([0.0, 0.0, 1.0]),
+                         np.array([0.0, 1.0, 0.0])])
+
+_N3_trixel = Trixel(15, [np.array([0.0, 1.0, 0.0]),
+                         np.array([0.0, 0.0, 1.0]),
+                         np.array([1.0, 0.0, 0.0])])
+
+_S0_trixel = Trixel(8, [np.array([1.0, 0.0, 0.0]),
+                        np.array([0.0, 0.0, -1.0]),
+                        np.array([0.0, 1.0, 0.0])])
+
+_S1_trixel = Trixel(9, [np.array([0.0, 1.0, 0.0]),
+                        np.array([0.0, 0.0, -1.0]),
+                        np.array([-1.0, 0.0, 0.0])])
+
+_S2_trixel = Trixel(10, [np.array([-1.0, 0.0, 0.0]),
+                         np.array([0.0, 0.0, -1.0]),
+                         np.array([0.0, -1.0, 0.0])])
+
+_S3_trixel = Trixel(11, [np.array([0.0, -1.0, 0.0]),
+                         np.array([0.0, 0.0, -1.0]),
+                         np.array([1.0, 0.0, 0.0])])
+
 def _iterateTrixelFinder(pt, parent, max_level):
     children = parent.get_children()
     for child in children:
@@ -74,49 +106,28 @@ def _iterateTrixelFinder(pt, parent, max_level):
                 return _iterateTrixelFinder(pt, child, max_level)
 
 def findHtmId(ra, dec, max_level):
-    v0 = np.array([0.0, 0.0, 1.0])
-    v1 = np.array([1.0, 0.0, 0.0])
-    v2 = np.array([0.0, 1.0, 0.0])
-    v3 = np.array([-1.0, 0.0, 0.0])
-    v4 = np.array([0.0, -1.0, 0.0])
-    v5 = np.array([0.0, 0.0, -1.0])
 
     raRad = np.radians(ra)
     decRad = np.radians(dec)
     pt = cartesianFromSpherical(raRad, decRad)
 
-    S0 = Trixel(8, [v1, v5, v2])
-    if S0.contains(pt):
-        parent = S0
+    if _S0_trixel.contains(pt):
+        parent = _S0_trixel
+    elif _S1_trixel.contains(pt):
+        parent = _S1_trixel
+    elif _S2_trixel.contains(pt):
+        parent = _S2_trixel
+    elif _S3_trixel.contains(pt):
+        parent = _S3_trixel
+    elif _N0_trixel.contains(pt):
+        parent = _N0_trixel
+    elif _N1_trixel.contains(pt):
+        parent = _N1_trixel
+    elif _N2_trixel.contains(pt):
+        parent = _N2_trixel
+    elif _N3_trixel.contains(pt):
+        parent = _N3_trixel
     else:
-        S1 = Trixel(9, [v2, v5, v3])
-        if S1.contains(pt):
-            parent = S1
-        else:
-           S2 = Trixel(10, [v3, v5, v4])
-           if S2.contains(pt):
-              parent = S2
-           else:
-               S3 = Trixel(11, [v4, v5, v1])
-               if S3.contains(pt):
-                   parent = S3
-               else:
-                   N0 = Trixel(12, [v1, v0, v4])
-                   if N0.contains(pt):
-                       parent = N0
-                   else:
-                       N1 = Trixel(13,[v4, v0, v3])
-                       if N1.contains(pt):
-                           parent = N1
-                       else:
-                           N2 = Trixel(14, [v3, v0, v2])
-                           if N2.contains(pt):
-                               parent = N2
-                           else:
-                               N3 = Trixel(15, [v2, v0, v1])
-                               if N3.contains(pt):
-                                   parent = N3
-                               else:
-                                   raise RuntimeError("could not find parent Trixel")
+        raise RuntimeError("could not find parent Trixel")
 
     return _iterateTrixelFinder(pt, parent, max_level)
