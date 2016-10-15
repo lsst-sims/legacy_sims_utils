@@ -1,7 +1,31 @@
 import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
-__all__ = ["Trixel", "findHtmId", "trixelFromLabel"]
+__all__ = ["Trixel", "HalfSpace", "findHtmId", "trixelFromLabel"]
+
+class HalfSpace(object):
+
+    def __init__(self, vector, length):
+        self._v = vector/np.sqrt(np.power(vector, 2).sum())
+        self._d = length
+
+    def contains_pt(self, pt):
+        """
+        Cartesian point
+        """
+        norm_pt = pt/np.sqrt(np.power(pt, 2).sum())
+
+        dot_product = np.dot(pt, self._v)
+
+        if self._d >= 0.0:
+            if dot_product > self._d:
+                return True
+        else:
+            if dot_product < self._d:
+                return True
+
+        return False
+
 
 class Trixel(object):
 
