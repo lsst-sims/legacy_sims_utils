@@ -1,5 +1,5 @@
-from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 import numpy as np
+from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
 __all__ = ["Trixel", "findHtmId"]
 
