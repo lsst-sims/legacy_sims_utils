@@ -109,13 +109,15 @@ class TrixelFinderTest(unittest.TestCase):
         for i_test in range(n_tests):
             pt = rng.normal(0.0, 1.0, 3)
             ra, dec = sphericalFromCartesian(pt)
-            ii = findHtmId(np.degrees(ra), np.degrees(dec), 5)
+            ra = np.degrees(ra)
+            dec = np.degrees(dec)
+            ii = findHtmId(ra, dec, 5)
             tt = trixelFromLabel(ii)
-            self.assertTrue(tt.contains(pt))
+            self.assertTrue(tt.contains(ra, dec))
             tt1 = trixelFromLabel(ii-1)
-            self.assertFalse(tt1.contains(pt))
+            self.assertFalse(tt1.contains(ra, dec))
             tt2 = trixelFromLabel(ii+1)
-            self.assertFalse(tt2.contains(pt))
+            self.assertFalse(tt2.contains(ra, dec))
 
 if __name__ == "__main__":
     unittest.main()

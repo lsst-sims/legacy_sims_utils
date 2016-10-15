@@ -18,7 +18,17 @@ class Trixel(object):
         self._w_arr = None
 
 
-    def contains(self, pt):
+    def contains(self, ra, dec):
+        """
+        In degrees
+        """
+        xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
+        return self._contains(xyz)
+
+    def _contains(self, pt):
+        """
+        Cartesian point
+        """
 
         if self._cross01 is None:
             self._cross01 = np.cross(self._corners[0], self._corners[1])
@@ -162,7 +172,7 @@ def trixelFromLabel(label):
 def _iterateTrixelFinder(pt, parent, max_level):
     children = parent.get_children()
     for child in children:
-        if child.contains(pt):
+        if child._contains(pt):
             if child.level == max_level:
                 return child.label
             else:
@@ -174,21 +184,21 @@ def findHtmId(ra, dec, max_level):
     decRad = np.radians(dec)
     pt = cartesianFromSpherical(raRad, decRad)
 
-    if _S0_trixel.contains(pt):
+    if _S0_trixel._contains(pt):
         parent = _S0_trixel
-    elif _S1_trixel.contains(pt):
+    elif _S1_trixel._contains(pt):
         parent = _S1_trixel
-    elif _S2_trixel.contains(pt):
+    elif _S2_trixel._contains(pt):
         parent = _S2_trixel
-    elif _S3_trixel.contains(pt):
+    elif _S3_trixel._contains(pt):
         parent = _S3_trixel
-    elif _N0_trixel.contains(pt):
+    elif _N0_trixel._contains(pt):
         parent = _N0_trixel
-    elif _N1_trixel.contains(pt):
+    elif _N1_trixel._contains(pt):
         parent = _N1_trixel
-    elif _N2_trixel.contains(pt):
+    elif _N2_trixel._contains(pt):
         parent = _N2_trixel
-    elif _N3_trixel.contains(pt):
+    elif _N3_trixel._contains(pt):
         parent = _N3_trixel
     else:
         raise RuntimeError("could not find parent Trixel")
