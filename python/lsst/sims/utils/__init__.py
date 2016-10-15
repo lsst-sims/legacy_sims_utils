@@ -12,3 +12,4 @@ from .samplingFunctions import *
 from .healpyUtils import *
 from .stellarMags import *
 from .m5_flat_sed import *
+from .htmModule import *
