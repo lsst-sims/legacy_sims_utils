@@ -1,4 +1,4 @@
-from lsst.sims.utils import cartesianFromSpherical
+from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 import numpy as np
 
 __all__ = ["Trixel", "findHtmId"]
@@ -50,6 +50,12 @@ class Trixel(object):
         t3 = Trixel(base_child+3, [w0, w1, w2])
 
         return [t0, t1, t2, t3]
+
+    def get_center(self):
+        xyz = self._corners[0] + self._corners[1] + self._corners[2]
+        xyz = xyz/np.sqrt(np.power(xyz, 2).sum())
+        ra, dec = sphericalFromCartesian(xyz)
+        return np.degrees(ra), np.degrees(dec)
 
     @property
     def level(self):
