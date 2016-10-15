@@ -60,6 +60,10 @@ class Trixel(object):
 
         return [t0, t1, t2, t3]
 
+    def get_child(self, dex):
+        children = self.get_children()
+        return children[dex]
+
     def get_center(self):
         xyz = self._corners[0] + self._corners[1] + self._corners[2]
         xyz = xyz/np.sqrt(np.power(xyz, 2).sum())
