@@ -1,5 +1,5 @@
 import unittest
-from lsst.sims.utils.htmModule import TrixelFinder
+from lsst.sims.utils.htmModule import findHtmId
 import time
 import numpy as np
 
@@ -9,12 +9,9 @@ class TrixelFinderTest(unittest.TestCase):
 
     longMessage = True
 
-    def setUp(self):
-        self.finder = TrixelFinder()
-
     def check_pt(self, pt, answer):
         ra, dec = sphericalFromCartesian(pt)
-        ii = self.finder.findHtmId(np.degrees(ra), np.degrees(dec), 3)
+        ii = findHtmId(np.degrees(ra), np.degrees(dec), 3)
         binary = '{0:b}'.format(ii)
         self.assertEqual(binary, answer)
 
