@@ -14,6 +14,7 @@ __all__ = ["_galacticFromEquatorial", "galacticFromEquatorial",
            "_equatorialFromGalactic", "equatorialFromGalactic",
            "sphericalFromCartesian", "cartesianFromSpherical",
            "rotationMatrixFromVectors",
+           "rotAboutZ", "rotAboutY", "rotAboutX",
            "equationOfEquinoxes", "calcGmstGast", "calcLmstLast",
            "angularSeparation", "_angularSeparation", "haversine",
            "arcsecFromRadians", "radiansFromArcsec",
@@ -219,6 +220,58 @@ def sphericalFromCartesian(xyz):
         latitude = np.arcsin(xyz[2] / rad)
 
     return longitude, latitude
+
+
+def zRotationMatrix(theta):
+    cc = np.cos(theta)
+    ss = np.sin(theta)
+    return np.array([[cc, -ss, 0.0],
+                     [ss, cc, 0.0],
+                     [0.0, 0.0, 1.0]])
+
+
+def rotAboutZ(vec, theta):
+    """
+    Rotate a Cartesian vector an angle theta about the z axis.
+    Theta is in radians.
+    Positive theta rotates +x towards +y.
+    """
+    return np.dot(zRotationMatrix(theta), vec.transpose()).transpose()
+
+
+def yRotationMatrix(theta):
+    cc = np.cos(theta)
+    ss = np.sin(theta)
+    return  np.array([[cc, 0.0, ss],
+                      [0.0, 1.0, 0.0],
+                      [-ss, 0.0, cc]])
+
+
+def rotAboutY(vec, theta):
+    """
+    Rotate a Cartesian vector an angle theta about the y axis.
+    Theta is in radians.
+    Positive theta rotates +x towards -z.
+    """
+    return np.dot(yRotationMatrix(theta), vec.transpose()).transpose()
+
+
+def xRotationMatrix(theta):
+    cc = np.cos(theta)
+    ss = np.sin(theta)
+
+    return np.array([[1.0, 0.0, 0.0],
+                     [0.0, cc, -ss],
+                     [0.0, ss, cc]])
+
+
+def rotAboutX(vec, theta):
+    """
+    Rotate a Cartesian vector an angle theta about the x axis.
+    Theta is in radians.
+    Positive theta rotates +y towards +z.
+    """
+    return np.dot(xRotationMatrix(theta), vec.transpose()).transpose()
 
 
 def rotationMatrixFromVectors(v1, v2):
