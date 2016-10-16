@@ -8,6 +8,9 @@ class HalfSpace(object):
     def __init__(self, vector, length):
         self._v = vector/np.sqrt(np.power(vector, 2).sum())
         self._d = length
+        self._phi = np.arccos(np.abs(self._d))  # angular extent of the half space
+        if self._d < 0.0:
+            self._phi = np.pi - self._phi
 
     def contains_pt(self, pt):
         """
@@ -26,6 +29,76 @@ class HalfSpace(object):
 
         return False
 
+    def _intersects_edge(self, pt1, pt2):
+        """
+        pt1 and pt2 are two unit vectors; the edge goes from pt1 to pt2
+
+        see equation 4.8 of Szalay et al 2005
+        https://www.microsoft.com/en-us/research/wp-content/uploads/2005/09/tr-2005-123.pdf
+        """
+        theta = np.arccos(np.dot(pt1, pt2))
+        u = np.tan(0.5*theta)
+        gamma1 = np.dot(self._v, pt1)
+        gamma2 = np.dot(self._v, pt2)
+        b = gamma1*(u*u-1.0) + gamma2*(u*u+1)
+        a = -u*u*(gamma1+self._d)
+        c = gamma1 - self._d
+
+        det = b*b - 4*a*c
+        if det<0.0:
+            return False
+
+        sqrt_det = np.sqrt(det)
+        pos = (-b + sqrt_det)/(2.0*a)
+
+        if pos >= 0.0 and pos <= 1.0:
+            return True
+
+        neg = (-b - sqrt_det)/(2.0*a)
+        if neg >= 0.0 and neg <= 1.0:
+            return True
+
+        return False
+
+    def contains_trixel(self, tx):
+
+        n_corners_contained = 0
+        for corner in tx.corners:
+            if self.contains_pt(corner):
+                n_corners_contained += 1
+
+        if n_corners_contained == 3:
+            return "full"
+        elif n_corners_contained > 0:
+            return "partial"
+
+        # check if the trixel's bounding circle intersects
+        # the halfspace
+        theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
+        if theta > self._phi + tx.bounding_circle[2]:
+            return "outside"
+
+        # need to test that the bounding circle intersect the halfspace
+        # boundary
+
+        intersection = False
+        for edge in ((tx.corners[0], tx.corners[1]),
+                     (tx.corners[1], tx.corners[2]),
+                     (tx.corners[2], tx.corners[0])):
+
+            if self._interesects_edge(edge[0], edge[1]):
+                intersection = True
+                break
+
+        if intersection:
+            return "partial"
+
+        if tx.contains(self._v):
+            return "partial"
+
+        return "outside"
+
+
 
 class Trixel(object):
 
@@ -40,6 +113,7 @@ class Trixel(object):
         self._cross12 = None
         self._cross20 = None
         self._w_arr = None
+        self._bounding_circle = None
 
 
     def contains(self, ra, dec):
@@ -115,6 +189,24 @@ class Trixel(object):
     @property
     def corners(self):
         return self._corners
+
+    @property
+    def bounding_circle(self):
+        """
+        Returns a tuple.
+        Zeroth element is the 'z-axis' vector of the bounding circle.
+        First element is the d of the bounding circle.
+        Second element is the angular extent of the bounding circle.
+        """
+        if self._bounding_circle is None:
+            vb = np.cross((self._corners[1]-self._corners[0]), (self._corners[2]-self._corners[1]))
+            vb = vb/np.sqrt(np.power(vb, 2).sum())
+            dd = np.dot(self._corners[0], vb)
+            if np.abs(dd)>1.0:
+                raise RuntimeError("Bounding circle has dd %e (should be between -1 and 1)" % dd)
+            self._bounding_circle = (vb, dd, np.arccos(dd))
+
+        return self._bounding_circle
 
 
 _N0_trixel = Trixel(12, [np.array([1.0, 0.0, 0.0]),
