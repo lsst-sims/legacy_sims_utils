@@ -86,7 +86,7 @@ class HalfSpace(object):
                      (tx.corners[1], tx.corners[2]),
                      (tx.corners[2], tx.corners[0])):
 
-            if self._interesects_edge(edge[0], edge[1]):
+            if self._intersects_edge(edge[0], edge[1]):
                 intersection = True
                 break
 
