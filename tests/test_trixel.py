@@ -1,6 +1,6 @@
 import unittest
 from lsst.sims.utils import findHtmId, trixelFromLabel
-from lsst.sims.utils import HalfSpace
+from lsst.sims.utils import HalfSpace, basic_trixels
 import time
 import numpy as np
 
@@ -9,7 +9,9 @@ from lsst.sims.utils import rotAboutY, rotAboutX, rotAboutZ
 
 class HalfSpaceTest(unittest.TestCase):
 
-    def test_half_space_contains(self):
+    longMessage = True
+
+    def test_half_space_contains_pt(self):
         hs = HalfSpace(np.array([0.0, 0.0, 1.0]), 0.1)
         nhs = HalfSpace(np.array([0.0, 0.0, 1.0]), -0.1)
         theta = np.arcsin(0.1)
@@ -70,6 +72,53 @@ class HalfSpaceTest(unittest.TestCase):
             xyz = rotAboutZ(xyz_rot, 0.25*np.pi)
             self.assertFalse(hs.contains_pt(xyz))
             self.assertTrue(nhs.contains_pt(xyz))
+
+
+    def test_halfspace_contains_trixel(self):
+
+        # test half space that is on the equator wher N3 and S0 meet
+        hs = HalfSpace(np.array([1.0, 1.0, 0.0]), 0.8)
+        for tx in basic_trixels:
+            status = hs.contains_trixel(basic_trixels[tx])
+            msg = 'Failed on %s' % tx
+            if tx not in ('S0', 'N3'):
+                self.assertEqual(status, 'outside', msg=msg)
+            else:
+                self.assertEqual(status, 'partial', msg=msg)
+
+        # test halfspace that is centered on vertex where S0, S3, N0, N3 meet
+        hs = HalfSpace(np.array([1.0, 0.0, 0.0]), 0.8)
+        for tx in basic_trixels:
+            status = hs.contains_trixel(basic_trixels[tx])
+            msg = 'Failed on %s' % tx
+            if tx not in ('S0', 'S3', 'N0', 'N3'):
+                self.assertEqual(status, 'outside', msg=msg)
+            else:
+                self.assertEqual(status, 'partial', msg=msg)
+
+        # test halfspace fully contained in N3
+        hs = HalfSpace(np.array([1.0, 1.0, 1.0]), 0.9)
+        for tx in basic_trixels:
+            status = hs.contains_trixel(basic_trixels[tx])
+            msg = 'Failed on %s' % tx
+            if tx != 'N3':
+                self.assertEqual(status, 'outside', msg=msg)
+            else:
+                self.assertEqual(status, 'partial', msg=msg)
+
+        # test halfspace that totally contains N3
+        ra, dec = basic_trixels['N3'].get_center()
+        xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
+        hs = HalfSpace(np.array([1.0, 1.0, 1.0]), np.cos(0.31*np.pi))
+        for tx in basic_trixels:
+            status = hs.contains_trixel(basic_trixels[tx])
+            msg = 'Failed on %s' % tx
+            if tx == 'N3':
+                self.assertEqual(status, 'full', msg=msg)
+            elif tx in ('N1', 'N2', 'N0', 'S0', 'S1', 'S3'):
+                self.assertEqual(status, 'partial', msg=msg)
+            else:
+                self.assertEqual(status, 'outside', msg=msg)
 
 
 class TrixelFinderTest(unittest.TestCase):

@@ -1,14 +1,15 @@
 import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
-__all__ = ["Trixel", "HalfSpace", "findHtmId", "trixelFromLabel"]
+__all__ = ["Trixel", "HalfSpace", "findHtmId", "trixelFromLabel",
+           "basic_trixels"]
 
 class HalfSpace(object):
 
     def __init__(self, vector, length):
         self._v = vector/np.sqrt(np.power(vector, 2).sum())
         self._d = length
-        self._phi = np.arccos(np.abs(self._d))  # angular extent of the half space
+        self._phi = np.arccos(np.abs(self._d))  # half angular extent of the half space
         if self._d < 0.0:
             self._phi = np.pi - self._phi
 
@@ -196,7 +197,7 @@ class Trixel(object):
         Returns a tuple.
         Zeroth element is the 'z-axis' vector of the bounding circle.
         First element is the d of the bounding circle.
-        Second element is the angular extent of the bounding circle.
+        Second element is the half angular extent of the bounding circle.
         """
         if self._bounding_circle is None:
             vb = np.cross((self._corners[1]-self._corners[0]), (self._corners[2]-self._corners[1]))
@@ -240,6 +241,15 @@ _S2_trixel = Trixel(10, [np.array([-1.0, 0.0, 0.0]),
 _S3_trixel = Trixel(11, [np.array([0.0, -1.0, 0.0]),
                          np.array([0.0, 0.0, -1.0]),
                          np.array([1.0, 0.0, 0.0])])
+
+basic_trixels = {'N0': _N0_trixel,
+                 'N1': _N1_trixel,
+                 'N2': _N2_trixel,
+                 'N3': _N3_trixel,
+                 'S0': _S0_trixel,
+                 'S1': _S1_trixel,
+                 'S2': _S2_trixel,
+                 'S3': _S3_trixel}
 
 
 def trixelFromLabel(label):
