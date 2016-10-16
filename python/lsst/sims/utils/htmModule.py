@@ -93,7 +93,7 @@ class HalfSpace(object):
         if intersection:
             return "partial"
 
-        if tx.contains(self._v):
+        if tx.contains_pt(self._v):
             return "partial"
 
         return "outside"
@@ -121,9 +121,9 @@ class Trixel(object):
         In degrees
         """
         xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
-        return self._contains(xyz)
+        return self.contains_pt(xyz)
 
-    def _contains(self, pt):
+    def contains_pt(self, pt):
         """
         Cartesian point
         """
@@ -288,7 +288,7 @@ def trixelFromLabel(label):
 def _iterateTrixelFinder(pt, parent, max_level):
     children = parent.get_children()
     for child in children:
-        if child._contains(pt):
+        if child.contains_pt(pt):
             if child.level == max_level:
                 return child.label
             else:
@@ -300,21 +300,21 @@ def findHtmId(ra, dec, max_level):
     decRad = np.radians(dec)
     pt = cartesianFromSpherical(raRad, decRad)
 
-    if _S0_trixel._contains(pt):
+    if _S0_trixel.contains_pt(pt):
         parent = _S0_trixel
-    elif _S1_trixel._contains(pt):
+    elif _S1_trixel.contains_pt(pt):
         parent = _S1_trixel
-    elif _S2_trixel._contains(pt):
+    elif _S2_trixel.contains_pt(pt):
         parent = _S2_trixel
-    elif _S3_trixel._contains(pt):
+    elif _S3_trixel.contains_pt(pt):
         parent = _S3_trixel
-    elif _N0_trixel._contains(pt):
+    elif _N0_trixel.contains_pt(pt):
         parent = _N0_trixel
-    elif _N1_trixel._contains(pt):
+    elif _N1_trixel.contains_pt(pt):
         parent = _N1_trixel
-    elif _N2_trixel._contains(pt):
+    elif _N2_trixel.contains_pt(pt):
         parent = _N2_trixel
-    elif _N3_trixel._contains(pt):
+    elif _N3_trixel.contains_pt(pt):
         parent = _N3_trixel
     else:
         raise RuntimeError("could not find parent Trixel")
