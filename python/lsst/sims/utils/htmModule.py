@@ -36,8 +36,8 @@ class HalfSpace(object):
         see equation 4.8 of Szalay et al 2005
         https://www.microsoft.com/en-us/research/wp-content/uploads/2005/09/tr-2005-123.pdf
         """
-        theta = np.arccos(np.dot(pt1, pt2))
-        u = np.tan(0.5*theta)
+        costheta = np.dot(pt1, pt2)
+        u=np.sqrt((1-costheta)/(1+costheta))  # using trig identity for tan(theta/2)
         gamma1 = np.dot(self._v, pt1)
         gamma2 = np.dot(self._v, pt2)
         b = gamma1*(u*u-1.0) + gamma2*(u*u+1)
