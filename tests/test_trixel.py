@@ -11,6 +11,7 @@ class HalfSpaceTest(unittest.TestCase):
 
     def test_half_space_contains(self):
         hs = HalfSpace(np.array([0.0, 0.0, 1.0]), 0.1)
+        nhs = HalfSpace(np.array([0.0, 0.0, 1.0]), -0.1)
         theta = np.arcsin(0.1)
         rng = np.random.RandomState(88)
         n_tests = 200
@@ -19,14 +20,17 @@ class HalfSpaceTest(unittest.TestCase):
         for ra, dec, in zip(ra_list, dec_list):
             xyz = cartesianFromSpherical(ra, dec)
             self.assertTrue(hs.contains_pt(xyz))
+            self.assertFalse(nhs.contains_pt(xyz))
 
         ra_list = rng.random_sample(n_tests)*2.0*np.pi
         dec_list = theta - rng.random_sample(n_tests)*(0.5*np.pi+theta)
         for ra, dec, in zip(ra_list, dec_list):
             xyz = cartesianFromSpherical(ra, dec)
             self.assertFalse(hs.contains_pt(xyz))
+            self.assertTrue(nhs.contains_pt(xyz))
 
         hs = HalfSpace(np.array([1.0, 0.0, 0.0]), 0.2)
+        nhs = HalfSpace(np.array([1.0, 0.0, 0.0]), -0.2)
         theta = np.arcsin(0.2)
         ra_list = rng.random_sample(n_tests)*2.0*np.pi
         dec_list = rng.random_sample(n_tests)*(0.5*np.pi-theta)+theta
@@ -34,6 +38,7 @@ class HalfSpaceTest(unittest.TestCase):
             xyz_rot = cartesianFromSpherical(ra, dec)
             xyz = rotAboutY(xyz_rot, 0.5*np.pi)
             self.assertTrue(hs.contains_pt(xyz))
+            self.assertFalse(nhs.contains_pt(xyz))
 
         ra_list = rng.random_sample(n_tests)*2.0*np.pi
         dec_list = theta - rng.random_sample(n_tests)*(0.5*np.pi+theta)
@@ -41,9 +46,11 @@ class HalfSpaceTest(unittest.TestCase):
             xyz_rot = cartesianFromSpherical(ra, dec)
             xyz = rotAboutY(xyz_rot, 0.5*np.pi)
             self.assertFalse(hs.contains_pt(xyz))
+            self.assertTrue(nhs.contains_pt(xyz))
 
         vv = np.array([0.5*np.sqrt(2), -0.5*np.sqrt(2), 0.0])
         hs = HalfSpace(vv, 0.3)
+        nhs = HalfSpace(vv, -0.3)
         theta = np.arcsin(0.3)
         ra_list = rng.random_sample(n_tests)*2.0*np.pi
         dec_list = rng.random_sample(n_tests)*(0.5*np.pi-theta)+theta
@@ -53,6 +60,7 @@ class HalfSpaceTest(unittest.TestCase):
             xyz_rot = rotAboutX(xyz_rot, 0.5*np.pi)
             xyz = rotAboutZ(xyz_rot, 0.25*np.pi)
             self.assertTrue(hs.contains_pt(xyz))
+            self.assertFalse(nhs.contains_pt(xyz))
 
         ra_list = rng.random_sample(n_tests)*2.0*np.pi
         dec_list = theta - rng.random_sample(n_tests)*(0.5*np.pi+theta)
@@ -61,6 +69,7 @@ class HalfSpaceTest(unittest.TestCase):
             xyz_rot = rotAboutX(xyz_rot, 0.5*np.pi)
             xyz = rotAboutZ(xyz_rot, 0.25*np.pi)
             self.assertFalse(hs.contains_pt(xyz))
+            self.assertTrue(nhs.contains_pt(xyz))
 
 
 class TrixelFinderTest(unittest.TestCase):

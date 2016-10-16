@@ -21,7 +21,7 @@ class HalfSpace(object):
             if dot_product > self._d:
                 return True
         else:
-            if dot_product < self._d:
+            if dot_product < np.abs(self._d):
                 return True
 
         return False
