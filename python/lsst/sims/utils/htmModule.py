@@ -110,7 +110,16 @@ class HalfSpace(object):
 
         # check if the trixel's bounding circle intersects
         # the halfspace
-        theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
+        dotproduct = np.dot(tx.bounding_circle[0], self._v)
+        if np.abs(dotproduct) < 1.0:
+            theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
+        elif dotproduct<1.000000001:
+            theta = 0.0
+        elif dotproduct>-1.000000001:
+            theta = np.pi
+        else:
+            raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
+
         if theta > self._phi + tx.bounding_circle[2]:
             return "outside"
 
