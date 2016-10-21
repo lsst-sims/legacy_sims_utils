@@ -217,6 +217,57 @@ class ConvexTestCase(unittest.TestCase):
         self.assertIn(hs1, conv.half_space_list)
         self.assertIn(hs3, conv.half_space_list)
 
+    def test_roots(self):
+        """
+        Test that Convex finds the correct roots
+        """
+
+        v1 = np.array([0.0, 1.0, 1.0])
+        hs1 = HalfSpace(v1, 0.0)
+        v2 = np.array([0.0, -1.0, 1.0])
+        hs2 = HalfSpace(v2, 0.0)
+        conv = Convex([hs1, hs2])
+        self.assertEqual(len(conv.roots), 2)
+        for root in conv.roots:
+            try:
+                np.testing.assert_array_almost_equal(root,
+                                                     np.array([1.0, 0.0, 0.0]),
+                                                     10)
+            except:
+                np.testing.assert_array_almost_equal(root,
+                                                     np.array([-1.0, 0.0, 0.0]),
+                                                     10)
+
+        self.assertAlmostEqual(np.dot(conv.roots[0], conv.roots[1]), -1.0, 10)
+
+        xaxis = np.array([1.0, 0.0, 0.0])
+        hs3 =  HalfSpace(xaxis, 0.5)
+        conv = Convex([hs1, hs2, hs3])
+        self.assertEqual(len(conv.roots), 3)
+        np.testing.assert_array_almost_equal(conv.roots[0], xaxis, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[1], xaxis), np.cos(np.pi/3.0), 10)
+        # take advantage of the fact that we know the order in which HalfSpaces are checked
+        # for roots to make sure that the roots are at the correct angle with respect to
+        # the normal vectors of the half spaces
+        self.assertAlmostEqual(conv.roots[1][0], 0.5, 10)
+        self.assertAlmostEqual(conv.roots[2][0], 0.5, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[1], v1), 0.0, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[2], v2), 0.0, 10)
+
+        hs4 = HalfSpace(-1.0*xaxis, -0.9)
+        conv = Convex([hs1, hs4, hs2, hs3])
+        self.assertEqual(len(conv.roots), 4)
+
+        # again, take advantage of the fact that we know the order in which
+        # the roots will be found
+        self.assertAlmostEqual(np.dot(conv.roots[0], xaxis), 0.9, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[1], xaxis), 0.5, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[2], xaxis), 0.9, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[3], xaxis), 0.5, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[0], v1), 0.0, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[1], v1), 0.0, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[2], v2), 0.0, 10)
+        self.assertAlmostEqual(np.dot(conv.roots[3], v2), 0.0, 10)
 
 class TrixelFinderTest(unittest.TestCase):
 
