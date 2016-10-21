@@ -156,6 +156,23 @@ class Convex(object):
 
             self._find_roots()
 
+        n_pos = 0
+        n_neg = 0
+        for hs in self._half_space_list:
+            if hs.dd < 0.0:
+                n_neg += 1
+            elif hs.dd > 0.0:
+                n_pos += 1
+
+        if n_neg > 0 and n_pos == 0:
+            self._sign = "negative"
+        elif n_pos > 0 and n_neg == 0:
+            self._sign = "positive"
+        elif n_pos > 0 and n_neg > 0:
+            self._sign = "mixed"
+        else:
+            self._sign = "zero"
+
     def _trim_half_space_list(self):
 
         # check that none of the half spaces exclude the whole sphere
@@ -305,6 +322,9 @@ class Convex(object):
     def roots(self):
         return self._roots
 
+    @property
+    def sign(self):
+        return self._sign
 
 class Trixel(object):
 
