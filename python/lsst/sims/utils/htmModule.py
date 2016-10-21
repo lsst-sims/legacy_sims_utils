@@ -61,7 +61,7 @@ class HalfSpace(object):
 
         return False
 
-    def _intersects_edge(self, pt1, pt2):
+    def intersects_edge(self, pt1, pt2):
         """
         pt1 and pt2 are two unit vectors; the edge goes from pt1 to pt2
 
@@ -92,6 +92,23 @@ class HalfSpace(object):
 
         return False
 
+    def intersects_bounding_circle(self, tx):
+
+        dotproduct = np.dot(tx.bounding_circle[0], self._v)
+        if np.abs(dotproduct) < 1.0:
+            theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
+        elif dotproduct<1.000000001:
+            theta = 0.0
+        elif dotproduct>-1.000000001:
+            theta = np.pi
+        else:
+            raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
+
+        if theta > self._phi + tx.bounding_circle[2]:
+            return False
+
+        return True
+
     def contains_trixel(self, tx):
 
         n_corners_contained = 0
@@ -106,17 +123,7 @@ class HalfSpace(object):
 
         # check if the trixel's bounding circle intersects
         # the halfspace
-        dotproduct = np.dot(tx.bounding_circle[0], self._v)
-        if np.abs(dotproduct) < 1.0:
-            theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
-        elif dotproduct<1.000000001:
-            theta = 0.0
-        elif dotproduct>-1.000000001:
-            theta = np.pi
-        else:
-            raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
-
-        if theta > self._phi + tx.bounding_circle[2]:
+        if not self.intersects_bounding_circle(tx):
             return "outside"
 
         # need to test that the bounding circle intersect the halfspace
@@ -127,7 +134,7 @@ class HalfSpace(object):
                      (tx.corners[1], tx.corners[2]),
                      (tx.corners[2], tx.corners[0])):
 
-            if self._intersects_edge(edge[0], edge[1]):
+            if self.intersects_edge(edge[0], edge[1]):
                 intersection = True
                 break
 
@@ -165,13 +172,23 @@ class Convex(object):
                 n_pos += 1
 
         if n_neg > 0 and n_pos == 0:
-            self._sign = "negative"
+            self._sign = -1
         elif n_pos > 0 and n_neg == 0:
-            self._sign = "positive"
+            self._sign = 1
         elif n_pos > 0 and n_neg > 0:
-            self._sign = "mixed"
+            self._sign = 2
         else:
-            self._sign = "zero"
+            self._sign = 0
+
+        # sort half spaces in order of size
+        self._half_space_list = np.array(self._half_space_list)
+        phi_arr = []
+        for hs in self._half_space_list:
+            phi_arr.append(hs.phi)
+        phi_arr = np.array(phi_arr)
+        sorted_dex = np.argsort(phi_arr)
+        self._half_space_list = self._half_space_list[sorted_dex]
+
 
     def _trim_half_space_list(self):
 
@@ -304,6 +321,101 @@ class Convex(object):
                             break
                 if vv_minus_valid:
                     self._roots.append(vv_minus)
+
+    def contains_pt(self, pt):
+        """
+        Test that convex contains a Cartesian pt
+        """
+        for hs in self._half_space_list:
+            if not hs.contains_pt(pt):
+                return False
+        return True
+
+
+    def _contains_trixel_pos(self, tx):
+        """
+        Test that convex contains trixel when convex is positive
+        """
+        if self._sign != 1 and self._sign != 0:
+            raise RuntimeError("Calling _contains_trixel_pos when sign is %d" % self._sign)
+
+        corner_contained_in = []
+        for corner in tx.corners:
+            n_in = 0
+            if self.contains(corner):
+                n_in += 1
+            corner_contained_in.append(n_in)
+
+        all_corners_in = True
+        for ix in corner_contained_in:
+            if ix != len(self._half_space_list):
+                all_corners_in = False
+                break
+
+        if all_corners_in:
+            return "full"
+
+        for ix in corner_contained_in:
+            if ix == len(self._half_space_list):
+                return "partial"
+
+        bounding_circle_intersects_all = True
+        for hs in self._half_space_list:
+            if not hs.intersects_bounding_circle(tx):
+                bounding_circle_intersects_all = False
+                break
+
+        if not bounding_circle_intersects_all:
+            return "outside"
+
+        smallest_intersects = False
+        edge_tuple = ((tx.corners[0], tx.corners[1]),
+                      (tx.corners[1], tx.corners[2]),
+                      (tx.corners[2], tx.corners[0]))
+
+        for edge in edge_tuple:
+            if self._half_space_list[0].intersects_edge(edge[0], edge[1]):
+                smallest_intersects = True
+                break
+
+        if smallest_intersects:
+            another_does_not_intersect = False
+            for ix in range(1, len(self._half_space_list)):
+                intersects_an_edge = False
+                for edge in edge_tuple:
+                    if self._half_space_list[ix].intersects_edge(edge[0], edge[1]):
+                        intersects_an_edge = True
+                        break
+                if not intersects_an_edge:
+                    another_does_not_intersect = True
+                    break
+
+            if not another_does_not_intersect:
+                return "partial"
+
+        constraint_inside = True
+        for root in self._roots:
+            if not tx.contains_pt(root):
+                constraint_inside = False
+                break
+
+        if constraint_inside:
+            return "partial"
+
+        return "outside"
+
+    def contains_trixel(self, tx):
+        if self._is_null:
+            return "outside"
+        if self._is_whole_sphere:
+            return "full"
+
+        if self._sign==1 or self._sign==0:
+            return self._contains_trixel_pos(tx)
+        elif self._sign==-1:
+            return self._contains_trixel_neg(tx)
+        elif self._sign==2:
+            return self._contains_trixel_mixed(tx)
 
 
     @property
