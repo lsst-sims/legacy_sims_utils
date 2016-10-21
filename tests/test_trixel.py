@@ -217,6 +217,14 @@ class ConvexTestCase(unittest.TestCase):
         self.assertIn(hs1, conv.half_space_list)
         self.assertIn(hs3, conv.half_space_list)
 
+        # test case of a hole in a half space
+        axis = np.array([1.2, 0.9, -0.3])
+        hs = HalfSpace(axis, 0.1)
+        whole = HalfSpace(-1.0*axis, -0.9)
+        conv = Convex([hs, whole])
+        self.assertEqual(len(conv.half_space_list), 2)
+
+
     def test_roots(self):
         """
         Test that Convex finds the correct roots
