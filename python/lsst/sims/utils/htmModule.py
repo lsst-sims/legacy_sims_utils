@@ -1,7 +1,7 @@
 import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
-__all__ = ["Trixel", "HalfSpace", "findHtmId", "trixelFromLabel",
+__all__ = ["Trixel", "HalfSpace", "Convex", "findHtmId", "trixelFromLabel",
            "basic_trixels"]
 
 class HalfSpace(object):
@@ -143,6 +143,111 @@ class HalfSpace(object):
 
         return "outside"
 
+
+class Convex(object):
+
+    def __init__(self, half_space_list):
+        """
+        half_space_list is a list of HalfSpaces
+        """
+        self._half_space_list = half_space_list
+        self._is_null = False
+        self._is_whole_sphere = False
+        self._trim_half_space_list()
+
+    def _trim_half_space_list(self):
+
+        # check that none of the half spaces exclude the whole sphere
+        for hs in self._half_space_list:
+            if hs.dd > 1.0:
+                self._is_null = True
+                return
+
+        # remove half spaces that are identical
+        redundant_half_spaces = []
+        for ix in range(len(self._half_space_list)):
+            for iy in range(ix+1, len(self._half_space_list)):
+                if self._half_space_list[ix]==self._half_space_list[iy]:
+                    if iy not in redundant_half_spaces:
+                        redundant_half_spaces.append(iy)
+
+        redundant_half_spaces.sort(reverse=True)
+        for ix in redundant_half_spaces:
+            self._half_space_list.pop(ix)
+
+        # check for half spaces that are the whole sphere
+        redundant_half_spaces = []
+        for ix in range(len(self._half_space_list)):
+            if self._half_space_list[ix].dd < -1.0:
+                if len(self._half_space_list) > 1:
+                    redundant_half_spaces.append(ix)
+                else:
+                    self._is_whole_sphere = True
+                    return
+
+        redundant_half_spaces.sort(reverse=True)
+        for ix in redundant_half_spaces:
+            self._half_space_list.pop(ix)
+
+        # check to see if two half spaces conflict with each other,
+        # causing the whole convex to be null
+        for ix in range(len(self._half_space_list)):
+            hs1 = self._half_space_list[ix]
+            for iy in range(ix+1, len(self._half_space_list)):
+                hs2 = self._half_space_list[iy]
+                angle_between = np.arccos(np.dot(hs1.vector, hs2.vector))
+                if angle_between >= hs1.phi + hs2.phi:
+                    self._is_null = True
+                    return
+
+        # look for cases where two half spaces are complements of each other
+        tol = 1.0e-10
+        for ix in range(len(self._half_space_list)):
+            hs1 = self._half_space_list[ix]
+            for iy in range(ix+1, len(self._half_space_list)):
+                hs2 = self._half_space_list[iy]
+                delta_dd = hs1.dd+hs2.dd
+                if np.abs(delta_dd) < tol:
+                    if np.abs(np.dot(hs1.vector, hs2.vector)-1.0) < tol:
+                        self._is_null = True
+                        return
+
+        # look for half spaces that completely contain another
+        redundant_half_spaces = []
+        for ix in range(len(self._half_space_list)):
+            hs1 = self._half_space_list[ix]
+            for iy in range(ix+1, len(self._half_space_list)):
+                hs2 = self._half_space_list[iy]
+                if hs1.phi > hs2.phi:
+                    bigger = hs1
+                    bigger_dex = ix
+                    smaller = hs2
+                    smaller_dex = iy
+                else:
+                    bigger = hs2
+                    bigger_dex = iy
+                    smaller = hs1
+                    smaller_dex = ix
+
+                angle_between = np.arccos(np.dot(bigger.vector, smaller.vector))
+                if bigger.phi - smaller.phi >= angle_between:
+                    redundant_half_spaces.append(smaller_dex)
+
+        redundant_half_spaces.sort(reverse=True)
+        for ix in redundant_half_spaces:
+            self._half_space_list.pop(ix)
+
+    @property
+    def half_space_list(self):
+        return self._half_space_list
+
+    @property
+    def is_null(self):
+        return self._is_null
+
+    @property
+    def is_whole_sphere(self):
+        return self._is_whole_sphere
 
 
 class Trixel(object):
