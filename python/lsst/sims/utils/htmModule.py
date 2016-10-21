@@ -183,7 +183,7 @@ class Convex(object):
         elif n_pos > 0 and n_neg > 0:
             self._sign = _CONVEX_SIGN_MIXED
         else:
-            self._sign = _CONVEX_SIGN_POS
+            self._sign = _CONVEX_SIGN_ZERO
 
         # sort half spaces in order of size
         self._half_space_list = np.array(self._half_space_list)
