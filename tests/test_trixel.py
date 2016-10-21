@@ -13,7 +13,7 @@ class HalfSpaceTest(unittest.TestCase):
 
     def test_half_space_contains_pt(self):
         hs = HalfSpace(np.array([0.0, 0.0, 1.0]), 0.1)
-        nhs = HalfSpace(np.array([0.0, 0.0, 1.0]), -0.1)
+        nhs = HalfSpace(np.array([0.0, 0.0, -1.0]), -0.1)
         theta = np.arcsin(0.1)
         rng = np.random.RandomState(88)
         n_tests = 200
@@ -32,7 +32,7 @@ class HalfSpaceTest(unittest.TestCase):
             self.assertTrue(nhs.contains_pt(xyz))
 
         hs = HalfSpace(np.array([1.0, 0.0, 0.0]), 0.2)
-        nhs = HalfSpace(np.array([1.0, 0.0, 0.0]), -0.2)
+        nhs = HalfSpace(np.array([-1.0, 0.0, 0.0]), -0.2)
         theta = np.arcsin(0.2)
         ra_list = rng.random_sample(n_tests)*2.0*np.pi
         dec_list = rng.random_sample(n_tests)*(0.5*np.pi-theta)+theta
@@ -52,7 +52,7 @@ class HalfSpaceTest(unittest.TestCase):
 
         vv = np.array([0.5*np.sqrt(2), -0.5*np.sqrt(2), 0.0])
         hs = HalfSpace(vv, 0.3)
-        nhs = HalfSpace(vv, -0.3)
+        nhs = HalfSpace(-1.0*vv, -0.3)
         theta = np.arcsin(0.3)
         ra_list = rng.random_sample(n_tests)*2.0*np.pi
         dec_list = rng.random_sample(n_tests)*(0.5*np.pi-theta)+theta

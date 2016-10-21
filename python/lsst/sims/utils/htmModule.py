@@ -56,12 +56,8 @@ class HalfSpace(object):
 
         dot_product = np.dot(pt, self._v)
 
-        if self._d >= 0.0:
-            if dot_product > self._d:
-                return True
-        else:
-            if dot_product < np.abs(self._d):
-                return True
+        if dot_product > self._d:
+            return True
 
         return False
 
