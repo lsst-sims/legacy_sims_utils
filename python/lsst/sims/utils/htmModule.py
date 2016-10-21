@@ -154,6 +154,11 @@ class Convex(object):
         self._is_null = False
         self._is_whole_sphere = False
         self._trim_half_space_list()
+        self._roots = []
+        if (not self._is_null and not self._is_whole_sphere
+            and len(self._half_space_list) > 1):
+
+            self._find_roots()
 
     def _trim_half_space_list(self):
 
@@ -237,6 +242,57 @@ class Convex(object):
         for ix in redundant_half_spaces:
             self._half_space_list.pop(ix)
 
+    def _find_roots(self):
+        """
+        See section 3.5 of Szalay et al. 2005
+        """
+        tol = 1.0e-10
+        for ix in range(len(self._half_space_list)):
+            hs1 = self._half_space_list[ix]
+            for iy in range(ix+1, len(self._half_space_list)):
+                hs2 = self._half_space_list[iy]
+                gamma = np.dot(hs1.vector, hs2.vector)
+                if np.abs(gamma-1.0)<tol or np.abs(gamma+1.0)<tol:
+                    break
+
+                denom = 1.0 - gamma*gamma
+                if denom <= 0.0:
+                    break
+
+                num = hs1.dd*hs1.dd + hs2.dd*hs2.dd - 2.0*gamma*hs1.dd*hs2.dd
+
+                if denom < num:
+                    break
+
+                w_plus = np.sqrt((1.0-num/denom)/denom)
+                w_minus = -1.0*w_plus
+
+                uu = (hs1.dd - gamma*hs2.dd)/denom
+                vv = (hs2.dd - gamma*hs1.dd)/denom
+
+                cross = np.cross(hs1.vector, hs2.vector)
+
+                vv_plus = uu*hs1.vector + vv*hs2.vector + w_plus*cross
+                vv_plus_valid = True
+                for iz in range(len(self._half_space_list)):
+                    if iz != ix and iz != iy:
+                        if not self._half_space_list[iz].contains_pt(vv_plus):
+                            vv_plus_valid = False
+                            break
+                if vv_plus_valid:
+                    self._roots.append(vv_plus)
+
+                vv_minus = uu*hs1.vector + vv*hs2.vector + w_minus*cross
+                vv_minus_valid = True
+                for ix in range(len(self._half_space_list)):
+                    if iz != ix and iz != iy:
+                        if not self._half_space_list[iz].contains_pt(vv_minus):
+                            vv_minus_valid = False
+                            break
+                if vv_minus_valid:
+                    self._roots.append(vv_minus)
+
+
     @property
     def half_space_list(self):
         return self._half_space_list
@@ -248,6 +304,10 @@ class Convex(object):
     @property
     def is_whole_sphere(self):
         return self._is_whole_sphere
+
+    @property
+    def roots(self):
+        return self._roots
 
 
 class Trixel(object):
