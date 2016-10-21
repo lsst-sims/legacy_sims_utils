@@ -9,7 +9,13 @@ class HalfSpace(object):
     def __init__(self, vector, length):
         self._v = vector/np.sqrt(np.power(vector, 2).sum())
         self._d = length
-        self._phi = np.arccos(self._d)  # half angular extent of the half space
+        if np.abs(self._d)<1.0:
+            self._phi = np.arccos(self._d)  # half angular extent of the half space
+        else:
+            if self._d > 0.0:
+                self._phi = np.pi
+            else:
+                self._phi = 0.0
 
     def __eq__(self, other):
         tol = 1.0e-10
