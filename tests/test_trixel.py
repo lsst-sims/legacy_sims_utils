@@ -277,6 +277,22 @@ class ConvexTestCase(unittest.TestCase):
         self.assertAlmostEqual(np.dot(conv.roots[2], v2), 0.0, 10)
         self.assertAlmostEqual(np.dot(conv.roots[3], v2), 0.0, 10)
 
+    def test_positive_convex_contains_trixel(self):
+        """
+        Test the contains_trixel() method for positive/zero sign convexes
+        """
+
+        hs1 = HalfSpace(np.array([0.0, 0.0, 1.0]), 0.001)
+        hs2 = HalfSpace(np.array([0.0, 1.0, 0.0]), 0.001)
+        hs3 = HalfSpace(np.array([1.0, 0.0, 0.0]), 0.001)
+        conv = Convex([hs1, hs2, hs3])  # only accept the positive octant
+        self.assertEqual(conv.sign, 1)
+
+        self.assertEqual(conv.contains_trixel(basic_trixels['N2']), 'outside')
+        self.assertEqual(conv.contains_trixel(basic_trixels['N0']), 'outside')
+        self.assertEqual(conv.contains_trixel(basic_trixels['N3']), 'partial')
+
+
 class TrixelFinderTest(unittest.TestCase):
 
     longMessage = True
