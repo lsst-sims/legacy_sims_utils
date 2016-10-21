@@ -170,10 +170,11 @@ class Convex(object):
 
         n_pos = 0
         n_neg = 0
+        tol = 1.0e-10
         for hs in self._half_space_list:
-            if hs.dd < 0.0:
+            if hs.dd < -1.0*tol:
                 n_neg += 1
-            elif hs.dd > 0.0:
+            elif hs.dd > tol:
                 n_pos += 1
 
         if n_neg > 0 and n_pos == 0:
