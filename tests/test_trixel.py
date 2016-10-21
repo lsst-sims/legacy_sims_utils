@@ -1,6 +1,6 @@
 import unittest
 from lsst.sims.utils import findHtmId, trixelFromLabel
-from lsst.sims.utils import HalfSpace, basic_trixels
+from lsst.sims.utils import HalfSpace, Convex, basic_trixels
 import time
 import numpy as np
 
@@ -132,6 +132,90 @@ class HalfSpaceTest(unittest.TestCase):
         self.assertNotEqual(hs1, hs2)
         hs2 = HalfSpace(vv-1.0e-6*np.array([1.0, 0.0, 0.0]), 0.1)
         self.assertNotEqual(hs1, hs2)
+
+
+class ConvexTestCase(unittest.TestCase):
+
+    longMessage = True
+
+    def test_trimming_of_half_spaces(self):
+        """
+        Test that convex correctly pairs down list of HalfSpaces
+        """
+
+        # test when one of the HalfSpaces excludes the entire sphere
+        hs_list = [HalfSpace(np.array([1.0, 1.3, 2.1]), 0.1),
+                   HalfSpace(np.array([1.1, 2.1, 0.0]), 0.7),
+                   HalfSpace(np.array([1.0, 0.0, 0.0]), 1.1),
+                   HalfSpace(np.array([0.0, 1.0, 0.0]), -1.1)]
+
+        conv = Convex(hs_list)
+        self.assertTrue(conv.is_null)
+        self.assertFalse(conv.is_whole_sphere)
+
+        # test case when a convex and its complement are in the convex
+        hs_list = [HalfSpace(np.array([1.9, 0.1, 0.3]), 0.2),
+                   HalfSpace(np.array([1.9, 0.1, 0.3]), -0.2),
+                   HalfSpace(np.array([1.2, 3.1, 0.0]), 0.2)]
+
+        conv = Convex(hs_list)
+        self.assertTrue(conv.is_null)
+        self.assertFalse(conv.is_whole_sphere)
+
+        # test case where two half spaces serve to cut off the whole
+        # sphere
+        hs_list = [HalfSpace(np.array([1.1, 2.1, 3.1]), 0.9),
+                   HalfSpace(np.array([-1.1, -2.1, -3.1]), 0.9),
+                   HalfSpace(np.array([0.0, 0.0, 0.1]), 0.01)]
+        conv = Convex(hs_list)
+        self.assertTrue(conv.is_null)
+        self.assertFalse(conv.is_whole_sphere)
+
+        # test case where convex is just one half space that contains
+        # the entire sphere
+        hs_list = [HalfSpace(np.array([1.1, 2.3, 0.0]), -1.1)]
+        conv = Convex(hs_list)
+        self.assertFalse(conv.is_null)
+        self.assertTrue(conv.is_whole_sphere)
+
+        # test case where one half space is contained within another
+        hs1 = HalfSpace(np.array([1.1, 0.2, 0.3]), 0.5)
+        hs2 = HalfSpace(np.array([2.2, 0.4, 0.61]), 0.9) # hs2 should be in hs1
+        hs3 = HalfSpace(np.array([0.0, 0.0, 1.0]), 0.01)
+        hs_list = [hs1, hs2, hs3]
+        conv = Convex(hs_list)
+        self.assertFalse(conv.is_null)
+        self.assertFalse(conv.is_whole_sphere)
+        self.assertEqual(len(conv.half_space_list), 2)
+        self.assertIn(hs1, conv.half_space_list)
+        self.assertIn(hs3, conv.half_space_list)
+
+        hs_list = [hs2, hs1, hs3]
+        conv = Convex(hs_list)
+        self.assertFalse(conv.is_null)
+        self.assertFalse(conv.is_whole_sphere)
+        self.assertEqual(len(conv.half_space_list), 2)
+        self.assertIn(hs1, conv.half_space_list)
+        self.assertIn(hs3, conv.half_space_list)
+
+        # test case when two convexes are identical
+        hs_list = [hs1, hs3, hs1]
+        conv = Convex(hs_list)
+        self.assertFalse(conv.is_null)
+        self.assertFalse(conv.is_whole_sphere)
+        self.assertEqual(len(conv.half_space_list), 2)
+        self.assertIn(hs1, conv.half_space_list)
+        self.assertIn(hs3, conv.half_space_list)
+
+        # test case when one convex is whole sphere
+        hs4 = HalfSpace(np.array([1.1, 3.1, 0.9]), -1.1)
+        hs_list = [hs1, hs3, hs4]
+        conv = Convex(hs_list)
+        self.assertFalse(conv.is_null)
+        self.assertFalse(conv.is_whole_sphere)
+        self.assertEqual(len(conv.half_space_list), 2)
+        self.assertIn(hs1, conv.half_space_list)
+        self.assertIn(hs3, conv.half_space_list)
 
 
 class TrixelFinderTest(unittest.TestCase):
