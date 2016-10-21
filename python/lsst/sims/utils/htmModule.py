@@ -280,7 +280,7 @@ class Convex(object):
 
                 vv_minus = uu*hs1.vector + vv*hs2.vector + w_minus*cross
                 vv_minus_valid = True
-                for ix in range(len(self._half_space_list)):
+                for iz in range(len(self._half_space_list)):
                     if iz != ix and iz != iy:
                         if not self._half_space_list[iz].contains_pt(vv_minus):
                             vv_minus_valid = False
