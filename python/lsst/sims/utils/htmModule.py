@@ -416,7 +416,7 @@ class Convex(object):
         if self._is_whole_sphere:
             return "full"
 
-        if self._sign==_CONVEX_SIGN_POS or self._sign==_CONVEX_SIGN_POS:
+        if self._sign==_CONVEX_SIGN_POS or self._sign==_CONVEX_SIGN_ZERO:
             return self._contains_trixel_pos(tx)
         elif self._sign==_CONVEX_SIGN_NEG:
             return self._contains_trixel_neg(tx)
