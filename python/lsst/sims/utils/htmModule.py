@@ -13,6 +13,29 @@ class HalfSpace(object):
         if self._d < 0.0:
             self._phi = np.pi - self._phi
 
+    @property
+    def vector(self):
+        """
+        The unit vector from the origin to the center of the Half Space.
+        """
+        return self._v
+
+    @property
+    def dd(self):
+        """
+        The distance along the Half Space's vector that defines the
+        extent of the Half Space.
+        """
+        return self._d
+
+    @property
+    def phi(self):
+        """
+        The angular radius of the Half Space on the surface of the sphere
+        in radians.
+        """
+        return self._phi
+
     def contains_pt(self, pt):
         """
         Cartesian point
