@@ -348,7 +348,7 @@ class Convex(object):
         corner_contained_in = []
         for corner in tx.corners:
             n_in = 0
-            if self.contains(corner):
+            if self.contains_pt(corner):
                 n_in += 1
             corner_contained_in.append(n_in)
 
