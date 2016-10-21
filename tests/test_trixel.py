@@ -120,6 +120,19 @@ class HalfSpaceTest(unittest.TestCase):
             else:
                 self.assertEqual(status, 'outside', msg=msg)
 
+    def test_half_space_eq(self):
+        """
+        Test that __eq__() works for HalfSpace
+        """
+        vv = np.array([1.0, 0.9, 2.4])
+        hs1 = HalfSpace(vv, 0.1)
+        hs2 = HalfSpace(2.0*vv, 0.1)
+        self.assertEqual(hs1, hs2)
+        hs2 = HalfSpace(vv, 0.09)
+        self.assertNotEqual(hs1, hs2)
+        hs2 = HalfSpace(vv-1.0e-6*np.array([1.0, 0.0, 0.0]), 0.1)
+        self.assertNotEqual(hs1, hs2)
+
 
 class TrixelFinderTest(unittest.TestCase):
 

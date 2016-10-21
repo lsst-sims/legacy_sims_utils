@@ -13,6 +13,14 @@ class HalfSpace(object):
         if self._d < 0.0:
             self._phi = np.pi - self._phi
 
+    def __eq__(self, other):
+        tol = 1.0e-10
+        if np.abs(self.dd-other.dd)>tol:
+            return False
+        if np.abs(np.dot(self.vector, other.vector)-1.0)>tol:
+            return False
+        return True
+
     @property
     def vector(self):
         """
