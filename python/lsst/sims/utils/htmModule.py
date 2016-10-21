@@ -4,6 +4,11 @@ from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 __all__ = ["Trixel", "HalfSpace", "Convex", "findHtmId", "trixelFromLabel",
            "basic_trixels"]
 
+_CONVEX_SIGN_POS=1
+_CONVEX_SIGN_NEG=-1
+_CONVEX_SIGN_ZERO=0
+_CONVEX_SIGN_MIXED=2
+
 class HalfSpace(object):
 
     def __init__(self, vector, length):
@@ -172,13 +177,13 @@ class Convex(object):
                 n_pos += 1
 
         if n_neg > 0 and n_pos == 0:
-            self._sign = -1
+            self._sign = _CONVEX_SIGN_NEG
         elif n_pos > 0 and n_neg == 0:
-            self._sign = 1
+            self._sign = _CONVEX_SIGN_POS
         elif n_pos > 0 and n_neg > 0:
-            self._sign = 2
+            self._sign = _CONVEX_SIGN_MIXED
         else:
-            self._sign = 0
+            self._sign = _CONVEX_SIGN_POS
 
         # sort half spaces in order of size
         self._half_space_list = np.array(self._half_space_list)
@@ -336,7 +341,7 @@ class Convex(object):
         """
         Test that convex contains trixel when convex is positive
         """
-        if self._sign != 1 and self._sign != 0:
+        if self._sign != _CONVEX_SIGN_POS and self._sign != _CONVEX_SIGN_ZERO:
             raise RuntimeError("Calling _contains_trixel_pos when sign is %d" % self._sign)
 
         corner_contained_in = []
@@ -410,11 +415,11 @@ class Convex(object):
         if self._is_whole_sphere:
             return "full"
 
-        if self._sign==1 or self._sign==0:
+        if self._sign==_CONVEX_SIGN_POS or self._sign==_CONVEX_SIGN_POS:
             return self._contains_trixel_pos(tx)
-        elif self._sign==-1:
+        elif self._sign==_CONVEX_SIGN_NEG:
             return self._contains_trixel_neg(tx)
-        elif self._sign==2:
+        elif self._sign==_CONVEX_SIGN_MIXED:
             return self._contains_trixel_mixed(tx)
 
 
