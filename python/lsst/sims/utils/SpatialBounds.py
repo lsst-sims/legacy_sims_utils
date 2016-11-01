@@ -146,13 +146,15 @@ class CircleBounds(SpatialBounds):
 
     def to_SQL(self, RAname, DECname):
 
-        if self.DECdeg != 90.0 and self.DECdeg != -90.0:
+        cosDec = np.cos(self.DEC)
+
+        if np.abs(cosDec)>1.0e-20:
             RAmax = self.RAdeg + \
                 360.0 * np.arcsin(np.sin(0.5 * self.radius) /
-                                  np.cos(self.DEC)) / np.pi
+                                  cosDec) / np.pi
             RAmin = self.RAdeg - \
                 360.0 * np.arcsin(np.sin(0.5 * self.radius) /
-                                  np.cos(self.DEC)) / np.pi
+                                  cosDec) / np.pi
         else:
             # just in case, for some reason, we are looking at the poles
             RAmax = 360.0
