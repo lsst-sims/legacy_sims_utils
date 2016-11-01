@@ -160,6 +160,10 @@ class CircleBounds(SpatialBounds):
             RAmax = 360.0
             RAmin = 0.0
 
+        if np.isnan(RAmax) or np.isnan(RAmin):
+            RAmax = 360.0
+            RAmin = 0.0
+
         DECmax = self.DECdeg + self.radiusdeg
         DECmin = self.DECdeg - self.radiusdeg
 
