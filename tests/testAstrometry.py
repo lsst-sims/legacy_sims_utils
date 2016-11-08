@@ -37,6 +37,8 @@ from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import _appGeoFromObserved, _icrsFromAppGeo
 from lsst.sims.utils import refractionCoefficients, applyRefraction
 
+from lsst.sims.utils import observedFromICRS, applyProperMotion, icrsFromObserved
+
 
 def setup_module(module):
     lsst.utils.tests.init()
@@ -97,6 +99,8 @@ class astrometryUnitTest(unittest.TestCase):
     querying the database) because SLALIB was originally run on values that did not correspond
     to any particular Opsim run.
     """
+
+    longMessage = True
 
     def setUp(self):
         self.metadata = {}
@@ -1173,6 +1177,71 @@ class astrometryUnitTest(unittest.TestCase):
         for ix, zz in enumerate(zd_arr):
             test_refraction = applyRefraction(zz, coeffs[0], coeffs[1])
             self.assertAlmostEqual(test_refraction, control_refraction[ix], 12)
+
+    def test_daisy_chain_icrs(self):
+        """
+        Verify that the following give equivalent results:
+
+        (raJ2000, decJ2000) -> ObservedFromICRS(with proper motion) -> icrsFromObserved()
+        (raJ2000, decJ2000) -> applyProperMotion ->
+                               ObservedFromICRS(without propermotion) -> icrsFromObserved()
+        """
+        rng = np.random.RandomState(119283)
+        solar_distance = -100.0
+        while solar_distance < 45.0:
+            mjd = rng.random_sample()*10000.0 + 49000.0
+            dummy_obs = ObservationMetaData(mjd=mjd)
+            ra, dec = raDecFromAltAz(60.0, 112.0, dummy_obs)
+            solar_distance = distanceToSun(ra, dec, dummy_obs.mjd)
+
+        obs = ObservationMetaData(pointingRA=ra, pointingDec=dec, mjd=mjd)
+
+        n_obj = 1000
+        rr = rng.random_sample(n_obj)*2.0
+        theta = rng.random_sample(n_obj)*2.0*np.pi
+        ra_list = ra + rr*np.cos(theta)
+        dec_list = dec + rr*np.sin(theta)
+        pm_ra_list = (rng.random_sample(n_obj)-0.5)*100.0
+        pm_dec_list = (rng.random_sample(n_obj)-0.5)*100.0
+        px_list = rng.random_sample(n_obj) + 0.05
+        vrad_list = (rng.random_sample(n_obj)-0.5)*300.0
+
+        for includeRefraction in (True, False):
+
+            ra_obs, dec_obs = observedFromICRS(ra_list, dec_list, pm_ra=pm_ra_list, pm_dec=pm_dec_list,
+                                               parallax=px_list, v_rad=vrad_list, obs_metadata=obs,
+                                               epoch=2000.0, includeRefraction=includeRefraction)
+
+            ra_pm, dec_pm = applyProperMotion(ra_list, dec_list, pm_ra_list, pm_dec_list,
+                                              px_list, vrad_list, epoch=2000.0,
+                                              mjd=obs.mjd)
+
+            ra_test, dec_test = observedFromICRS(ra_pm, dec_pm, parallax=px_list,
+                                                 obs_metadata=obs, epoch=2000.0,
+                                                 includeRefraction=includeRefraction)
+
+            msg = 'failed with includeRefraction = %s' % str(includeRefraction)
+            dd = arcsecFromRadians(haversine(np.radians(ra_obs), np.radians(dec_obs),
+                                             np.radians(ra_test), np.radians(dec_test)))
+
+            dd_no_op = arcsecFromRadians(haversine(np.radians(ra_obs), np.radians(dec_obs),
+                                                   np.radians(ra_list), np.radians(dec_list)))
+
+            # first, just verify that applying proper motion separate from precession, nutation, etc.
+            # gives a self-consistent answer
+            self.assertLess(dd.max(), 0.001, msg=msg)
+            self.assertGreater(dd_no_op.min(), 0.001, msg=msg)
+
+            # now check that converting back to icrs gives consistent answers
+            ra_icrs, dec_icrs = icrsFromObserved(ra_obs, dec_obs, obs_metadata=obs, epoch=2000.0,
+                                                 includeRefraction=includeRefraction)
+
+            ra_icrs_1, dec_icrs_1 = icrsFromObserved(ra_test, dec_test, obs_metadata=obs, epoch=2000.0,
+                                                     includeRefraction=includeRefraction)
+
+            dd = arcsecFromRadians(haversine(np.radians(ra_icrs), np.radians(dec_icrs),
+                                             np.radians(ra_icrs_1), np.radians(dec_icrs_1)))
+            self.assertLess(dd.max(), 0.001, msg=msg)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
