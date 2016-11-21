@@ -36,6 +36,7 @@ from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import _appGeoFromObserved, _icrsFromAppGeo
 from lsst.sims.utils import refractionCoefficients, applyRefraction
+from lsst.sims.utils import observedFromICRS, applyProperMotion, sphericalFromCartesian
 
 
 def setup_module(module):
@@ -1173,6 +1174,59 @@ class astrometryUnitTest(unittest.TestCase):
         for ix, zz in enumerate(zd_arr):
             test_refraction = applyRefraction(zz, coeffs[0], coeffs[1])
             self.assertAlmostEqual(test_refraction, control_refraction[ix], 12)
+
+    def test_applyProperMotion_vs_icrs(self):
+        """
+        test that running:
+        applyProperMotion() -> observedFromICRS(pm=0)
+        gives the same results as running
+        observedFromICRS(pm!=0)
+        """
+        rng = np.random.RandomState(18293)
+        n_obj = 500
+        ra = 46.2
+        dec = -14.2
+
+        # generate a set of points uniformly distributed on the
+        # unit sphere
+        xyz_list = rng.normal(loc=0.0, scale=1.0, size=(n_obj, 3))
+        ra_list, dec_list = sphericalFromCartesian(xyz_list)
+        self.assertEqual(len(ra_list), n_obj)
+        ra_list = np.degrees(ra_list)
+        dec_list = np.degrees(dec_list)
+
+        px_list = np.array([0.2]*n_obj)
+        vrad_list = np.array([200.0]*n_obj)
+        pm_ra_list = np.array([30.0]*n_obj)
+        pm_dec_list = np.array([-30.0]*n_obj)
+
+        obs = ObservationMetaData(pointingRA=ra, pointingDec=dec,
+                                  mjd=60123.0)
+
+        for includeRefraction in (True, False):
+            ra_control, dec_control = observedFromICRS(ra_list, dec_list,
+                                                       pm_ra=pm_ra_list, pm_dec=pm_dec_list,
+                                                       v_rad=vrad_list, parallax=px_list, obs_metadata=obs,
+                                                       epoch=2000.0, includeRefraction=includeRefraction)
+
+            ra_pm, dec_pm = applyProperMotion(ra_list, dec_list, pm_ra_list, pm_dec_list,
+                                              parallax=px_list, v_rad=vrad_list, mjd=obs.mjd, epoch=2000.0)
+
+            ra_test, dec_test = observedFromICRS(ra_pm, dec_pm, parallax=px_list, v_rad=vrad_list,
+                                                 obs_metadata=obs, epoch=2000.0,
+                                                 includeRefraction=includeRefraction)
+
+            # the distance between the test points and the control points
+            dd = arcsecFromRadians(haversine(np.radians(ra_test), np.radians(dec_test),
+                                             np.radians(ra_control), np.radians(dec_control)))
+
+            self.assertLess(dd.max(), 0.005)
+
+            # the distance between the origina points and the motion-propagated points
+            dd_bad = arcsecFromRadians(haversine(np.radians(ra_control), np.radians(dec_control),
+                                                 np.radians(ra_list), np.radians(dec_list)))
+
+            self.assertGreater(dd_bad.min(), 10.0)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
