@@ -542,6 +542,12 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd=None):
     so that the user knows how to query a database of mean RA and Decs
     for objects observed at a given telescope pointing.
 
+    WARNING: This method does not account for apparent motion due to parallax.
+    This means it should not be used to invert the ICRS-to-apparent geocentric
+    transformation for actual celestial objects.  This method is only useful
+    for mapping positions on a theoretical focal plan to positions on the
+    celestial sphere.
+
     This method works in radians.
 
     @param [in] ra in radians (apparent geocentric).  Can be a numpy array or a number.
@@ -591,6 +597,12 @@ def icrsFromAppGeo(ra, dec, epoch=2000.0, mjd=None):
     presumably include the above effects) back to mean ICRS RA and Dec
     so that the user knows how to query a database of mean RA and Decs
     for objects observed at a given telescope pointing.
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This means it should not be used to invert the ICRS-to-apparent geocentric
+    transformation for actual celestial objects.  This method is only useful
+    for mapping positions on a theoretical focal plan to positions on the
+    celestial sphere.
 
     This method works in degrees.
 
@@ -1044,6 +1056,12 @@ def icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=T
     Note: This method is only accurate at angular distances from the sun of greater
     than 45 degrees and zenith distances of less than 75 degrees.
 
+    WARNING: This method does not account for apparent motion due to parallax.
+    This means it should not be used to invert the ICRS-to-observed coordinates
+    transformation for actual celestial objects.  This method is only useful
+    for mapping positions on a theoretical focal plan to positions on the
+    celestial sphere.
+
     This method works in degrees.
 
     @param [in] ra is the observed RA in degrees.  Can be a numpy array or a number.
@@ -1080,6 +1098,12 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
 
     Note: This method is only accurate at angular distances from the sun of greater
     than 45 degrees and zenith distances of less than 75 degrees.
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This means it should not be used to invert the ICRS-to-observed coordinates
+    transformation for actual celestial objects.  This method is only useful
+    for mapping positions on a theoretical focal plan to positions on the
+    celestial sphere.
 
     This method works in radians.
 
