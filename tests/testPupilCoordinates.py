@@ -306,6 +306,18 @@ class PupilCoordinateUnitTest(unittest.TestCase):
             distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control,2) + np.power(yp_test-yp_control,2)))
             self.assertLess(distance.max(), 0.006)
 
+            # now test it in radians
+            xp_rad, yp_rad = _pupilCoordsFromRaDec(np.radians(ra_list), np.radians(dec_list),
+                                                   pm_ra=radiansFromArcsec(pm_ra_list),
+                                                   pm_dec=radiansFromArcsec(pm_dec_list),
+                                                   parallax=radiansFromArcsec(px_list),
+                                                   v_rad=v_rad_list,
+                                                   obs_metadata=obs, epoch=2000.0,
+                                                   includeRefraction=includeRefraction)
+
+            np.testing.assert_array_equal(xp_rad, xp_test)
+            np.testing.assert_array_equal(yp_rad, yp_test)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
