@@ -58,6 +58,8 @@ def controlAltAzFromRaDec(raRad_in, decRad_in, longRad, latRad, mjd):
     altRad = np.arcsin(sinAlt)
     azRad = np.arccos((sinDec - sinAlt*sinLat) / (np.cos(altRad)*cosLat))
     azRadOut = np.where(np.sin(haRad) >= 0.0, 2.0 * np.pi - azRad, azRad)
+    if isinstance(altRad, float):
+        return altRad, float(azRadOut)
     return altRad, azRadOut
 
 
