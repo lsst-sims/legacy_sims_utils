@@ -3,12 +3,16 @@ import numpy as np
 import palpy
 from lsst.sims.utils.CodeUtilities import _validate_inputs
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
+from lsst.sims.utils import radiansFromArcsec
 
 __all__ = ["_pupilCoordsFromRaDec", "pupilCoordsFromRaDec",
            "_raDecFromPupilCoords", "raDecFromPupilCoords"]
 
 
-def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
+def pupilCoordsFromRaDec(ra_in, dec_in,
+                         pm_ra=None, pm_dec=None, parallax=None,
+                         v_rad=None, includeRefraction=True,
+                         obs_metadata=None, epoch=2000.0):
     """
     Take an input RA and dec from the sky and convert it to coordinates
     on the focal plane.
@@ -29,6 +33,20 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
 
     @param [in] dec_in is in degrees (ICRS).  Can be either a numpy array or a number.
 
+    @param [in] pm_ra is proper motion in RA multiplied by cos(Dec) (arcsec/yr)
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] pm_dec is proper motion in dec (arcsec/yr)
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] parallax is parallax in arcsec
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] v_rad is radial velocity (km/s)
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] includeRefraction is a boolean controlling the application of refraction.
+
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
 
@@ -38,11 +56,33 @@ def pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     radians and whose second row is the y coordinate in radians
     """
 
+    if pm_ra is not None:
+        pm_ra_in = radiansFromArcsec(pm_ra)
+    else:
+        pm_ra_in = None
+
+    if pm_dec is not None:
+        pm_dec_in = radiansFromArcsec(pm_dec)
+    else:
+        pm_dec_in = None
+
+    if parallax is not None:
+        parallax_in = radiansFromArcsec(parallax)
+    else:
+        parallax_in = None
+
     return _pupilCoordsFromRaDec(np.radians(ra_in), np.radians(dec_in),
+                                 pm_ra=pm_ra_in, pm_dec=pm_dec_in,
+                                 parallax=parallax_in, v_rad=v_rad,
+                                 includeRefraction=includeRefraction,
                                  obs_metadata=obs_metadata, epoch=epoch)
 
 
-def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
+def _pupilCoordsFromRaDec(ra_in, dec_in,
+                          pm_ra=None, pm_dec=None,
+                          parallax=None, v_rad=None,
+                          includeRefraction=True,
+                          obs_metadata=None, epoch=2000.0):
     """
     Take an input RA and dec from the sky and convert it to coordinates
     on the focal plane.
@@ -62,6 +102,20 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
     @param [in] ra_in is in radians (ICRS).  Can be either a numpy array or a number.
 
     @param [in] dec_in is in radians (ICRS).  Can be either a numpy array or a number.
+
+    @param [in] pm_ra is proper motion in RA multiplied by cos(Dec) (radians/yr)
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] pm_dec is proper motion in dec (radians/yr)
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] parallax is parallax in radians
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] v_rad is radial velocity (km/s)
+    Can be a numpy array or a number or None (default=None).
+
+    @param [in] includeRefraction is a boolean controlling the application of refraction.
 
     @param [in] obs_metadata is an ObservationMetaData instantiation characterizing the
     telescope location and pointing.
@@ -93,13 +147,18 @@ def _pupilCoordsFromRaDec(ra_in, dec_in, obs_metadata=None, epoch=2000.0):
 
     theta = obs_metadata._rotSkyPos
 
-    ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in, obs_metadata=obs_metadata,
-                                        epoch=epoch, includeRefraction=True)
+    ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in,
+                                        pm_ra=pm_ra, pm_dec=pm_dec,
+                                        parallax=parallax, v_rad=v_rad,
+                                        obs_metadata=obs_metadata,
+                                        epoch=epoch,
+                                        includeRefraction=includeRefraction)
 
     ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
                                                   obs_metadata._pointingDec,
                                                   obs_metadata=obs_metadata,
-                                                  epoch=epoch, includeRefraction=True)
+                                                  epoch=epoch,
+                                                  includeRefraction=includeRefraction)
 
     # palpy.ds2tp performs the gnomonic projection on ra_in and dec_in
     # with a tangent point at (pointingRA, pointingDec)
