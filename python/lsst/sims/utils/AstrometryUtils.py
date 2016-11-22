@@ -475,27 +475,37 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     if mjd is None:
         raise RuntimeError("cannot call appGeoFromICRS; mjd is None")
 
-    if isinstance(ra, np.ndarray):
-        fill_value = np.zeros(len(ra))
+    include_px = False
+
+    if (pm_ra is not None or pm_dec is not None or
+        v_rad is not None or parallax is not None):
+
+        include_px = True
+
+        if isinstance(ra, np.ndarray):
+            fill_value = np.zeros(len(ra))
+        else:
+            fill_value = 0.0
+
+        if pm_ra is None:
+            pm_ra = fill_value
+
+        if pm_dec is None:
+            pm_dec = fill_value
+
+        if v_rad is None:
+            v_rad = fill_value
+
+        if parallax is None:
+            parallax = fill_value
+
+        are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, v_rad, parallax],
+                                      ['ra', 'dec', 'pm_ra', 'pm_dec', 'v_rad',
+                                       'parallax'],
+                                      "appGeoFromICRS")
     else:
-        fill_value = 0.0
+        are_arrays = _validate_inputs([ra, dec], ['ra', 'dec'], "appGeoFromICRS")
 
-    if pm_ra is None:
-        pm_ra = fill_value
-
-    if pm_dec is None:
-        pm_dec = fill_value
-
-    if v_rad is None:
-        v_rad = fill_value
-
-    if parallax is None:
-        parallax = fill_value
-
-    are_arrays = _validate_inputs([ra, dec, pm_ra, pm_dec, v_rad, parallax],
-                                  ['ra', 'dec', 'pm_ra', 'pm_dec', 'v_rad',
-                                   'parallax'],
-                                  "appGeoFromICRS")
 
     # Define star independent mean to apparent place parameters
     # palpy.mappa calculates the star-independent parameters
@@ -516,16 +526,23 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
     # The accuracy is sub-milliarcsecond, limited by the
     # precession-nutation model (see palPrenut for details).
 
-    # because PAL and ERFA expect proper motion in terms of "coordinate
-    # angle; not true angle" (as stated in erfa/starpm.c documentation)
-    pm_ra_corrected = pm_ra / np.cos(dec)
+    if include_px:
+        # because PAL and ERFA expect proper motion in terms of "coordinate
+        # angle; not true angle" (as stated in erfa/starpm.c documentation)
+        pm_ra_corrected = pm_ra / np.cos(dec)
 
     if are_arrays:
-        raOut, decOut = palpy.mapqkVector(ra, dec, pm_ra_corrected, pm_dec,
-                                          arcsecFromRadians(parallax), v_rad, prms)
+        if include_px:
+            raOut, decOut = palpy.mapqkVector(ra, dec, pm_ra_corrected, pm_dec,
+                                              arcsecFromRadians(parallax), v_rad, prms)
+        else:
+            raOut, decOut = palpy.mapqkzVector(ra, dec, prms)
     else:
-        raOut, decOut = palpy.mapqk(ra, dec, pm_ra_corrected, pm_dec,
-                                    arcsecFromRadians(parallax), v_rad, prms)
+        if include_px:
+            raOut, decOut = palpy.mapqk(ra, dec, pm_ra_corrected, pm_dec,
+                                        arcsecFromRadians(parallax), v_rad, prms)
+        else:
+            raOut, decOut = palpy.mapqkz(ra, dec, prms)
 
     return np.array([raOut, decOut])
 
@@ -1005,25 +1022,6 @@ def _observedFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None, v_rad=Non
     RA and the second row is the observed Dec (both in radians)
 
     """
-
-    if isinstance(ra, np.ndarray):
-        fill_value = np.zeros(len(ra))
-    else:
-        fill_value = 0.0
-
-    if pm_ra is None:
-        pm_ra = fill_value
-    if pm_dec is None:
-        pm_dec = fill_value
-    if parallax is None:
-        parallax = fill_value
-    if v_rad is None:
-        v_rad = fill_value
-
-    _validate_inputs([ra, dec, pm_ra, pm_dec, parallax, v_rad],
-                     ['ra', 'dec', 'pm_ra', 'pm_dec', 'parallax',
-                      'v_rad'],
-                     "observedFromICRS")
 
     if obs_metadata is None:
         raise RuntimeError("Cannot call observedFromICRS; obs_metadata is none")
