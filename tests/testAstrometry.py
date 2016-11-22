@@ -28,7 +28,7 @@ from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, \
     radiansFromArcsec, arcsecFromRadians, Site, \
     raDecFromAltAz, haversine, ModifiedJulianDate, \
-    _getRotSkyPos
+    _getRotSkyPos, _angularSeparation
 
 from lsst.sims.utils import solarRaDec, _solarRaDec, distanceToSun, _distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
@@ -852,6 +852,49 @@ class astrometryUnitTest(unittest.TestCase):
         self.assertEqual(context.exception.args[0],
                          "The arrays input to appGeoFromICRS all need to "
                          "have the same length")
+
+    # 22 November 2016
+    # There appears to be a bug in PALPY in which mapqk (mean-to-apparent place)
+    # corrects for light deflection due to the Sun, while mapqkz
+    # (mean-to-apparent place for extra-galactic sources) does not.  Until
+    # this bug is fixed, we should expect the two methods to give different
+    # answers, even when mapqk is passed proper motion = 0.0.  Therefore,
+    # I am marking this test as an expectedFailure() until we can get the
+    # question resolved.
+    @unittest.expectedFailure
+    def test_appGeoFromICRS_noMotion(self):
+        """
+        Test that appGeoFromICRS with parallax, proper motion, and radial velocity
+        set to None behaves the same as appGeoFromICRs with parallax, proper motion
+        and radial velocity set to zero.
+        """
+        obs = ObservationMetaData(pointingRA=25.0, pointingDec=-11.0,
+                                  mjd=59781.2)
+
+        rng = np.random.RandomState(88)
+        n_obj = 100
+        ra_list = rng.random_sample(n_obj)*2.0*np.pi
+        dec_list = rng.random_sample(n_obj)*np.pi-0.5*np.pi
+        px_list = np.zeros(n_obj)
+        vrad_list = np.zeros(n_obj)
+        pm_ra_list = np.zeros(n_obj)
+        pm_dec_list = np.zeros(n_obj)
+
+        control_ra, control_dec = _appGeoFromICRS(ra_list, dec_list, mjd=obs.mjd,
+                                                  pm_ra=pm_ra_list, pm_dec=pm_dec_list,
+                                                  parallax=px_list, v_rad=vrad_list,
+                                                  epoch=2000.0)
+
+        test_ra, test_dec = _appGeoFromICRS(ra_list, dec_list,
+                                            mjd=obs.mjd, epoch=2000.0)
+
+        dd_sun = _distanceToSun(ra_list, dec_list, obs.mjd)
+        valid = np.where(dd_sun > np.radians(20.0))
+        self.assertGreater(len(valid[0]), n_obj/3)
+
+        dd = _angularSeparation(test_ra[valid], test_dec[valid],
+                                control_ra[valid], control_dec[valid])
+        self.assertLess(arcsecFromRadians(dd).max(), 0.005)
 
     def test_icrsFromAppGeo(self):
         """
