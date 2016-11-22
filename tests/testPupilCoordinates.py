@@ -268,7 +268,7 @@ class PupilCoordinateUnitTest(unittest.TestCase):
             obs = ObservationMetaData(mjd=mjd_tai)
             ra, dec = raDecFromAltAz(78.0, 112.0, obs)
             dd = distanceToSun(ra, dec, obs.mjd)
-            if dd>45.0:
+            if dd > 45.0:
                 is_valid = True
 
         n_obj = 1000
@@ -303,7 +303,8 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                                                     obs_metadata=obs, epoch=2000.0,
                                                     includeRefraction=includeRefraction)
 
-            distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control,2) + np.power(yp_test-yp_control,2)))
+            distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control, 2) +
+                                                 np.power(yp_test-yp_control, 2)))
             self.assertLess(distance.max(), 0.006)
 
             # now test it in radians
@@ -335,7 +336,8 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                                                     obs_metadata=obs, epoch=2000.0,
                                                     includeRefraction=includeRefraction)
 
-            distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control,2) + np.power(yp_test-yp_control,2)))
+            distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control, 2) +
+                                                 np.power(yp_test-yp_control, 2)))
             self.assertLess(distance.max(), 0.006)
 
 
