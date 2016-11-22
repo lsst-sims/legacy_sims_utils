@@ -318,6 +318,26 @@ class PupilCoordinateUnitTest(unittest.TestCase):
             np.testing.assert_array_equal(xp_rad, xp_test)
             np.testing.assert_array_equal(yp_rad, yp_test)
 
+            # now test it with proper motion = 0
+            ra_obs, dec_obs = observedFromICRS(ra_list, dec_list,
+                                               parallax=px_list, v_rad=v_rad_list,
+                                               obs_metadata=obs, epoch=2000.0,
+                                               includeRefraction=includeRefraction)
+
+            ra_icrs, dec_icrs = icrsFromObserved(ra_obs, dec_obs, obs_metadata=obs,
+                                                 epoch=2000.0, includeRefraction=includeRefraction)
+
+            xp_control, yp_control = pupilCoordsFromRaDec(ra_icrs, dec_icrs, obs_metadata=obs,
+                                                          epoch=2000.0, includeRefraction=includeRefraction)
+
+            xp_test, yp_test = pupilCoordsFromRaDec(ra_list, dec_list,
+                                                    parallax=px_list, v_rad=v_rad_list,
+                                                    obs_metadata=obs, epoch=2000.0,
+                                                    includeRefraction=includeRefraction)
+
+            distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control,2) + np.power(yp_test-yp_control,2)))
+            self.assertLess(distance.max(), 0.006)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
