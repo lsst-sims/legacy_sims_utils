@@ -5,7 +5,8 @@ from lsst.sims.utils.CodeUtilities import _validate_inputs
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import radiansFromArcsec
 
-__all__ = ["_pupilCoordsFromRaDec", "pupilCoordsFromRaDec",
+__all__ = ["_pupilCoordsFromObserved",
+           "_pupilCoordsFromRaDec", "pupilCoordsFromRaDec",
            "_raDecFromPupilCoords", "raDecFromPupilCoords"]
 
 
@@ -145,14 +146,43 @@ def _pupilCoordsFromRaDec(ra_in, dec_in,
     if obs_metadata.pointingRA is None or obs_metadata.pointingDec is None:
         raise RuntimeError("Cannot calculate [x,y]_focal_nominal without pointingRA and Dec in obs_metadata")
 
-    theta = obs_metadata._rotSkyPos
-
     ra_obs, dec_obs = _observedFromICRS(ra_in, dec_in,
                                         pm_ra=pm_ra, pm_dec=pm_dec,
                                         parallax=parallax, v_rad=v_rad,
                                         obs_metadata=obs_metadata,
                                         epoch=epoch,
                                         includeRefraction=includeRefraction)
+
+    return _pupilCoordsFromObserved(ra_obs, dec_obs, obs_metadata,
+                                    epoch=epoch, includeRefraction=includeRefraction)
+
+
+def _pupilCoordsFromObserved(ra_obs, dec_obs, obs_metadata, epoch=2000.0, includeRefraction=True):
+    """
+    Convert Observed RA, Dec into pupil coordinates
+
+    Parameters
+    ----------
+    ra_obs is the observed RA in radians
+
+    dec_obs is the observed Dec in radians
+
+    obs_metadata is an ObservationMetaData characterizing the telescope location and pointing
+
+    epoch is the epoch of the mean RA and Dec in julian years (default=2000.0)
+
+    includeRefraction is a boolean controlling the application of refraction.
+
+    Returns
+    --------
+    A numpy array whose first row is the x coordinate on the pupil in
+    radians and whose second row is the y coordinate in radians
+    """
+
+    are_arrays = _validate_inputs([ra_obs, dec_obs], ['ra_obs', 'dec_obs'],
+                                  "pupilCoordsFromObserved")
+
+    theta = obs_metadata._rotSkyPos
 
     ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
                                                   obs_metadata._pointingDec,
