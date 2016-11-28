@@ -182,6 +182,10 @@ def _nativeLonLatFromRaDec(ra_in, dec_in, obs_metadata):
     System.  Before calculating native longitude and latitude, this method will
     convert RA and Dec to observed geocentric coordinates.
 
+    WARNING: This method does not account for apparent motion due to parallax.
+    This method is only useful for mapping positions on a theoretical
+    celestial sphere.
+
     @param [in] ra is the RA of the star being transformed in radians
     (in the International Celestial Reference System)
 
@@ -225,6 +229,10 @@ def nativeLonLatFromRaDec(ra, dec, obs_metadata):
     Note: RA, and Dec are assumed to be in the International Celestial Reference
     System.  Before calculating native longitude and latitude, this method will
     convert RA and Dec to observed geocentric coordinates.
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This method is only useful for mapping positions on a theoretical
+    celestial sphere.
 
     @param [in] ra is the RA of the star being transformed in degrees
     (in the International Celestial Reference System)

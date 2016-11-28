@@ -251,6 +251,10 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
     row is Dec (both in degrees; both in the International Celestial Reference System)
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This method is only useful for mapping positions on a theoretical focal plan
+    to positions on the celestial sphere.
     """
 
     output = _raDecFromPupilCoords(xPupil, yPupil,
@@ -276,6 +280,10 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 
     @param [out] a 2-D numpy array in which the first row is RA and the second
     row is Dec (both in radians; both in the International Celestial Reference System)
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This method is only useful for mapping positions on a theoretical focal plan
+    to positions on the celestial sphere.
     """
 
     are_arrays = _validate_inputs([xPupil, yPupil], ['xPupil', 'yPupil'], "raDecFromPupilCoords")

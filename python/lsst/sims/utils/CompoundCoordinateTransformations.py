@@ -39,6 +39,10 @@ def altAzPaFromRaDec(ra, dec, obs, includeRefraction=True):
     @param [out] azimuth in degrees
 
     @param [out] parallactic angle in degrees
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This method is only useful for mapping positions on a theoretical celestial
+    sphere.
     """
 
     alt, az, pa = _altAzPaFromRaDec(np.radians(ra), np.radians(dec),
@@ -69,6 +73,10 @@ def _altAzPaFromRaDec(raRad, decRad, obs, includeRefraction=True):
     @param [out] azimuth in radians
 
     @param [out] parallactic angle in radians
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This method is only useful for mapping positions on a theoretical focal plan
+    to positions on the celestial sphere.
     """
 
     are_arrays = _validate_inputs([raRad, decRad], ['ra', 'dec'],

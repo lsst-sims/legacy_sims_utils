@@ -562,8 +562,7 @@ def _icrsFromAppGeo(ra, dec, epoch=2000.0, mjd=None):
     WARNING: This method does not account for apparent motion due to parallax.
     This means it should not be used to invert the ICRS-to-apparent geocentric
     transformation for actual celestial objects.  This method is only useful
-    for mapping positions on a theoretical focal plan to positions on the
-    celestial sphere.
+    for mapping positions on a theoretical celestial sphere.
 
     This method works in radians.
 
@@ -618,8 +617,7 @@ def icrsFromAppGeo(ra, dec, epoch=2000.0, mjd=None):
     WARNING: This method does not account for apparent motion due to parallax.
     This means it should not be used to invert the ICRS-to-apparent geocentric
     transformation for actual celestial objects.  This method is only useful
-    for mapping positions on a theoretical focal plan to positions on the
-    celestial sphere.
+    for mapping positions on a theoretical celestial sphere.
 
     This method works in degrees.
 
@@ -1057,8 +1055,7 @@ def icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=T
     WARNING: This method does not account for apparent motion due to parallax.
     This means it should not be used to invert the ICRS-to-observed coordinates
     transformation for actual celestial objects.  This method is only useful
-    for mapping positions on a theoretical focal plan to positions on the
-    celestial sphere.
+    for mapping positions on a theoretical celestial sphere.
 
     This method works in degrees.
 
@@ -1100,8 +1097,7 @@ def _icrsFromObserved(ra, dec, obs_metadata=None, epoch=None, includeRefraction=
     WARNING: This method does not account for apparent motion due to parallax.
     This means it should not be used to invert the ICRS-to-observed coordinates
     transformation for actual celestial objects.  This method is only useful
-    for mapping positions on a theoretical focal plan to positions on the
-    celestial sphere.
+    for mapping positions on a theoretical celestial sphere.
 
     This method works in radians.
 
