@@ -253,7 +253,7 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     row is Dec (both in degrees; both in the International Celestial Reference System)
 
     WARNING: This method does not account for apparent motion due to parallax.
-    This method is only useful for mapping positions on a theoretical focal plan
+    This method is only useful for mapping positions on a theoretical focal plane
     to positions on the celestial sphere.
     """
 
@@ -282,7 +282,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     row is Dec (both in radians; both in the International Celestial Reference System)
 
     WARNING: This method does not account for apparent motion due to parallax.
-    This method is only useful for mapping positions on a theoretical focal plan
+    This method is only useful for mapping positions on a theoretical focal plane
     to positions on the celestial sphere.
     """
 
