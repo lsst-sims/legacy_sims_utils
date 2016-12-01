@@ -110,8 +110,9 @@ class Site (object):
             temperature=11.5 centigrade
             pressure=750.0 millibars
             humidity=0.4
-            lapseRate=0.0065in Kelvin per meter
-            longitude: in degrees
+            lapseRate=0.0065 in Kelvin per meter
+
+        longitude: in degrees
 
         latitude: in degrees
 
