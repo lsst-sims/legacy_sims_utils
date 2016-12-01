@@ -160,6 +160,9 @@ class ModifiedJulianDate(object):
     def __eq__(self, other):
         return self._time == other._time
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __deepcopy__(self, memo):
         if self._initialized_with == 'TAI':
             new_mjd = ModifiedJulianDate(TAI=self.TAI)

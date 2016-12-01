@@ -157,8 +157,12 @@ class MjdTest(unittest.TestCase):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
         self.assertEqual(mjd1, mjd2)
+        self.assertTrue(mjd1 == mjd2)
+        self.assertFalse(mjd1 != mjd2)
         mjd3 = ModifiedJulianDate(TAI=43000.01)
         self.assertNotEqual(mjd1, mjd3)
+        self.assertFalse(mjd1 == mjd3)
+        self.assertTrue(mjd1 != mjd3)
 
     def test_deepcopy(self):
         # make sure that deepcopy() creates identical
