@@ -71,12 +71,6 @@ class ObservationMetaData(object):
           Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
           bandpassName
 
-        * epoch is the epoch of the RA, Dec system used to define
-          pointingRA/Dec.  This defaults to 2000.0 and should only be changed
-          if you plan to use this ObservationMetaData to query a database with meanRA,
-          Dec stored in a system that is not measured against the equinox at Julian
-          epoch 2000.0
-
         * rotSkyPos float
           The orientation of the telescope in degrees.
           This is used by the Astrometry mixins in sims_coordUtils.
@@ -101,14 +95,13 @@ class ObservationMetaData(object):
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, pointingRA=None, pointingDec=None, rotSkyPos=None,
                  bandpassName=None, site=Site(name='LSST'), m5=None, skyBrightness=None,
-                 seeing=None, epoch=2000.0):
+                 seeing=None):
 
         self._bounds = None
         self._boundType = boundType
         self._bandpass = bandpassName
         self._skyBrightness = skyBrightness
         self._site = site
-        self._epoch = epoch
         self._OpsimMetaData = None
 
         if mjd is not None:
