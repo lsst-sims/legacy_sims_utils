@@ -212,6 +212,28 @@ class SiteTest(unittest.TestCase):
         self.assertFalse(reference_site != other_site)
         self.assertTrue(reference_site == other_site)
 
+        # just in case we ever change the class to convert
+        # to radians only on demand, call for latitude/longitude
+        # in radians and then check that the two instances are
+        # still equal (since __eq__ just loops over the contents
+        # of self.__dict__, this could fail if other_site has not
+        # yet assigned a value to longitude/latitude_rad
+        reference_site.latitude_rad
+        self.assertEqual(reference_site, other_site)
+        self.assertFalse(reference_site != other_site)
+        self.assertTrue(reference_site == other_site)
+
+        reference_site.longitude_rad
+        self.assertEqual(reference_site, other_site)
+        self.assertFalse(reference_site != other_site)
+        self.assertTrue(reference_site == other_site)
+
+        reference_site.temperature_kelvin
+        self.assertEqual(reference_site, other_site)
+        self.assertFalse(reference_site != other_site)
+        self.assertTrue(reference_site == other_site)
+
+        # now test that __ne__ works correctly
         other_site = Site(name='other', longitude=112.12,
                           latitude=-83.121, temperature=112.1,
                           height=3124.2, pressure=891.2,
