@@ -173,6 +173,46 @@ class ObservationMetaData(object):
 
         return mydict
 
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+
+        if self.bounds != other.bounds:
+            return False
+
+        if self.pointingRA != other.pointingRA:
+            return False
+
+        if self.pointingDec != other.pointingDec:
+            return False
+
+        if self.rotSkyPos != other.rotSkyPos:
+            return False
+
+        if self.bandpass != other.bandpass:
+            return False
+
+        if self.seeing != other.seeing:
+            return False
+
+        if self.m5 != other.m5:
+            return False
+
+        if self.site != other.site:
+            return False
+
+        if self.mjd != other.mjd:
+            return False
+
+        if self.skyBrightness != other.skyBrightness:
+            return False
+
+        if self.OpsimMetaData != other.OpsimMetaData:
+            return False
+
+        return True
+
     def _assignDictKeyedToBandpass(self, inputValue, inputName):
         """
         This method sets up a dict of either m5 or seeing values (or any other quantity
