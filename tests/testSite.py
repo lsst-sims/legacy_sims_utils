@@ -194,6 +194,103 @@ class SiteTest(unittest.TestCase):
         self.assertEqual(site.temperature, 20.0)
         self.assertEqual(site.temperature_kelvin, 293.15)
 
+    def test_eq(self):
+        """
+        Test that we have correctly implemented __eq__ in Site
+        """
+        reference_site = Site(name='ref', longitude=112.12,
+                              latitude=-83.121, temperature=112.1,
+                              height=3124.2, pressure=891.2,
+                              humidity=0.341, lapseRate=0.008)
+
+        other_site = Site(name='ref', longitude=112.12,
+                          latitude=-83.121, temperature=112.1,
+                          height=3124.2, pressure=891.2,
+                          humidity=0.341, lapseRate=0.008)
+
+        self.assertEqual(reference_site, other_site)
+        self.assertFalse(reference_site != other_site)
+        self.assertTrue(reference_site == other_site)
+
+        other_site = Site(name='other', longitude=112.12,
+                          latitude=-83.121, temperature=112.1,
+                          height=3124.2, pressure=891.2,
+                          humidity=0.341, lapseRate=0.008)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        other_site = Site(name='ref', longitude=112.13,
+                          latitude=-83.121, temperature=112.1,
+                          height=3124.2, pressure=891.2,
+                          humidity=0.341, lapseRate=0.008)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        other_site = Site(name='ref', longitude=112.12,
+                          latitude=-83.122, temperature=112.1,
+                          height=3124.2, pressure=891.2,
+                          humidity=0.341, lapseRate=0.008)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        other_site = Site(name='ref', longitude=112.12,
+                          latitude=-83.121, temperature=112.2,
+                          height=3124.2, pressure=891.2,
+                          humidity=0.341, lapseRate=0.008)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        other_site = Site(name='ref', longitude=112.12,
+                          latitude=-83.121, temperature=112.1,
+                          height=3124.3, pressure=891.2,
+                          humidity=0.341, lapseRate=0.008)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        other_site = Site(name='ref', longitude=112.12,
+                          latitude=-83.121, temperature=112.1,
+                          height=3124.2, pressure=891.3,
+                          humidity=0.341, lapseRate=0.008)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        other_site = Site(name='ref', longitude=112.12,
+                          latitude=-83.121, temperature=112.1,
+                          height=3124.2, pressure=891.2,
+                          humidity=0.342, lapseRate=0.008)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        other_site = Site(name='ref', longitude=112.12,
+                          latitude=-83.121, temperature=112.1,
+                          height=3124.2, pressure=891.2,
+                          humidity=0.341, lapseRate=0.009)
+
+        self.assertNotEqual(reference_site, other_site)
+        self.assertFalse(reference_site == other_site)
+        self.assertTrue(reference_site != other_site)
+
+        # test blank Sites
+        ref_site = Site()
+        other_site = Site()
+        self.assertEqual(ref_site, other_site)
+        self.assertTrue(ref_site == other_site)
+        self.assertFalse(ref_site != other_site)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
