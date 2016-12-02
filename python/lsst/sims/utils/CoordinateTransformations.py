@@ -310,7 +310,6 @@ def calcGmstGast(mjd):
 def _angularSeparation(long1, lat1, long2, lat2):
     """
     Angular separation between two points in radians
-    (just calls palpy.dsep)
 
     Parameters
     ----------
@@ -325,6 +324,9 @@ def _angularSeparation(long1, lat1, long2, lat2):
     Returns
     -------
     The angular separation between the two points in radians
+
+    Calculated based on the haversine formula
+    From http://en.wikipedia.org/wiki/Haversine_formula
     """
     are_arrays_1 = _validate_inputs([long1, lat1],
                                     ['long1', 'lat1'],
@@ -352,23 +354,21 @@ def _angularSeparation(long1, lat1, long2, lat2):
             raise RuntimeError("You need to pass arrays of the same length "
                                "as arguments to angularSeparation()")
 
-        return palpy.dsepVector(long1, lat1, long2, lat2)
-    elif are_arrays_1 and not are_arrays_2:
-        return palpy.dsepVector(long1, lat1,
-                                np.array([long2]*len(long1)),
-                                np.array([lat2]*len(long1)))
-    elif are_arrays_2 and not are_arrays_1:
-        return palpy.dsepVector(np.array([long1]*len(long2)),
-                                np.array([lat1]*len(long2)),
-                                long2, lat2)
+    t1 = np.sin(lat2/2.0 - lat1/2.0)**2
+    t2 = np.cos(lat1)*np.cos(lat2)*np.sin(long2/2.0 - long1/2.0)**2
+    _sum = t1 + t2
 
-    return palpy.dsep(long1, lat1, long2, lat2)
+    if isinstance(_sum, numbers.Number):
+        if _sum<0.0:
+            _sum = 0.0
+    else:
+        _sum = np.where(_sum<0.0, 0.0, _sum)
 
+    return 2.0*np.arcsin(np.sqrt(_sum))
 
 def angularSeparation(long1, lat1, long2, lat2):
     """
     Angular separation between two points in degrees
-    (just calls palpy.dsep)
 
     Parameters
     ----------
@@ -405,8 +405,6 @@ def haversine(long1, lat1, long2, lat2):
     @param [in] lat2 is the latitude of point 2 in radians
 
     @param [out] the angular separation between points 1 and 2 in radians
-
-    Ultimately just calls palpy.dsep
     """
     return _angularSeparation(long1, lat1, long2, lat2)
 
