@@ -483,7 +483,7 @@ def _appGeoFromICRS(ra, dec, pm_ra=None, pm_dec=None, parallax=None,
         include_px = True
 
         if isinstance(ra, np.ndarray):
-            fill_value = np.zeros(len(ra))
+            fill_value = np.zeros(len(ra), dtype=float)
         else:
             fill_value = 0.0
 
