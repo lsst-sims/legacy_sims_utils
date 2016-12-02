@@ -305,6 +305,70 @@ class AngularSeparationTestCase(unittest.TestCase):
         test = np.cos(np.radians(test))
         np.testing.assert_array_almost_equal(test, control, decimal=15)
 
+    def testAngSepResultsExtreme(self):
+        """
+        Test that angularSeparation gives the correct answer by comparing
+        results with the dot products of Cartesian vectors.  Test on extremal
+        values (i.e. longitudes that go beyond 360.0 and latitudes that go
+        beyond 90.0)
+        """
+        rng = np.random.RandomState(99421)
+        n_obj = 100
+        for sgn in (-1.0, 1.0):
+            ra1 = sgn*(rng.random_sample(n_obj)*2.0*np.pi + 2.0*np.pi)
+            dec1 = sgn*(rng.random_sample(n_obj)*4.0*np.pi + 2.0*np.pi)
+            ra2 = sgn*(rng.random_sample(n_obj)*2.0*np.pi + 2.0*np.pi)
+            dec2 = sgn*(rng.random_sample(n_obj)*2.0*np.pi + 2.0*np.pi)
+
+            x1 = np.cos(dec1)*np.cos(ra1)
+            y1 = np.cos(dec1)*np.sin(ra1)
+            z1 = np.sin(dec1)
+
+            x2 = np.cos(dec2)*np.cos(ra2)
+            y2 = np.cos(dec2)*np.sin(ra2)
+            z2 = np.sin(dec2)
+
+            test = utils._angularSeparation(ra1, dec1, ra2, dec2)
+            test = np.cos(test)
+            control = x1*x2 + y1*y2 + z1*z2
+            np.testing.assert_array_almost_equal(test, control, decimal=14)
+
+            test = utils.angularSeparation(np.degrees(ra1), np.degrees(dec1),
+                                           np.degrees(ra2), np.degrees(dec2))
+            test = np.cos(np.radians(test))
+            np.testing.assert_array_almost_equal(test, control, decimal=14)
+
+            # specifically test at the north pole
+            dec1 = np.ones(n_obj)*np.pi
+            x1 = np.cos(dec1)*np.cos(ra1)
+            y1 = np.cos(dec1)*np.sin(ra1)
+            z1 = np.sin(dec1)
+            control = x1*x2 + y1*y2 + z1*z2
+            test = utils._angularSeparation(ra1, dec1, ra2, dec2)
+            test = np.cos(test)
+            np.testing.assert_array_almost_equal(test, control, decimal=14)
+
+            test = utils.angularSeparation(np.degrees(ra1), np.degrees(dec1),
+                                           np.degrees(ra2), np.degrees(dec2))
+            test = np.cos(np.radians(test))
+            dd = np.abs(test-control)
+            np.testing.assert_array_almost_equal(test, control, decimal=14)
+
+            # specifically test at the south pole
+            dec1 = -1.0*np.ones(n_obj)*np.pi
+            x1 = np.cos(dec1)*np.cos(ra1)
+            y1 = np.cos(dec1)*np.sin(ra1)
+            z1 = np.sin(dec1)
+            control = x1*x2 + y1*y2 + z1*z2
+            test = utils._angularSeparation(ra1, dec1, ra2, dec2)
+            test = np.cos(test)
+            np.testing.assert_array_almost_equal(test, control, decimal=14)
+
+            test = utils.angularSeparation(np.degrees(ra1), np.degrees(dec1),
+                                           np.degrees(ra2), np.degrees(dec2))
+            test = np.cos(np.radians(test))
+            np.testing.assert_array_almost_equal(test, control, decimal=14)
+
     def testAngSepResultsFloat(self):
         """
         Test that angularSeparation gives the correct answer by comparing
