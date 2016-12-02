@@ -28,7 +28,7 @@ from lsst.sims.utils import ObservationMetaData
 from lsst.sims.utils import _getRotTelPos, _raDecFromAltAz, \
     radiansFromArcsec, arcsecFromRadians, Site, \
     raDecFromAltAz, haversine, ModifiedJulianDate, \
-    _getRotSkyPos
+    _getRotSkyPos, _angularSeparation
 
 from lsst.sims.utils import solarRaDec, _solarRaDec, distanceToSun, _distanceToSun
 from lsst.sims.utils import _applyPrecession, _applyProperMotion
@@ -36,6 +36,7 @@ from lsst.sims.utils import _appGeoFromICRS, _observedFromAppGeo
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import _appGeoFromObserved, _icrsFromAppGeo
 from lsst.sims.utils import refractionCoefficients, applyRefraction
+from lsst.sims.utils import observedFromICRS, applyProperMotion, sphericalFromCartesian
 
 
 def setup_module(module):
@@ -852,6 +853,49 @@ class astrometryUnitTest(unittest.TestCase):
                          "The arrays input to appGeoFromICRS all need to "
                          "have the same length")
 
+    # 22 November 2016
+    # There appears to be a bug in PALPY in which mapqk (mean-to-apparent place)
+    # corrects for light deflection due to the Sun, while mapqkz
+    # (mean-to-apparent place for extra-galactic sources) does not.  Until
+    # this bug is fixed, we should expect the two methods to give different
+    # answers, even when mapqk is passed proper motion = 0.0.  Therefore,
+    # I am marking this test as an expectedFailure() until we can get the
+    # question resolved.
+    @unittest.expectedFailure
+    def test_appGeoFromICRS_noMotion(self):
+        """
+        Test that appGeoFromICRS with parallax, proper motion, and radial velocity
+        set to None behaves the same as appGeoFromICRs with parallax, proper motion
+        and radial velocity set to zero.
+        """
+        obs = ObservationMetaData(pointingRA=25.0, pointingDec=-11.0,
+                                  mjd=59781.2)
+
+        rng = np.random.RandomState(88)
+        n_obj = 100
+        ra_list = rng.random_sample(n_obj)*2.0*np.pi
+        dec_list = rng.random_sample(n_obj)*np.pi-0.5*np.pi
+        px_list = np.zeros(n_obj)
+        vrad_list = np.zeros(n_obj)
+        pm_ra_list = np.zeros(n_obj)
+        pm_dec_list = np.zeros(n_obj)
+
+        control_ra, control_dec = _appGeoFromICRS(ra_list, dec_list, mjd=obs.mjd,
+                                                  pm_ra=pm_ra_list, pm_dec=pm_dec_list,
+                                                  parallax=px_list, v_rad=vrad_list,
+                                                  epoch=2000.0)
+
+        test_ra, test_dec = _appGeoFromICRS(ra_list, dec_list,
+                                            mjd=obs.mjd, epoch=2000.0)
+
+        dd_sun = _distanceToSun(ra_list, dec_list, obs.mjd)
+        valid = np.where(dd_sun > np.radians(20.0))
+        self.assertGreater(len(valid[0]), n_obj/3)
+
+        dd = _angularSeparation(test_ra[valid], test_dec[valid],
+                                control_ra[valid], control_dec[valid])
+        self.assertLess(arcsecFromRadians(dd).max(), 0.005)
+
     def test_icrsFromAppGeo(self):
         """
         Test that _icrsFromAppGeo really inverts _appGeoFromICRS.
@@ -1173,6 +1217,59 @@ class astrometryUnitTest(unittest.TestCase):
         for ix, zz in enumerate(zd_arr):
             test_refraction = applyRefraction(zz, coeffs[0], coeffs[1])
             self.assertAlmostEqual(test_refraction, control_refraction[ix], 12)
+
+    def test_applyProperMotion_vs_icrs(self):
+        """
+        test that running:
+        applyProperMotion() -> observedFromICRS(pm=0)
+        gives the same results as running
+        observedFromICRS(pm!=0)
+        """
+        rng = np.random.RandomState(18293)
+        n_obj = 500
+        ra = 46.2
+        dec = -14.2
+
+        # generate a set of points uniformly distributed on the
+        # unit sphere
+        xyz_list = rng.normal(loc=0.0, scale=1.0, size=(n_obj, 3))
+        ra_list, dec_list = sphericalFromCartesian(xyz_list)
+        self.assertEqual(len(ra_list), n_obj)
+        ra_list = np.degrees(ra_list)
+        dec_list = np.degrees(dec_list)
+
+        px_list = np.array([0.2]*n_obj)
+        vrad_list = np.array([200.0]*n_obj)
+        pm_ra_list = np.array([30.0]*n_obj)
+        pm_dec_list = np.array([-30.0]*n_obj)
+
+        obs = ObservationMetaData(pointingRA=ra, pointingDec=dec,
+                                  mjd=60123.0)
+
+        for includeRefraction in (True, False):
+            ra_control, dec_control = observedFromICRS(ra_list, dec_list,
+                                                       pm_ra=pm_ra_list, pm_dec=pm_dec_list,
+                                                       v_rad=vrad_list, parallax=px_list, obs_metadata=obs,
+                                                       epoch=2000.0, includeRefraction=includeRefraction)
+
+            ra_pm, dec_pm = applyProperMotion(ra_list, dec_list, pm_ra_list, pm_dec_list,
+                                              parallax=px_list, v_rad=vrad_list, mjd=obs.mjd, epoch=2000.0)
+
+            ra_test, dec_test = observedFromICRS(ra_pm, dec_pm, parallax=px_list, v_rad=vrad_list,
+                                                 obs_metadata=obs, epoch=2000.0,
+                                                 includeRefraction=includeRefraction)
+
+            # the distance between the test points and the control points
+            dd = arcsecFromRadians(haversine(np.radians(ra_test), np.radians(dec_test),
+                                             np.radians(ra_control), np.radians(dec_control)))
+
+            self.assertLess(dd.max(), 0.005)
+
+            # the distance between the origina points and the motion-propagated points
+            dd_bad = arcsecFromRadians(haversine(np.radians(ra_control), np.radians(dec_control),
+                                                 np.radians(ra_list), np.radians(dec_list)))
+
+            self.assertGreater(dd_bad.min(), 10.0)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):

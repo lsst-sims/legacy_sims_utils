@@ -47,6 +47,9 @@ def _validate_inputs(input_list, input_names, method_name):
         msg += "passed to %s " % method_name
         msg += "need to be either numbers or numpy arrays\n"
         msg += "and the same type as the argument %s" % input_names[0]
+        msg += "\n\nTypes of arguments are:\n"
+        for name, arg in zip(input_names, input_list):
+            msg += '%s: %s\n' % (name, type(arg))
         raise RuntimeError(msg)
 
     if desired_type is np.ndarray:

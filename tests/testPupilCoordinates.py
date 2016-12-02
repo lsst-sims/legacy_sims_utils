@@ -6,10 +6,12 @@ import unittest
 import lsst.utils.tests
 
 from lsst.sims.utils import ObservationMetaData, _nativeLonLatFromRaDec
-from lsst.sims.utils import _pupilCoordsFromRaDec
+from lsst.sims.utils import _pupilCoordsFromRaDec, pupilCoordsFromRaDec
 from lsst.sims.utils import _raDecFromPupilCoords
 from lsst.sims.utils import _observedFromICRS, _icrsFromObserved
 from lsst.sims.utils import haversine, arcsecFromRadians, solarRaDec, ModifiedJulianDate, distanceToSun
+from lsst.sims.utils import raDecFromAltAz, observedFromICRS, icrsFromObserved
+from lsst.sims.utils import radiansFromArcsec
 
 
 def setup_module(module):
@@ -250,6 +252,93 @@ class PupilCoordinateUnitTest(unittest.TestCase):
             else:
                 np.testing.assert_equal(xt, np.NaN)
                 np.testing.assert_equal(yt, np.NaN)
+
+    def test_with_proper_motion(self):
+        """
+        Test that calculating pupil coordinates in the presence of proper motion, parallax,
+        and radial velocity is equivalent to
+        observedFromICRS -> icrsFromObserved -> pupilCoordsFromRaDec
+        (mostly to make surethat pupilCoordsFromRaDec is correctly calling observedFromICRS
+        with non-zero proper motion, etc.)
+        """
+        rng = np.random.RandomState(38442)
+        is_valid = False
+        while not is_valid:
+            mjd_tai = 59580.0 + 10000.0*rng.random_sample()
+            obs = ObservationMetaData(mjd=mjd_tai)
+            ra, dec = raDecFromAltAz(78.0, 112.0, obs)
+            dd = distanceToSun(ra, dec, obs.mjd)
+            if dd > 45.0:
+                is_valid = True
+
+        n_obj = 1000
+        rr = rng.random_sample(n_obj)*2.0
+        theta = rng.random_sample(n_obj)*2.0*np.pi
+        ra_list = ra + rr*np.cos(theta)
+        dec_list = dec + rr*np.sin(theta)
+        obs = ObservationMetaData(pointingRA=ra, pointingDec=dec, mjd=mjd_tai, rotSkyPos=19.0)
+
+        pm_ra_list = rng.random_sample(n_obj)*100.0 - 50.0
+        pm_dec_list = rng.random_sample(n_obj)*100.0 - 50.0
+        px_list = rng.random_sample(n_obj) + 0.05
+        v_rad_list = rng.random_sample(n_obj)*600.0 - 300.0
+
+        for includeRefraction in (True, False):
+
+            ra_obs, dec_obs = observedFromICRS(ra_list, dec_list,
+                                               pm_ra=pm_ra_list, pm_dec=pm_dec_list,
+                                               parallax=px_list, v_rad=v_rad_list,
+                                               obs_metadata=obs, epoch=2000.0,
+                                               includeRefraction=includeRefraction)
+
+            ra_icrs, dec_icrs = icrsFromObserved(ra_obs, dec_obs, obs_metadata=obs,
+                                                 epoch=2000.0, includeRefraction=includeRefraction)
+
+            xp_control, yp_control = pupilCoordsFromRaDec(ra_icrs, dec_icrs, obs_metadata=obs,
+                                                          epoch=2000.0, includeRefraction=includeRefraction)
+
+            xp_test, yp_test = pupilCoordsFromRaDec(ra_list, dec_list,
+                                                    pm_ra=pm_ra_list, pm_dec=pm_dec_list,
+                                                    parallax=px_list, v_rad=v_rad_list,
+                                                    obs_metadata=obs, epoch=2000.0,
+                                                    includeRefraction=includeRefraction)
+
+            distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control, 2) +
+                                                 np.power(yp_test-yp_control, 2)))
+            self.assertLess(distance.max(), 0.006)
+
+            # now test it in radians
+            xp_rad, yp_rad = _pupilCoordsFromRaDec(np.radians(ra_list), np.radians(dec_list),
+                                                   pm_ra=radiansFromArcsec(pm_ra_list),
+                                                   pm_dec=radiansFromArcsec(pm_dec_list),
+                                                   parallax=radiansFromArcsec(px_list),
+                                                   v_rad=v_rad_list,
+                                                   obs_metadata=obs, epoch=2000.0,
+                                                   includeRefraction=includeRefraction)
+
+            np.testing.assert_array_equal(xp_rad, xp_test)
+            np.testing.assert_array_equal(yp_rad, yp_test)
+
+            # now test it with proper motion = 0
+            ra_obs, dec_obs = observedFromICRS(ra_list, dec_list,
+                                               parallax=px_list, v_rad=v_rad_list,
+                                               obs_metadata=obs, epoch=2000.0,
+                                               includeRefraction=includeRefraction)
+
+            ra_icrs, dec_icrs = icrsFromObserved(ra_obs, dec_obs, obs_metadata=obs,
+                                                 epoch=2000.0, includeRefraction=includeRefraction)
+
+            xp_control, yp_control = pupilCoordsFromRaDec(ra_icrs, dec_icrs, obs_metadata=obs,
+                                                          epoch=2000.0, includeRefraction=includeRefraction)
+
+            xp_test, yp_test = pupilCoordsFromRaDec(ra_list, dec_list,
+                                                    parallax=px_list, v_rad=v_rad_list,
+                                                    obs_metadata=obs, epoch=2000.0,
+                                                    includeRefraction=includeRefraction)
+
+            distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control, 2) +
+                                                 np.power(yp_test-yp_control, 2)))
+            self.assertLess(distance.max(), 0.006)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):

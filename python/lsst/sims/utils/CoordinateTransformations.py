@@ -8,12 +8,14 @@ import numpy as np
 import numbers
 import palpy
 
+from lsst.sims.utils.CodeUtilities import _validate_inputs
+
 __all__ = ["_galacticFromEquatorial", "galacticFromEquatorial",
            "_equatorialFromGalactic", "equatorialFromGalactic",
            "sphericalFromCartesian", "cartesianFromSpherical",
            "rotationMatrixFromVectors",
            "equationOfEquinoxes", "calcGmstGast", "calcLmstLast",
-           "haversine",
+           "angularSeparation", "_angularSeparation", "haversine",
            "arcsecFromRadians", "radiansFromArcsec",
            "arcsecFromDegrees", "degreesFromArcsec"]
 
@@ -305,8 +307,93 @@ def calcGmstGast(mjd):
     return gmst, gast
 
 
+def _angularSeparation(long1, lat1, long2, lat2):
+    """
+    Angular separation between two points in radians
+
+    Parameters
+    ----------
+    long1 is the first longitudinal coordinate in radians
+
+    lat1 is the first latitudinal coordinate in radians
+
+    long2 is the second longitudinal coordinate in radians
+
+    lat2 is the second latitudinal coordinate in radians
+
+    Returns
+    -------
+    The angular separation between the two points in radians
+
+    Calculated based on the haversine formula
+    From http://en.wikipedia.org/wiki/Haversine_formula
+    """
+    are_arrays_1 = _validate_inputs([long1, lat1],
+                                    ['long1', 'lat1'],
+                                    'angularSeparation')
+
+    are_arrays_2 = _validate_inputs([long2, lat2],
+                                    ['long2', 'lat2'],
+                                    'angularSeparation')
+
+    # The code below is necessary because the call to np.radians() in
+    # angularSeparation() will automatically convert floats
+    # into length 1 numpy arrays, confusing validate_inputs()
+    if are_arrays_1 and len(long1) == 1:
+        are_arrays_1 = False
+        long1 = long1[0]
+        lat1 = lat1[0]
+
+    if are_arrays_2 and len(long2) == 1:
+        are_arrays_2 = False
+        long2 = long2[0]
+        lat2 = lat2[0]
+
+    if are_arrays_1 and are_arrays_2:
+        if len(long1) != len(long2):
+            raise RuntimeError("You need to pass arrays of the same length "
+                               "as arguments to angularSeparation()")
+
+    t1 = np.sin(lat2/2.0 - lat1/2.0)**2
+    t2 = np.cos(lat1)*np.cos(lat2)*np.sin(long2/2.0 - long1/2.0)**2
+    _sum = t1 + t2
+
+    if isinstance(_sum, numbers.Number):
+        if _sum<0.0:
+            _sum = 0.0
+    else:
+        _sum = np.where(_sum<0.0, 0.0, _sum)
+
+    return 2.0*np.arcsin(np.sqrt(_sum))
+
+def angularSeparation(long1, lat1, long2, lat2):
+    """
+    Angular separation between two points in degrees
+
+    Parameters
+    ----------
+    long1 is the first longitudinal coordinate in degrees
+
+    lat1 is the first latitudinal coordinate in degrees
+
+    long2 is the second longitudinal coordinate in degrees
+
+    lat2 is the second latitudinal coordinate in degrees
+
+    Returns
+    -------
+    The angular separation between the two points in degrees
+    """
+    return np.degrees(_angularSeparation(np.radians(long1),
+                                         np.radians(lat1),
+                                         np.radians(long2),
+                                         np.radians(lat2)))
+
+
 def haversine(long1, lat1, long2, lat2):
     """
+    DEPRECATED; use angularSeparation() instead
+
     Return the angular distance between two points in radians
 
     @param [in] long1 is the longitude of point 1 in radians
@@ -318,12 +405,8 @@ def haversine(long1, lat1, long2, lat2):
     @param [in] lat2 is the latitude of point 2 in radians
 
     @param [out] the angular separation between points 1 and 2 in radians
-
-    From http://en.wikipedia.org/wiki/Haversine_formula
     """
-    t1 = np.sin(lat2 / 2.0 - lat1 / 2.0)**2
-    t2 = np.cos(lat1) * np.cos(lat2) * np.sin(long2 / 2.0 - long1 / 2.0)**2
-    return 2 * np.arcsin(np.sqrt(t1 + t2))
+    return _angularSeparation(long1, lat1, long2, lat2)
 
 
 def arcsecFromRadians(value):
