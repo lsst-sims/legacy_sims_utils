@@ -119,7 +119,7 @@ class MjdTest(unittest.TestCase):
             # this only works for days on which a leap second is not applied
             dt = (mjd.UT1-mjd.UTC) * 86400.0
 
-            self.assertLess(np.abs(dt - mjd.dut1), 1.0e-6,
+            self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
                             msg='failed on UTC: %.12f' % mjd.UTC)
 
             self.assertLess(np.abs(mjd.dut1), 0.9)
@@ -148,7 +148,7 @@ class MjdTest(unittest.TestCase):
             # this only works for days on which a leap second is not applied
             dt = (mjd.UT1-mjd.UTC) * 86400.0
 
-            self.assertLess(np.abs(dt - mjd.dut1), 1.0e-6,
+            self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
                             msg='failed on UTC %.12f' % mjd.UTC)
 
             self.assertLess(np.abs(mjd.dut1), 0.9)
