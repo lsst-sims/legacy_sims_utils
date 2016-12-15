@@ -11,3 +11,4 @@ from .fileMaps import *
 from .samplingFunctions import *
 from .healpyUtils import *
 from .stellarMags import *
+from photo_m5 import *
