@@ -228,10 +228,8 @@ class Site (object):
     def __eq__(self, other):
 
         for param in self.__dict__:
-
             if param not in other.__dict__:
                 return False
-
             if self.__dict__[param] != other.__dict__[param]:
                 return False
 
