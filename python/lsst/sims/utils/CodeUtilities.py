@@ -2,6 +2,7 @@ from builtins import zip
 import numpy as np
 import numbers
 
+
 def sims_clean_up():
     """
     This method will clean up data caches created by the sims software stack.
@@ -21,7 +22,7 @@ def sims_clean_up():
         return None
 
     for target in sims_clean_up.targets:
-        if isinstance(target,dict):
+        if isinstance(target, dict):
             while len(target) > 0:
                 target.popitem()
         elif isinstance(target, list):
@@ -31,6 +32,7 @@ def sims_clean_up():
     return None
 
 sims_clean_up.targets = []
+
 
 def _validate_inputs(input_list, input_names, method_name):
     """
