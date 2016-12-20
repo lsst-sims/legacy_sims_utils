@@ -23,13 +23,10 @@ def sims_clean_up():
     for target in sims_clean_up.targets:
         if isinstance(target,dict):
             while len(target) > 0:
-                keys = list(target.keys())
-                target.pop(keys[0])
-            target = {}
+                target.popitem()
         elif isinstance(target, list):
             while len(target) > 0:
                 target.pop()
-            target = []
 
     return None
 
