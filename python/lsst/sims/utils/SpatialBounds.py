@@ -165,7 +165,7 @@ class CircleBounds(SpatialBounds):
 
         cosDec = np.cos(self.DEC)
 
-        if np.abs(cosDec)>1.0e-20:
+        if np.abs(cosDec) > 1.0e-20:
             RAmax = self.RAdeg + \
                 360.0 * np.arcsin(np.sin(0.5 * self.radius) /
                                   cosDec) / np.pi
