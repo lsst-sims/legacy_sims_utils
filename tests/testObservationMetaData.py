@@ -287,6 +287,177 @@ class ObservationMetaDataTest(unittest.TestCase):
 
         obs.OpsimMetaData = {'a': 1, 'b': 2}
 
+    def test_eq(self):
+        """
+        Test that we implemented __eq__ and __ne__ correctly
+        """
+        empty_obs = ObservationMetaData()
+        other_empty_obs = ObservationMetaData()
+        self.assertEqual(empty_obs, other_empty_obs)
+        self.assertTrue(empty_obs == other_empty_obs)
+        self.assertFalse(empty_obs != other_empty_obs)
+
+        dummy_site = Site(longitude=23.1, latitude=-11.1, temperature=11.0,
+                          height=8921.01, pressure=734.1, humidity=0.1,
+                          lapseRate=0.006)
+
+        ref_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                      mjd=59580.1, rotSkyPos=91.2,
+                                      bandpassName = 'u', m5=24.3,
+                                      skyBrightness=22.1, seeing=0.8,
+                                      site=dummy_site)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertEqual(ref_obs, other_obs)
+        self.assertTrue(ref_obs == other_obs)
+        self.assertFalse(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.41, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.2,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.2, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.1,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'g', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.1,
+                                        skyBrightness=22.1, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.2, seeing=0.8,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.81,
+                                        site=dummy_site)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs = ObservationMetaData(pointingRA=23.44, pointingDec=-19.1,
+                                        mjd=59580.1, rotSkyPos=91.2,
+                                        bandpassName = 'u', m5=24.3,
+                                        skyBrightness=22.1, seeing=0.8)
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        # use assignment to bring other_obs back into agreement with
+        # ref_obs
+        other_obs.site = dummy_site
+        self.assertEqual(ref_obs, other_obs)
+        self.assertTrue(ref_obs == other_obs)
+        self.assertFalse(ref_obs != other_obs)
+
+        # now try cases of m5, bandpass, and seeing being lists
+        ref_obs.setBandpassM5andSeeing(bandpassName=['u', 'r', 'z'],
+                                       m5=[22.1, 23.5, 24.2],
+                                       seeing=[0.6, 0.7, 0.8])
+
+        other_obs.setBandpassM5andSeeing(bandpassName=['u', 'r', 'z'],
+                                         m5=[22.1, 23.5, 24.2],
+                                         seeing=[0.6, 0.7, 0.8])
+
+        self.assertEqual(ref_obs, other_obs)
+        self.assertTrue(ref_obs == other_obs)
+        self.assertFalse(ref_obs != other_obs)
+
+        other_obs.setBandpassM5andSeeing(bandpassName=['u', 'i', 'z'],
+                                         m5=[22.1, 23.5, 24.2],
+                                         seeing=[0.6, 0.7, 0.8])
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs.setBandpassM5andSeeing(bandpassName=['u', 'r', 'z'],
+                                         m5=[22.1, 23.4, 24.2],
+                                         seeing=[0.6, 0.7, 0.8])
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs.setBandpassM5andSeeing(bandpassName=['u', 'r', 'z'],
+                                         m5=[22.1, 23.5, 24.2],
+                                         seeing=[0.2, 0.7, 0.8])
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
+        other_obs.setBandpassM5andSeeing(bandpassName=['u', 'z'],
+                                         m5=[22.1, 24.2],
+                                         seeing=[0.2, 0.8])
+
+        self.assertNotEqual(ref_obs, other_obs)
+        self.assertFalse(ref_obs == other_obs)
+        self.assertTrue(ref_obs != other_obs)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass

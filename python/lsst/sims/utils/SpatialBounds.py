@@ -85,6 +85,23 @@ class SpatialBounds(with_metaclass(SpatialBoundsMetaClass, object)):
 
         raise NotImplementedError()
 
+    def __eq__(self, other):
+        for param in self.__dict__:
+            if param not in other.__dict__:
+                return False
+
+            if self.__dict__[param] != other.__dict__[param]:
+                return False
+
+        for param in other.__dict__:
+            if param not in self.__dict__:
+                return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     @classmethod
     def getSpatialBounds(self, name, *args, **kwargs):
         if name in self.SBregistry:
@@ -148,7 +165,7 @@ class CircleBounds(SpatialBounds):
 
         cosDec = np.cos(self.DEC)
 
-        if np.abs(cosDec)>1.0e-20:
+        if np.abs(cosDec) > 1.0e-20:
             RAmax = self.RAdeg + \
                 360.0 * np.arcsin(np.sin(0.5 * self.radius) /
                                   cosDec) / np.pi

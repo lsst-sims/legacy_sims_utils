@@ -118,6 +118,105 @@ class SpatialBoundsTest(unittest.TestCase):
         self.assertRaises(RuntimeError, SpatialBounds.getSpatialBounds,
                           'box', 1.0, 2.0, 'moreUtterNonsense')
 
+    def test_eq(self):
+        """
+        Test that we have implemented __eq__and __ne__ correctly
+        """
+        ref_circle = CircleBounds(113.1, -20.1, 1.56)
+        other_circle = CircleBounds(113.1, -20.1, 1.56)
+        self.assertEqual(ref_circle, other_circle)
+        self.assertTrue(ref_circle == other_circle)
+        self.assertFalse(ref_circle != other_circle)
+
+        other_circle = CircleBounds(113.2, -20.1, 1.56)
+        self.assertNotEqual(ref_circle, other_circle)
+        self.assertFalse(ref_circle == other_circle)
+        self.assertTrue(ref_circle != other_circle)
+
+        other_circle = CircleBounds(113.1, -20.2, 1.56)
+        self.assertNotEqual(ref_circle, other_circle)
+        self.assertFalse(ref_circle == other_circle)
+        self.assertTrue(ref_circle != other_circle)
+
+        other_circle = CircleBounds(113.1, -20.1, 1.57)
+        self.assertNotEqual(ref_circle, other_circle)
+        self.assertFalse(ref_circle == other_circle)
+        self.assertTrue(ref_circle != other_circle)
+
+        ref_square = BoxBounds(113.1, -20.1, 1.56)
+        self.assertNotEqual(ref_circle, ref_square)
+        self.assertFalse(ref_circle == ref_square)
+        self.assertTrue(ref_circle != ref_square)
+
+        other_square = BoxBounds(113.1, -20.1, 1.56)
+        self.assertEqual(ref_square, other_square)
+        self.assertTrue(ref_square == other_square)
+        self.assertFalse(ref_square != other_square)
+
+        other_square = BoxBounds(113.2, -20.1, 1.56)
+        self.assertNotEqual(ref_square, other_square)
+        self.assertFalse(ref_square == other_square)
+        self.assertTrue(ref_square != other_square)
+
+        other_square = BoxBounds(113.1, -20.2, 1.56)
+        self.assertNotEqual(ref_square, other_square)
+        self.assertFalse(ref_square == other_square)
+        self.assertTrue(ref_square != other_square)
+
+        other_square = BoxBounds(113.1, -20.1, 1.57)
+        self.assertNotEqual(ref_square, other_square)
+        self.assertFalse(ref_square == other_square)
+        self.assertTrue(ref_square != other_square)
+
+        ref_rect = BoxBounds(113.1, -20.1, [1.56, 1.56])
+        self.assertEqual(ref_rect, ref_square)
+        self.assertTrue(ref_rect == ref_square)
+        self.assertFalse(ref_rect != ref_square)
+
+        self.assertNotEqual(ref_rect, ref_circle)
+        self.assertFalse(ref_rect == ref_circle)
+        self.assertTrue(ref_rect != ref_circle)
+
+        ref_rect = BoxBounds(113.1, -20.1, [1.56, 1.52])
+        self.assertNotEqual(ref_rect, ref_square)
+        self.assertFalse(ref_rect == ref_square)
+        self.assertTrue(ref_rect != ref_square)
+
+        other_rect = BoxBounds(113.1, -20.1, [1.56, 1.52])
+        self.assertEqual(ref_rect, other_rect)
+        self.assertTrue(ref_rect == other_rect)
+        self.assertFalse(ref_rect != other_rect)
+
+        other_rect = BoxBounds(113.1, -20.1, np.array([1.56, 1.52]))
+        self.assertEqual(ref_rect, other_rect)
+        self.assertTrue(ref_rect == other_rect)
+        self.assertFalse(ref_rect != other_rect)
+
+        other_rect = BoxBounds(113.1, -20.1, (1.56, 1.52))
+        self.assertEqual(ref_rect, other_rect)
+        self.assertTrue(ref_rect == other_rect)
+        self.assertFalse(ref_rect != other_rect)
+
+        other_rect = BoxBounds(113.2, -20.1, (1.56, 1.52))
+        self.assertNotEqual(ref_rect, other_rect)
+        self.assertFalse(ref_rect == other_rect)
+        self.assertTrue(ref_rect != other_rect)
+
+        other_rect = BoxBounds(113.1, -20.2, (1.56, 1.52))
+        self.assertNotEqual(ref_rect, other_rect)
+        self.assertFalse(ref_rect == other_rect)
+        self.assertTrue(ref_rect != other_rect)
+
+        other_rect = BoxBounds(113.1, -20.1, (1.57, 1.52))
+        self.assertNotEqual(ref_rect, other_rect)
+        self.assertFalse(ref_rect == other_rect)
+        self.assertTrue(ref_rect != other_rect)
+
+        other_rect = BoxBounds(113.1, -20.1, (1.56, 1.51))
+        self.assertNotEqual(ref_rect, other_rect)
+        self.assertFalse(ref_rect == other_rect)
+        self.assertTrue(ref_rect != other_rect)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
