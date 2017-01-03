@@ -853,15 +853,6 @@ class astrometryUnitTest(unittest.TestCase):
                          "The arrays input to appGeoFromICRS all need to "
                          "have the same length")
 
-    # 22 November 2016
-    # There appears to be a bug in PALPY in which mapqk (mean-to-apparent place)
-    # corrects for light deflection due to the Sun, while mapqkz
-    # (mean-to-apparent place for extra-galactic sources) does not.  Until
-    # this bug is fixed, we should expect the two methods to give different
-    # answers, even when mapqk is passed proper motion = 0.0.  Therefore,
-    # I am marking this test as an expectedFailure() until we can get the
-    # question resolved.
-    @unittest.expectedFailure
     def test_appGeoFromICRS_noMotion(self):
         """
         Test that appGeoFromICRS with parallax, proper motion, and radial velocity
