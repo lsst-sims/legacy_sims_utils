@@ -110,8 +110,9 @@ class Site (object):
             temperature=11.5 centigrade
             pressure=750.0 millibars
             humidity=0.4
-            lapseRate=0.0065in Kelvin per meter
-            longitude: in degrees
+            lapseRate=0.0065 in Kelvin per meter
+
+        longitude: in degrees
 
         latitude: in degrees
 
@@ -223,6 +224,23 @@ class Site (object):
             msg += "If you want these to just default to LSST values,\n"
             msg += "instantiate your Site with name='LSST'"
             warnings.warn(msg)
+
+    def __eq__(self, other):
+
+        for param in self.__dict__:
+            if param not in other.__dict__:
+                return False
+            if self.__dict__[param] != other.__dict__[param]:
+                return False
+
+        for param in other.__dict__:
+            if param not in self.__dict__:
+                return False
+
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     @property
     def name(self):

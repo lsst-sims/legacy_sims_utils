@@ -3,6 +3,37 @@ import numpy as np
 import numbers
 
 
+def sims_clean_up():
+    """
+    This method will clean up data caches created by the sims software stack.
+    Any time a cache is added to the sims software stack, it can be added to
+    the list sims_clean_up.targets.  When sims_clean_up() is called, it will
+    loop through the contents of sims_clean_up.targets.  It will call pop()
+    on all of the contents of each sims_clean_up.target, and then reset each
+    sims_clean_up.target to either a blank dict or list (depending on what
+    the target was).
+
+    Note: this method assumes that all relevant caches are either dicts
+    or lists.  If it encounters another object, sims_clean_up() will do
+    nothing.
+    """
+
+    if not hasattr(sims_clean_up, 'targets'):
+        return None
+
+    for target in sims_clean_up.targets:
+        if isinstance(target, dict):
+            while len(target) > 0:
+                target.popitem()
+        elif isinstance(target, list):
+            while len(target) > 0:
+                target.pop()
+
+    return None
+
+sims_clean_up.targets = []
+
+
 def _validate_inputs(input_list, input_names, method_name):
     """
     This method will validate the inputs of other methods.

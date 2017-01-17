@@ -71,12 +71,6 @@ class ObservationMetaData(object):
           Analogous to m5, corresponds to the seeing in arcseconds in the bandpasses in
           bandpassName
 
-        * epoch is the epoch of the RA, Dec system used to define
-          pointingRA/Dec.  This defaults to 2000.0 and should only be changed
-          if you plan to use this ObservationMetaData to query a database with meanRA,
-          Dec stored in a system that is not measured against the equinox at Julian
-          epoch 2000.0
-
         * rotSkyPos float
           The orientation of the telescope in degrees.
           This is used by the Astrometry mixins in sims_coordUtils.
@@ -101,14 +95,13 @@ class ObservationMetaData(object):
     def __init__(self, boundType=None, boundLength=None,
                  mjd=None, pointingRA=None, pointingDec=None, rotSkyPos=None,
                  bandpassName=None, site=Site(name='LSST'), m5=None, skyBrightness=None,
-                 seeing=None, epoch=2000.0):
+                 seeing=None):
 
         self._bounds = None
         self._boundType = boundType
         self._bandpass = bandpassName
         self._skyBrightness = skyBrightness
         self._site = site
-        self._epoch = epoch
         self._OpsimMetaData = None
 
         if mjd is not None:
@@ -172,6 +165,46 @@ class ObservationMetaData(object):
         mydict['OpsimMetaData'] = self._OpsimMetaData
 
         return mydict
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __eq__(self, other):
+
+        if self.bounds != other.bounds:
+            return False
+
+        if self.pointingRA != other.pointingRA:
+            return False
+
+        if self.pointingDec != other.pointingDec:
+            return False
+
+        if self.rotSkyPos != other.rotSkyPos:
+            return False
+
+        if self.bandpass != other.bandpass:
+            return False
+
+        if self.seeing != other.seeing:
+            return False
+
+        if self.m5 != other.m5:
+            return False
+
+        if self.site != other.site:
+            return False
+
+        if self.mjd != other.mjd:
+            return False
+
+        if self.skyBrightness != other.skyBrightness:
+            return False
+
+        if self.OpsimMetaData != other.OpsimMetaData:
+            return False
+
+        return True
 
     def _assignDictKeyedToBandpass(self, inputValue, inputName):
         """
