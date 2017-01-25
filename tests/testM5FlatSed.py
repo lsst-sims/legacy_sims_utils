@@ -1,6 +1,6 @@
 import unittest
 import lsst.utils.tests
-from lsst.sims.utils import photo_m5
+from lsst.sims.utils import m5_flat_sed
 
 
 def setup_module(module):
@@ -23,11 +23,11 @@ class PhotoM5Test(unittest.TestCase):
             k_default[key] = kwargs[key][0]
 
         for filtername in filters:
-            m5_baseline = photo_m5(filtername, **k_default)
+            m5_baseline = m5_flat_sed(filtername, **k_default)
             for key in kwargs:
                 k_new = k_default.copy()
                 k_new[key] = kwargs[key][1]
-                m5_new = photo_m5(filtername, **k_new)
+                m5_new = m5_flat_sed(filtername, **k_new)
                 assert(m5_new < m5_baseline)
 
 
