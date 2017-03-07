@@ -91,133 +91,133 @@ class AngularSeparationTestCase(unittest.TestCase):
         # np.radians will automatically convert the lists into arrays
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(list(ra1_arr), dec1_arr, ra2_arr, dec2_arr)
-        self.assertIn("number", context.exception.message)
-        self.assertIn("numpy array", context.exception.message)
-        self.assertIn("long1", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("number", context.exception.args[0])
+        self.assertIn("numpy array", context.exception.args[0])
+        self.assertIn("long1", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, list(dec1_arr), ra2_arr, dec2_arr)
-        self.assertIn("number", context.exception.message)
-        self.assertIn("numpy array", context.exception.message)
-        self.assertIn("lat1", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("number", context.exception.args[0])
+        self.assertIn("numpy array", context.exception.args[0])
+        self.assertIn("lat1", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, dec1_arr, list(ra2_arr), dec2_arr)
-        self.assertIn("number", context.exception.message)
-        self.assertIn("numpy array", context.exception.message)
-        self.assertIn("long2", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("number", context.exception.args[0])
+        self.assertIn("numpy array", context.exception.args[0])
+        self.assertIn("long2", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, dec1_arr, ra2_arr, list(dec2_arr))
-        self.assertIn("number", context.exception.message)
-        self.assertIn("numpy array", context.exception.message)
-        self.assertIn("lat2", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("number", context.exception.args[0])
+        self.assertIn("numpy array", context.exception.args[0])
+        self.assertIn("lat2", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         # test with numbers and arrays
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, dec1, ra2, dec2)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1, dec1_arr, ra2, dec2)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1, dec1, ra2_arr, dec2)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1, dec1, ra2, dec2_arr)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1_arr, dec1, ra2, dec2)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1, dec1_arr, ra2, dec2)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1, dec1, ra2_arr, dec2)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1, dec1, ra2, dec2_arr)
-        self.assertIn("the same type", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("the same type", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         # test with mismatched arrays
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr[:2], dec1_arr, ra2_arr, dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, dec1_arr[:2], ra2_arr, dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, dec1_arr, ra2_arr[:2], dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, dec1_arr, ra2_arr, dec2_arr[:2])
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1_arr[:2], dec1_arr, ra2_arr, dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1_arr, dec1_arr[:2], ra2_arr, dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1_arr, dec1_arr, ra2_arr[:2], dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1_arr, dec1_arr, ra2_arr, dec2_arr[:2])
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr[:2], dec1_arr[:2], ra2_arr, dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1_arr, dec1_arr, ra2_arr[:2], dec2_arr[:2])
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1_arr[:2], dec1_arr[:2], ra2_arr, dec2_arr)
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils.angularSeparation(ra1_arr, dec1_arr, ra2_arr[:2], dec2_arr[:2])
-        self.assertIn("same length", context.exception.message)
-        self.assertIn("angularSeparation", context.exception.message)
+        self.assertIn("same length", context.exception.args[0])
+        self.assertIn("angularSeparation", context.exception.args[0])
 
         # test that a sensible error is raised if you pass a string
         # into angularSeparation
@@ -226,23 +226,23 @@ class AngularSeparationTestCase(unittest.TestCase):
         # from trying to convert a str with np.radians
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation('a', dec1, ra2, dec2)
-        self.assertIn("angularSeparation", context.exception.message)
-        self.assertIn("number", context.exception.message)
+        self.assertIn("angularSeparation", context.exception.args[0])
+        self.assertIn("number", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1, 'a', ra2, dec2)
-        self.assertIn("angularSeparation", context.exception.message)
-        self.assertIn("number", context.exception.message)
+        self.assertIn("angularSeparation", context.exception.args[0])
+        self.assertIn("number", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1, dec1, 'a', dec2)
-        self.assertIn("angularSeparation", context.exception.message)
-        self.assertIn("number", context.exception.message)
+        self.assertIn("angularSeparation", context.exception.args[0])
+        self.assertIn("number", context.exception.args[0])
 
         with self.assertRaises(RuntimeError) as context:
             utils._angularSeparation(ra1, dec1, ra2, 'a')
-        self.assertIn("angularSeparation", context.exception.message)
-        self.assertIn("number", context.exception.message)
+        self.assertIn("angularSeparation", context.exception.args[0])
+        self.assertIn("number", context.exception.args[0])
 
     def testAngSepResultsArr(self):
         """
