@@ -25,9 +25,9 @@ def sims_clean_up():
         if isinstance(target, dict):
             while len(target) > 0:
                 obj = target.popitem()
-                if hasattr(obj, 'close'):
+                if hasattr(obj[1], 'close'):
                     try:
-                        obj.close()
+                        obj[1].close()
                     except:
                         pass
         elif isinstance(target, list):
