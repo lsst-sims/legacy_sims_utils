@@ -24,10 +24,20 @@ def sims_clean_up():
     for target in sims_clean_up.targets:
         if isinstance(target, dict):
             while len(target) > 0:
-                target.popitem()
+                obj = target.popitem()
+                if hasattr(obj[1], 'close'):
+                    try:
+                        obj[1].close()
+                    except:
+                        pass
         elif isinstance(target, list):
             while len(target) > 0:
-                target.pop()
+                obj = target.pop()
+                if hasattr(obj, 'close'):
+                    try:
+                        obj.close()
+                    except:
+                        pass
 
     return None
 
