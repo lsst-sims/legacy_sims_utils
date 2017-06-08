@@ -182,6 +182,10 @@ def _pupilCoordsFromObserved(ra_obs, dec_obs, obs_metadata, epoch=2000.0, includ
     are_arrays = _validate_inputs([ra_obs, dec_obs], ['ra_obs', 'dec_obs'],
                                   "pupilCoordsFromObserved")
 
+    if obs_metadata.rotSkyPos is None:
+        raise RuntimeError("Cannot call pupilCoordsFromObserved; "
+                           "rotSkyPos is None")
+
     theta = obs_metadata._rotSkyPos
 
     ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
