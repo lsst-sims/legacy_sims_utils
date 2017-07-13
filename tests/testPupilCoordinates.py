@@ -20,6 +20,8 @@ def setup_module(module):
 
 class PupilCoordinateUnitTest(unittest.TestCase):
 
+    longMessage = True
+
     def testExceptions(self):
         """
         Test that exceptions are raised when they ought to be
@@ -98,13 +100,13 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         """
         This unit test verifies that the following conventions hold:
 
-        if rotSkyPos = 0, then north is +y the camera and east is -x
+        if rotSkyPos = 0, then north is +y the camera and east is +x
 
-        if rotSkyPos = -90, then north is +x on the camera and east is +y
+        if rotSkyPos = -90, then north is -x on the camera and east is +y
 
-        if rotSkyPos = 90, then north is -x on the camera and east is -y
+        if rotSkyPos = 90, then north is +x on the camera and east is -y
 
-        if rotSkyPos = 180, then north is -y on the camera and east is +x
+        if rotSkyPos = 180, then north is -y on the camera and east is -x
 
         This is consistent with rotSkyPos = rotTelPos - parallacticAngle
 
@@ -155,23 +157,29 @@ class PupilCoordinateUnitTest(unittest.TestCase):
                 lon, lat = _nativeLonLatFromRaDec(raTest, decTest, obs)
                 rr = np.abs(np.cos(lat) / np.sin(lat))
 
-                if np.abs(rotSkyPos) < 0.01:
-                    control_x = np.array([-1.0 * rr[0], 1.0 * rr[1], 0.0, 0.0])
-                    control_y = np.array([0.0, 0.0, 1.0 * rr[2], -1.0 * rr[3]])
-                elif np.abs(rotSkyPos + 90.0) < 0.01:
-                    control_x = np.array([0.0, 0.0, 1.0 * rr[2], -1.0 * rr[3]])
-                    control_y = np.array([1.0 * rr[0], -1.0 * rr[1], 0.0, 0.0])
-                elif np.abs(rotSkyPos - 90.0) < 0.01:
-                    control_x = np.array([0.0, 0.0, -1.0 * rr[2], 1.0 * rr[3]])
-                    control_y = np.array([-1.0 * rr[0], 1.0 * rr[1], 0.0, 0.0])
-                elif np.abs(rotSkyPos - 180.0) < 0.01:
+                if np.abs(rotSkyPos) < 0.01:  # rotSkyPos == 0
                     control_x = np.array([1.0 * rr[0], -1.0 * rr[1], 0.0, 0.0])
+                    control_y = np.array([0.0, 0.0, 1.0 * rr[2], -1.0 * rr[3]])
+                elif np.abs(rotSkyPos + 90.0) < 0.01:  # rotSkyPos == -90
+                    control_x = np.array([0.0, 0.0, -1.0 * rr[2], 1.0 * rr[3]])
+                    control_y = np.array([1.0 * rr[0], -1.0 * rr[1], 0.0, 0.0])
+                elif np.abs(rotSkyPos - 90.0) < 0.01:  # rotSkyPos == 90
+                    control_x = np.array([0.0, 0.0, 1.0 * rr[2], -1.0 * rr[3]])
+                    control_y = np.array([-1.0 * rr[0], +1.0 * rr[1], 0.0, 0.0])
+                elif np.abs(rotSkyPos - 180.0) < 0.01:  # rotSkyPos == 180
+                    control_x = np.array([-1.0 * rr[0], +1.0 * rr[1], 0.0, 0.0])
                     control_y = np.array([0.0, 0.0, -1.0 * rr[2], 1.0 * rr[3]])
+
+                msg = 'failed on rotSkyPos == %e\n' % rotSkyPos
+                msg += 'control_x %s\n' % str(control_x)
+                msg += 'test_x %s\n' % str(x)
+                msg += 'control_y %s\n' % str(control_y)
+                msg += 'test_y %s\n' % str(y)
 
                 dx = np.array([xx / cc if np.abs(cc) > 1.0e-10 else 1.0 - xx for xx, cc in zip(x, control_x)])
                 dy = np.array([yy / cc if np.abs(cc) > 1.0e-10 else 1.0 - yy for yy, cc in zip(y, control_y)])
-                np.testing.assert_array_almost_equal(dx, np.ones(4), decimal=4)
-                np.testing.assert_array_almost_equal(dy, np.ones(4), decimal=4)
+                self.assertLess(np.abs(dx-np.ones(4)).max(), 0.001, msg=msg)
+                self.assertLess(np.abs(dy-np.ones(4)).max(), 0.001, msg=msg)
 
     def testRaDecFromPupil(self):
         """
