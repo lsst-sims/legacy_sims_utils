@@ -13,9 +13,8 @@ def sims_clean_up():
     sims_clean_up.target to either a blank dict or list (depending on what
     the target was).
 
-    Note: this method assumes that all relevant caches are either dicts
-    or lists.  If it encounters another object, sims_clean_up() will do
-    nothing.
+    Note: if a target cache is not a dict or a list, it will attempt to call
+    close() on the cache.
     """
 
     if not hasattr(sims_clean_up, 'targets'):
