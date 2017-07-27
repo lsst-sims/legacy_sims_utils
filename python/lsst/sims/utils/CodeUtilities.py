@@ -39,6 +39,10 @@ def sims_clean_up():
                     except:
                         pass
 
+        else:
+            if hasattr(target, 'close'):
+                target.close()
+
     return None
 
 sims_clean_up.targets = []
