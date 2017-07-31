@@ -9,9 +9,9 @@ def sims_clean_up():
     Any time a cache is added to the sims software stack, it can be added to
     the list sims_clean_up.targets.  When sims_clean_up() is called, it will
     loop through the contents of sims_clean_up.targets.  It will call pop()
-    on all of the contents of each sims_clean_up.target, and then reset each
-    sims_clean_up.target to either a blank dict or list (depending on what
-    the target was).
+    on all of the contents of each sims_clean_up.target, run close() on each
+    item it pops (if applicable), and then reset each sims_clean_up.target
+    to either a blank dict or list (depending on what the target was).
 
     Note: if a target cache is not a dict or a list, it will attempt to call
     close() on the cache.
