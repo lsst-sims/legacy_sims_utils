@@ -9,13 +9,12 @@ def sims_clean_up():
     Any time a cache is added to the sims software stack, it can be added to
     the list sims_clean_up.targets.  When sims_clean_up() is called, it will
     loop through the contents of sims_clean_up.targets.  It will call pop()
-    on all of the contents of each sims_clean_up.target, and then reset each
-    sims_clean_up.target to either a blank dict or list (depending on what
-    the target was).
+    on all of the contents of each sims_clean_up.target, run close() on each
+    item it pops (if applicable), and then reset each sims_clean_up.target
+    to either a blank dict or list (depending on what the target was).
 
-    Note: this method assumes that all relevant caches are either dicts
-    or lists.  If it encounters another object, sims_clean_up() will do
-    nothing.
+    Note: if a target cache is not a dict or a list, it will attempt to call
+    close() on the cache.
     """
 
     if not hasattr(sims_clean_up, 'targets'):
@@ -38,6 +37,10 @@ def sims_clean_up():
                         obj.close()
                     except:
                         pass
+
+        else:
+            if hasattr(target, 'close'):
+                target.close()
 
     return None
 
