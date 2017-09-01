@@ -29,6 +29,7 @@ def sims_clean_up():
                         obj[1].close()
                     except:
                         pass
+                del obj
         elif isinstance(target, list):
             while len(target) > 0:
                 obj = target.pop()
@@ -37,10 +38,11 @@ def sims_clean_up():
                         obj.close()
                     except:
                         pass
-
+                del obj
         else:
             if hasattr(target, 'close'):
                 target.close()
+            del target
 
     return None
 
