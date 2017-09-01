@@ -1,6 +1,7 @@
 from builtins import zip
 import numpy as np
 import numbers
+import gc
 
 
 def sims_clean_up():
@@ -44,6 +45,7 @@ def sims_clean_up():
                 target.close()
             del target
 
+    gc.collect()
     return None
 
 sims_clean_up.targets = []
