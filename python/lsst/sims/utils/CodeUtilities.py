@@ -11,11 +11,13 @@ def sims_clean_up():
     the list sims_clean_up.targets.  When sims_clean_up() is called, it will
     loop through the contents of sims_clean_up.targets.  It will call pop()
     on all of the contents of each sims_clean_up.target, run close() on each
-    item it pops (if applicable), and then reset each sims_clean_up.target
-    to either a blank dict or list (depending on what the target was).
+    item it pops (if applicable), delete each item it pops, and then reset
+    each sims_clean_up.target to either a blank dict or list (depending on
+    what the target was).  sims_clean_up() will then run the garbage
+    collector.
 
     Note: if a target cache is not a dict or a list, it will attempt to call
-    close() on the cache.
+    close() on the cache and delete the cache.
     """
 
     if not hasattr(sims_clean_up, 'targets'):
