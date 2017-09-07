@@ -276,7 +276,7 @@ class astrometryUnitTest(unittest.TestCase):
             np.testing.assert_array_almost_equal(
                 distance_list, distance_control, 5)
 
-    @unittest.skip('hang')
+
     def testAstrometryExceptions(self):
         """
         Test to make sure that stand-alone astrometry methods raise an exception when they are called without
