@@ -230,7 +230,7 @@ class astrometryUnitTest(unittest.TestCase):
             dd_rad = _distanceToSun(np.radians(ra), np.radians(dec), mjd)
             self.assertAlmostEqual(np.radians(dd_deg), dd_rad, 10)
 
-    @unittest.skip('hang')
+
     def testSolarRaDecDeg(self):
         """
         Test that solarRaDec is consistent with _solarRaDec
