@@ -468,7 +468,7 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertAlmostEqual(ra_f, ra_arr[ix], 12)
             self.assertAlmostEqual(dec_f, dec_arr[ix], 12)
 
-    @unittest.skip('hang')
+
     def test_applyPrecession(self):
 
         ra = np.zeros((3), dtype=float)
