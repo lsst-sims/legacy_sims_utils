@@ -129,7 +129,7 @@ class astrometryUnitTest(unittest.TestCase):
         del self.metadata
         del self.tol
 
-    @unittest.skip('hang')
+
     def testDistanceToSun(self):
         """
         Test _distanceToSun using solar RA, Dec calculated from
