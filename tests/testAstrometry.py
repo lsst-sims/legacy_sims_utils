@@ -218,7 +218,7 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertIsInstance(dd, np.float)
             self.assertAlmostEqual(dd, control_distance[ix], 12)
 
-    @unittest.skip('hang')
+
     def testDistanceToSunDeg(self):
         """
         Test that distanceToSun is consistent with _distanceToSun
