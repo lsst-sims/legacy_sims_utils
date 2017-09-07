@@ -243,7 +243,7 @@ class astrometryUnitTest(unittest.TestCase):
             self.assertAlmostEqual(np.radians(ra_deg), ra_rad, 10)
             self.assertAlmostEqual(np.radians(dec_deg), dec_rad, 10)
 
-    @unittest.skip('hang')
+
     def testDistanceToSunArray(self):
         """
         Test _distanceToSun on numpy arrays of RA, Dec using solar RA, Dec calculated from
