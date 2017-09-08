@@ -27,6 +27,9 @@ class MjdTest(unittest.TestCase):
 
     longMessage = True
 
+    def test_blah(self):
+        mjd = ModifiedJulianDate(43950.0)
+
     @unittest.skip('hang')
     def test_tai_from_utc(self):
         """
