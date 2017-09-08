@@ -27,7 +27,6 @@ class MjdTest(unittest.TestCase):
 
     longMessage = True
 
-    @unittest.skip('hang')
     def test_tai_from_utc(self):
         """
         Load a table of UTC vs. TAI (as JD) generated directly
@@ -55,7 +54,6 @@ class MjdTest(unittest.TestCase):
             self.assertLess(dd_sec, 5.0e-5, msg=msg)
             self.assertAlmostEqual(mjd.TAI, tt, 15, msg=msg)
 
-    @unittest.skip('hang')
     def test_tt(self):
         """
         Verify that Terrestrial Time is TAI + 32.184 seconds
@@ -75,7 +73,6 @@ class MjdTest(unittest.TestCase):
             mjd = ModifiedJulianDate(TAI=tai)
             self.assertAlmostEqual(mjd.TT, tai + 32.184 / 86400.0, 15)
 
-    @unittest.skip('hang')
     def test_tdb(self):
         """
         Verify that TDB is within a few tens of microseconds of the value given
@@ -98,7 +95,6 @@ class MjdTest(unittest.TestCase):
             dt = np.abs(tdb_test-mjd.TDB) * 8.64 * 1.0e10  # convert to microseconds
             self.assertLess(dt, 50)
 
-    @unittest.skip('hang')
     def test_dut1(self):
         """
         Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
@@ -128,7 +124,6 @@ class MjdTest(unittest.TestCase):
 
             self.assertLess(np.abs(mjd.dut1), 0.9)
 
-    @unittest.skip('hang')
     def test_dut1_future(self):
         """
         Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
@@ -158,7 +153,6 @@ class MjdTest(unittest.TestCase):
 
             self.assertLess(np.abs(mjd.dut1), 0.9)
 
-    @unittest.skip('hang')
     def test_eq(self):
         mjd1 = ModifiedJulianDate(TAI=43000.0)
         mjd2 = ModifiedJulianDate(TAI=43000.0)
@@ -170,7 +164,6 @@ class MjdTest(unittest.TestCase):
         self.assertFalse(mjd1 == mjd3)
         self.assertTrue(mjd1 != mjd3)
 
-    @unittest.skip('hang')
     def test_deepcopy(self):
         # make sure that deepcopy() creates identical
         # ModifiedJulianDates with different memory addresses
@@ -256,7 +249,6 @@ class MjdTest(unittest.TestCase):
                 self.assertIn("ModifiedJulianDate.dut1", str(w.message))
         self.assertEqual(expected_MJD_warnings, MJD_warnings, msg="dut1 did not emit a UTCtoUT1Warning")
 
-    @unittest.skip('hang')
     def test_force_values(self):
         """
         Test that we can force the properties of a ModifiedJulianDate to have
@@ -282,6 +274,7 @@ class MjdTest(unittest.TestCase):
         self.assertEqual(tt.UT1, 8.0)
         self.assertEqual(tt.dut1, 10.0)
 
+    @unittest.skip('hang')
     def test_list(self):
         """
         Test that ModifiedJulianDate.get_list() gets results that are consistent
