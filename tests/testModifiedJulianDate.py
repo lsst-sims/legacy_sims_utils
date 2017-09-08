@@ -282,7 +282,6 @@ class MjdTest(unittest.TestCase):
         self.assertEqual(tt.UT1, 8.0)
         self.assertEqual(tt.dut1, 10.0)
 
-    @unittest.skip('hang')
     def test_list(self):
         """
         Test that ModifiedJulianDate.get_list() gets results that are consistent
