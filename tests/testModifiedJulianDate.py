@@ -30,6 +30,8 @@ class MjdTest(unittest.TestCase):
     def test_blah(self):
         mjd = ModifiedJulianDate(43950.0)
         xx = mjd.dut1
+        yy = mjd.UT1
+        zz = mjd.UTC
 
     @unittest.skip('hang')
     def test_tai_from_utc(self):
