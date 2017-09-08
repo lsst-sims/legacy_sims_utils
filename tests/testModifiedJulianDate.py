@@ -30,7 +30,6 @@ class MjdTest(unittest.TestCase):
     def test_blah(self):
         mjd = ModifiedJulianDate(43950.0)
 
-    @unittest.skip('hang')
     def test_tai_from_utc(self):
         """
         Load a table of UTC vs. TAI (as JD) generated directly
