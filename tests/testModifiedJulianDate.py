@@ -57,7 +57,7 @@ class MjdTest(unittest.TestCase):
             self.assertLess(dd_sec, 5.0e-5, msg=msg)
             self.assertAlmostEqual(mjd.TAI, tt, 15, msg=msg)
 
-    @unittest.skip('hang')
+
     def test_tt(self):
         """
         Verify that Terrestrial Time is TAI + 32.184 seconds
