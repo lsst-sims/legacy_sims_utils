@@ -27,6 +27,7 @@ class MjdTest(unittest.TestCase):
 
     longMessage = True
 
+    @unittest.skip('hang')
     def test_blah(self):
         mjd = ModifiedJulianDate(UTC=43950.0)
         xx = mjd.dut1
@@ -103,7 +104,6 @@ class MjdTest(unittest.TestCase):
             dt = np.abs(tdb_test-mjd.TDB) * 8.64 * 1.0e10  # convert to microseconds
             self.assertLess(dt, 50)
 
-    @unittest.skip('hang')
     def test_dut1(self):
         """
         Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
@@ -116,22 +116,19 @@ class MjdTest(unittest.TestCase):
         dut in units of days rather than seconds, etc.)
         """
 
-        rng = np.random.RandomState(117)
+        utc = 43950.0
+        mjd = ModifiedJulianDate(UTC=utc)
 
-        utc_list = rng.random_sample(3) * 10000.0 + 43000.0
-        for utc in utc_list:
-            mjd = ModifiedJulianDate(UTC=utc)
+        # first, test the self-consistency of ModifiedJulianData.dut1
+        # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+        #
+        # this only works for days on which a leap second is not applied
+        dt = (mjd.UT1-mjd.UTC) * 86400.0
 
-            # first, test the self-consistency of ModifiedJulianData.dut1
-            # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
-            #
-            # this only works for days on which a leap second is not applied
-            dt = (mjd.UT1-mjd.UTC) * 86400.0
+        self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
+                        msg='failed on UTC: %.12f' % mjd.UTC)
 
-            self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
-                            msg='failed on UTC: %.12f' % mjd.UTC)
-
-            self.assertLess(np.abs(mjd.dut1), 0.9)
+        self.assertLess(np.abs(mjd.dut1), 0.9)
 
     @unittest.skip('hang')
     def test_dut1_future(self):
