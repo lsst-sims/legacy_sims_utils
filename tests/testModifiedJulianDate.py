@@ -99,7 +99,6 @@ class MjdTest(unittest.TestCase):
             dt = np.abs(tdb_test-mjd.TDB) * 8.64 * 1.0e10  # convert to microseconds
             self.assertLess(dt, 50)
 
-    @unittest.skip('hang')
     def test_dut1(self):
         """
         Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
