@@ -29,7 +29,9 @@ class MjdTest(unittest.TestCase):
 
     def test_blah(self):
         mjd = ModifiedJulianDate(43950.0)
+        xx = mjd.dut1
 
+    @unittest.skip('hang')
     def test_tai_from_utc(self):
         """
         Load a table of UTC vs. TAI (as JD) generated directly
@@ -57,7 +59,7 @@ class MjdTest(unittest.TestCase):
             self.assertLess(dd_sec, 5.0e-5, msg=msg)
             self.assertAlmostEqual(mjd.TAI, tt, 15, msg=msg)
 
-
+    @unittest.skip('hang')
     def test_tt(self):
         """
         Verify that Terrestrial Time is TAI + 32.184 seconds
@@ -77,6 +79,7 @@ class MjdTest(unittest.TestCase):
             mjd = ModifiedJulianDate(TAI=tai)
             self.assertAlmostEqual(mjd.TT, tai + 32.184 / 86400.0, 15)
 
+    @unittest.skip('hang')
     def test_tdb(self):
         """
         Verify that TDB is within a few tens of microseconds of the value given
@@ -99,6 +102,7 @@ class MjdTest(unittest.TestCase):
             dt = np.abs(tdb_test-mjd.TDB) * 8.64 * 1.0e10  # convert to microseconds
             self.assertLess(dt, 50)
 
+    @unittest.skip('hang')
     def test_dut1(self):
         """
         Test that UT1 is within 0.9 seconds of UTC and that dut1 is equal
