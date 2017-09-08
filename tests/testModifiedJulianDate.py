@@ -28,7 +28,7 @@ class MjdTest(unittest.TestCase):
     longMessage = True
 
     def test_blah(self):
-        mjd = ModifiedJulianDate(utc=43950.0)
+        mjd = ModifiedJulianDate(UTC=43950.0)
         xx = mjd.dut1
         yy = mjd.UT1
         zz = mjd.UTC
