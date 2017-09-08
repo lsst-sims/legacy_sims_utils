@@ -77,7 +77,6 @@ class MjdTest(unittest.TestCase):
             mjd = ModifiedJulianDate(TAI=tai)
             self.assertAlmostEqual(mjd.TT, tai + 32.184 / 86400.0, 15)
 
-    @unittest.skip('hang')
     def test_tdb(self):
         """
         Verify that TDB is within a few tens of microseconds of the value given
