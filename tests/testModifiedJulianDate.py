@@ -120,19 +120,44 @@ class MjdTest(unittest.TestCase):
 
         #touch2
         utc_list = rng.random_sample(3) * 10000.0 + 43000.0
-        for utc in utc_list:
-            mjd = ModifiedJulianDate(UTC=utc)
+        mjd = ModifiedJulianDate(UTC=utc_list[0])
 
-            # first, test the self-consistency of ModifiedJulianData.dut1
-            # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
-            #
-            # this only works for days on which a leap second is not applied
-            dt = (mjd.UT1-mjd.UTC) * 86400.0
+        # first, test the self-consistency of ModifiedJulianData.dut1
+        # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+        #
+        # this only works for days on which a leap second is not applied
+        dt = (mjd.UT1-mjd.UTC) * 86400.0
 
-            self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
-                            msg='failed on UTC: %.12f' % mjd.UTC)
+        self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
+                        msg='failed on UTC: %.12f' % mjd.UTC)
 
-            self.assertLess(np.abs(mjd.dut1), 0.9)
+        self.assertLess(np.abs(mjd.dut1), 0.9)
+
+        mjd = ModifiedJulianDate(UTC=utc_list[1])
+
+        # first, test the self-consistency of ModifiedJulianData.dut1
+        # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+        #
+        # this only works for days on which a leap second is not applied
+        dt = (mjd.UT1-mjd.UTC) * 86400.0
+
+        self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
+                        msg='failed on UTC: %.12f' % mjd.UTC)
+
+        self.assertLess(np.abs(mjd.dut1), 0.9)
+
+        mjd = ModifiedJulianDate(UTC=utc_list[2])
+
+        # first, test the self-consistency of ModifiedJulianData.dut1
+        # and ModifiedJulianData.UT1-ModifiedJulianData.UTC
+        #
+        # this only works for days on which a leap second is not applied
+        dt = (mjd.UT1-mjd.UTC) * 86400.0
+
+        self.assertLess(np.abs(dt - mjd.dut1), 1.0e-5,
+                        msg='failed on UTC: %.12f' % mjd.UTC)
+
+        self.assertLess(np.abs(mjd.dut1), 0.9)
 
     @unittest.skip('hang')
     def test_dut1_future(self):
