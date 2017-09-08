@@ -11,7 +11,7 @@ import lsst.utils.tests
 
 from lsst.utils import getPackageDir
 from lsst.sims.utils import ModifiedJulianDate, UTCtoUT1Warning
-#touch
+#touch2
 
 def setup_module(module):
     lsst.utils.tests.init()
