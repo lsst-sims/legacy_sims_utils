@@ -77,13 +77,13 @@ class ObservationMetaData(object):
 
           The convention for rotSkyPos is as follows:
 
-          rotSkyPos = 0 means north is in the +y direction on the focal plane and east is -x
+          rotSkyPos = 0 means north is in the +y direction on the focal plane and east is +x
 
-          rotSkyPos = 90 means north is -x and east is -y
+          rotSkyPos = 90 means north is +x and east is -y
 
-          rotSkyPos = -90 means north is +x and east is +y
+          rotSkyPos = -90 means north is -x and east is +y
 
-          rotSkyPos = 180 means north is -y and east is +x
+          rotSkyPos = 180 means north is -y and east is -x
 
           This should be consistent with PhoSim conventions.
 

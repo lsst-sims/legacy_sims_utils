@@ -186,7 +186,7 @@ def _pupilCoordsFromObserved(ra_obs, dec_obs, obs_metadata, epoch=2000.0, includ
         raise RuntimeError("Cannot call pupilCoordsFromObserved; "
                            "rotSkyPos is None")
 
-    theta = obs_metadata._rotSkyPos
+    theta = -1.0*obs_metadata._rotSkyPos
 
     ra_pointing, dec_pointing = _observedFromICRS(obs_metadata._pointingRA,
                                                   obs_metadata._pointingDec,
@@ -221,13 +221,6 @@ def _pupilCoordsFromObserved(ra_obs, dec_obs, obs_metadata, epoch=2000.0, includ
                 y.append(yy)
             x = np.array(x)
             y = np.array(y)
-
-    # The extra negative sign on x_out comes from the following:
-    # The Gnomonic projection as calculated by palpy is such that,
-    # if north is in the +y direction, then west is in the -x direction,
-    # which is the opposite of the behavior we want (I do not know how to
-    # express this analytically; I have just confirmed it numerically)
-    x *= -1.0
 
     # rotate the result by rotskypos (rotskypos being "the angle of the sky relative to
     # camera coordinates" according to phoSim documentation) to account for
@@ -317,12 +310,10 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 
     # This is the same as theta in pupilCoordsFromRaDec, except without the minus sign.
     # This is because we will be reversing the rotation performed in that other method.
-    theta = -1.0*obs_metadata._rotSkyPos
+    theta = obs_metadata._rotSkyPos
 
     x_g = xPupil*np.cos(theta) - yPupil*np.sin(theta)
     y_g = xPupil*np.sin(theta) + yPupil*np.cos(theta)
-
-    x_g *= -1.0
 
     # x_g and y_g are now the x and y coordinates
     # can now use the PALPY method palDtp2s to convert to RA, Dec.
