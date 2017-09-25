@@ -9,6 +9,159 @@ _CONVEX_SIGN_NEG=-1
 _CONVEX_SIGN_ZERO=0
 _CONVEX_SIGN_MIXED=2
 
+
+class Trixel(object):
+
+    def __init__(self, present_label, present_corners):
+        """
+        Corners in ccw order from lower left hand corner (v0)
+        """
+        self._corners = present_corners
+        self._label = present_label
+        self._level = (len('{0:b}'.format(self._label))/2)-1
+        self._cross01 = None
+        self._cross12 = None
+        self._cross20 = None
+        self._w_arr = None
+        self._bounding_circle = None
+
+
+    def contains(self, ra, dec):
+        """
+        In degrees
+        """
+        xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
+        return self.contains_pt(xyz)
+
+    def contains_pt(self, pt):
+        """
+        Cartesian point
+        """
+
+        if self._cross01 is None:
+            self._cross01 = np.cross(self._corners[0], self._corners[1])
+
+        if np.dot(self._cross01,pt)>0.0:
+            if self._cross12 is None:
+                self._cross12 = np.cross(self._corners[1], self._corners[2])
+
+            if np.dot(self._cross12, pt)>0.0:
+                if self._cross20 is None:
+                    self._cross20 = np.cross(self._corners[2], self._corners[0])
+                if np.dot(self._cross20, pt)>0.0:
+                    return True
+
+        return False
+
+    def _create_w(self):
+
+        w0 = self._corners[1]+self._corners[2]
+        w0 = w0/np.sqrt(np.power(w0, 2).sum())
+        w1 = self._corners[0]+self._corners[2]
+        w1 = w1/np.sqrt(np.power(w1, 2).sum())
+        w2 = self._corners[0]+self._corners[1]
+        w2 = w2/np.sqrt(np.power(w2, 2).sum())
+
+        self._w_arr = [w0, w1, w2]
+
+    def get_children(self):
+
+        if self._w_arr is None:
+            self._create_w()
+
+        base_child = self._label << 2
+
+        t0 = Trixel(base_child, [self._corners[0], self._w_arr[2], self._w_arr[1]])
+        t1 = Trixel(base_child+1, [self._corners[1], self._w_arr[0],self._w_arr[2]])
+        t2 = Trixel(base_child+2, [self._corners[2], self._w_arr[1],self._w_arr[0]])
+        t3 = Trixel(base_child+3, [self._w_arr[0], self._w_arr[1], self._w_arr[2]])
+
+        return [t0, t1, t2, t3]
+
+    def get_child(self, dex):
+        children = self.get_children()
+        return children[dex]
+
+    def get_center(self):
+        xyz = self._corners[0] + self._corners[1] + self._corners[2]
+        xyz = xyz/np.sqrt(np.power(xyz, 2).sum())
+        ra, dec = sphericalFromCartesian(xyz)
+        return np.degrees(ra), np.degrees(dec)
+
+    @property
+    def level(self):
+        return self._level
+
+    @property
+    def label(self):
+        return self._label
+
+    @property
+    def corners(self):
+        return self._corners
+
+    @property
+    def bounding_circle(self):
+        """
+        Returns a tuple.
+        Zeroth element is the 'z-axis' vector of the bounding circle.
+        First element is the d of the bounding circle.
+        Second element is the half angular extent of the bounding circle.
+        """
+        if self._bounding_circle is None:
+            vb = np.cross((self._corners[1]-self._corners[0]), (self._corners[2]-self._corners[1]))
+            vb = vb/np.sqrt(np.power(vb, 2).sum())
+            dd = np.dot(self._corners[0], vb)
+            if np.abs(dd)>1.0:
+                raise RuntimeError("Bounding circle has dd %e (should be between -1 and 1)" % dd)
+            self._bounding_circle = (vb, dd, np.arccos(dd))
+
+        return self._bounding_circle
+
+
+_N0_trixel = Trixel(12, [np.array([1.0, 0.0, 0.0]),
+                         np.array([0.0, 0.0, 1.0]),
+                         np.array([0.0, -1.0, 0.0])])
+
+_N1_trixel = Trixel(13,[np.array([0.0, -1.0, 0.0]),
+                        np.array([0.0, 0.0, 1.0]),
+                        np.array([-1.0, 0.0, 0.0])])
+
+_N2_trixel = Trixel(14, [np.array([-1.0, 0.0, 0.0]),
+                         np.array([0.0, 0.0, 1.0]),
+                         np.array([0.0, 1.0, 0.0])])
+
+_N3_trixel = Trixel(15, [np.array([0.0, 1.0, 0.0]),
+                         np.array([0.0, 0.0, 1.0]),
+                         np.array([1.0, 0.0, 0.0])])
+
+_S0_trixel = Trixel(8, [np.array([1.0, 0.0, 0.0]),
+                        np.array([0.0, 0.0, -1.0]),
+                        np.array([0.0, 1.0, 0.0])])
+
+_S1_trixel = Trixel(9, [np.array([0.0, 1.0, 0.0]),
+                        np.array([0.0, 0.0, -1.0]),
+                        np.array([-1.0, 0.0, 0.0])])
+
+_S2_trixel = Trixel(10, [np.array([-1.0, 0.0, 0.0]),
+                         np.array([0.0, 0.0, -1.0]),
+                         np.array([0.0, -1.0, 0.0])])
+
+_S3_trixel = Trixel(11, [np.array([0.0, -1.0, 0.0]),
+                         np.array([0.0, 0.0, -1.0]),
+                         np.array([1.0, 0.0, 0.0])])
+
+basic_trixels = {'N0': _N0_trixel,
+                 'N1': _N1_trixel,
+                 'N2': _N2_trixel,
+                 'N3': _N3_trixel,
+                 'S0': _S0_trixel,
+                 'S1': _S1_trixel,
+                 'S2': _S2_trixel,
+                 'S3': _S3_trixel}
+
+
+
 class HalfSpace(object):
 
     def __init__(self, vector, length):
@@ -444,155 +597,6 @@ class Convex(object):
     def sign(self):
         return self._sign
 
-class Trixel(object):
-
-    def __init__(self, present_label, present_corners):
-        """
-        Corners in ccw order from lower left hand corner (v0)
-        """
-        self._corners = present_corners
-        self._label = present_label
-        self._level = (len('{0:b}'.format(self._label))/2)-1
-        self._cross01 = None
-        self._cross12 = None
-        self._cross20 = None
-        self._w_arr = None
-        self._bounding_circle = None
-
-
-    def contains(self, ra, dec):
-        """
-        In degrees
-        """
-        xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
-        return self.contains_pt(xyz)
-
-    def contains_pt(self, pt):
-        """
-        Cartesian point
-        """
-
-        if self._cross01 is None:
-            self._cross01 = np.cross(self._corners[0], self._corners[1])
-
-        if np.dot(self._cross01,pt)>0.0:
-            if self._cross12 is None:
-                self._cross12 = np.cross(self._corners[1], self._corners[2])
-
-            if np.dot(self._cross12, pt)>0.0:
-                if self._cross20 is None:
-                    self._cross20 = np.cross(self._corners[2], self._corners[0])
-                if np.dot(self._cross20, pt)>0.0:
-                    return True
-
-        return False
-
-    def _create_w(self):
-
-        w0 = self._corners[1]+self._corners[2]
-        w0 = w0/np.sqrt(np.power(w0, 2).sum())
-        w1 = self._corners[0]+self._corners[2]
-        w1 = w1/np.sqrt(np.power(w1, 2).sum())
-        w2 = self._corners[0]+self._corners[1]
-        w2 = w2/np.sqrt(np.power(w2, 2).sum())
-
-        self._w_arr = [w0, w1, w2]
-
-    def get_children(self):
-
-        if self._w_arr is None:
-            self._create_w()
-
-        base_child = self._label << 2
-
-        t0 = Trixel(base_child, [self._corners[0], self._w_arr[2], self._w_arr[1]])
-        t1 = Trixel(base_child+1, [self._corners[1], self._w_arr[0],self._w_arr[2]])
-        t2 = Trixel(base_child+2, [self._corners[2], self._w_arr[1],self._w_arr[0]])
-        t3 = Trixel(base_child+3, [self._w_arr[0], self._w_arr[1], self._w_arr[2]])
-
-        return [t0, t1, t2, t3]
-
-    def get_child(self, dex):
-        children = self.get_children()
-        return children[dex]
-
-    def get_center(self):
-        xyz = self._corners[0] + self._corners[1] + self._corners[2]
-        xyz = xyz/np.sqrt(np.power(xyz, 2).sum())
-        ra, dec = sphericalFromCartesian(xyz)
-        return np.degrees(ra), np.degrees(dec)
-
-    @property
-    def level(self):
-        return self._level
-
-    @property
-    def label(self):
-        return self._label
-
-    @property
-    def corners(self):
-        return self._corners
-
-    @property
-    def bounding_circle(self):
-        """
-        Returns a tuple.
-        Zeroth element is the 'z-axis' vector of the bounding circle.
-        First element is the d of the bounding circle.
-        Second element is the half angular extent of the bounding circle.
-        """
-        if self._bounding_circle is None:
-            vb = np.cross((self._corners[1]-self._corners[0]), (self._corners[2]-self._corners[1]))
-            vb = vb/np.sqrt(np.power(vb, 2).sum())
-            dd = np.dot(self._corners[0], vb)
-            if np.abs(dd)>1.0:
-                raise RuntimeError("Bounding circle has dd %e (should be between -1 and 1)" % dd)
-            self._bounding_circle = (vb, dd, np.arccos(dd))
-
-        return self._bounding_circle
-
-
-_N0_trixel = Trixel(12, [np.array([1.0, 0.0, 0.0]),
-                         np.array([0.0, 0.0, 1.0]),
-                         np.array([0.0, -1.0, 0.0])])
-
-_N1_trixel = Trixel(13,[np.array([0.0, -1.0, 0.0]),
-                        np.array([0.0, 0.0, 1.0]),
-                        np.array([-1.0, 0.0, 0.0])])
-
-_N2_trixel = Trixel(14, [np.array([-1.0, 0.0, 0.0]),
-                         np.array([0.0, 0.0, 1.0]),
-                         np.array([0.0, 1.0, 0.0])])
-
-_N3_trixel = Trixel(15, [np.array([0.0, 1.0, 0.0]),
-                         np.array([0.0, 0.0, 1.0]),
-                         np.array([1.0, 0.0, 0.0])])
-
-_S0_trixel = Trixel(8, [np.array([1.0, 0.0, 0.0]),
-                        np.array([0.0, 0.0, -1.0]),
-                        np.array([0.0, 1.0, 0.0])])
-
-_S1_trixel = Trixel(9, [np.array([0.0, 1.0, 0.0]),
-                        np.array([0.0, 0.0, -1.0]),
-                        np.array([-1.0, 0.0, 0.0])])
-
-_S2_trixel = Trixel(10, [np.array([-1.0, 0.0, 0.0]),
-                         np.array([0.0, 0.0, -1.0]),
-                         np.array([0.0, -1.0, 0.0])])
-
-_S3_trixel = Trixel(11, [np.array([0.0, -1.0, 0.0]),
-                         np.array([0.0, 0.0, -1.0]),
-                         np.array([1.0, 0.0, 0.0])])
-
-basic_trixels = {'N0': _N0_trixel,
-                 'N1': _N1_trixel,
-                 'N2': _N2_trixel,
-                 'N3': _N3_trixel,
-                 'S0': _S0_trixel,
-                 'S1': _S1_trixel,
-                 'S2': _S2_trixel,
-                 'S3': _S3_trixel}
 
 
 def trixelFromLabel(label):
