@@ -198,8 +198,13 @@ def trixelFromLabel(label):
             ans = _S3_trixel
 
     if ans is None:
-        raise RuntimeError("Unable to find trixel for id %d\n %s"
-                           % (label_0, str(tree)))
+        num = 0
+        fac = 4**(len(tree)-1)
+        for tt in tree:
+            num += tt*fac
+            fac = fac/4
+        raise RuntimeError("Unable to find trixel for id %d\n %s\n%d"
+                           % (label_0, str(tree),num))
 
     for ix in range(2, len(tree)):
         ans = ans.get_child(tree[ix])
