@@ -673,3 +673,25 @@ def findHtmId(ra, dec, max_level):
         raise RuntimeError("could not find parent Trixel")
 
     return _iterateTrixelFinder(pt, parent, max_level)
+
+
+def halfSpaceFromRaDec(ra, dec, radius):
+    """
+    Take an RA, Dec and radius of a circular field of view and return
+    a HalfSpace
+
+    Parameters
+    ----------
+    ra in degrees
+
+    dec in degrees
+
+    radius in degrees
+
+    Returns
+    -------
+    HalfSpace corresponding to the circular field of view
+    """
+    dd = np.cos(np.radians(radius))
+    xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
+    return HalfSpace(xyz, dd)
