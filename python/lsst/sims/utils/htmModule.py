@@ -2,7 +2,7 @@ import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
 __all__ = ["Trixel", "HalfSpace", "Convex", "findHtmId", "trixelFromLabel",
-           "basic_trixels"]
+           "basic_trixels", "halfSpaceFromRaDec"]
 
 _CONVEX_SIGN_POS=1
 _CONVEX_SIGN_NEG=-1
