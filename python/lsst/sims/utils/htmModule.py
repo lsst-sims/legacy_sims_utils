@@ -162,6 +162,88 @@ basic_trixels = {'N0': _N0_trixel,
 
 
 
+
+
+def trixelFromLabel(label):
+    label_0 = label
+    tree = []
+    reduced_label = label
+    while reduced_label > 0:
+        reduced_label = label >> 2
+        d_label = label - (reduced_label << 2)
+        tree.append(d_label)
+        label = reduced_label
+
+    tree.reverse()
+
+    ans = None
+
+    if tree[0] == 3:
+        if tree[1] == 0:
+            ans = _N0_trixel
+        elif tree[1] == 1:
+            ans = _N1_trixel
+        elif tree[1] == 2:
+            ans = _N2_trixel
+        elif tree[1] == 3:
+            ans = _N3_trixel
+    elif tree[0] == 2:
+        if tree[1] == 0:
+            ans = _S0_trixel
+        elif tree[1] == 1:
+            ans = _S1_trixel
+        elif tree[1] == 2:
+            ans = _S2_trixel
+        elif tree[1] == 3:
+            ans = _S3_trixel
+
+    if ans is None:
+        raise RuntimeError("Unable to find trixel for id %d\n %s"
+                           % (label_0, str(tree)))
+
+    for ix in range(2, len(tree)):
+        ans = ans.get_child(tree[ix])
+
+    return ans
+
+
+def _iterateTrixelFinder(pt, parent, max_level):
+    children = parent.get_children()
+    for child in children:
+        if child.contains_pt(pt):
+            if child.level == max_level:
+                return child.label
+            else:
+                return _iterateTrixelFinder(pt, child, max_level)
+
+def findHtmId(ra, dec, max_level):
+
+    raRad = np.radians(ra)
+    decRad = np.radians(dec)
+    pt = cartesianFromSpherical(raRad, decRad)
+
+    if _S0_trixel.contains_pt(pt):
+        parent = _S0_trixel
+    elif _S1_trixel.contains_pt(pt):
+        parent = _S1_trixel
+    elif _S2_trixel.contains_pt(pt):
+        parent = _S2_trixel
+    elif _S3_trixel.contains_pt(pt):
+        parent = _S3_trixel
+    elif _N0_trixel.contains_pt(pt):
+        parent = _N0_trixel
+    elif _N1_trixel.contains_pt(pt):
+        parent = _N1_trixel
+    elif _N2_trixel.contains_pt(pt):
+        parent = _N2_trixel
+    elif _N3_trixel.contains_pt(pt):
+        parent = _N3_trixel
+    else:
+        raise RuntimeError("could not find parent Trixel")
+
+    return _iterateTrixelFinder(pt, parent, max_level)
+
+
 class HalfSpace(object):
 
     def __init__(self, vector, length):
@@ -596,87 +678,6 @@ class Convex(object):
     @property
     def sign(self):
         return self._sign
-
-
-
-def trixelFromLabel(label):
-    label_0 = label
-    tree = []
-    reduced_label = label
-    while reduced_label > 0:
-        reduced_label = label >> 2
-        d_label = label - (reduced_label << 2)
-        tree.append(d_label)
-        label = reduced_label
-
-    tree.reverse()
-
-    ans = None
-
-    if tree[0] == 3:
-        if tree[1] == 0:
-            ans = _N0_trixel
-        elif tree[1] == 1:
-            ans = _N1_trixel
-        elif tree[1] == 2:
-            ans = _N2_trixel
-        elif tree[1] == 3:
-            ans = _N3_trixel
-    elif tree[0] == 2:
-        if tree[1] == 0:
-            ans = _S0_trixel
-        elif tree[1] == 1:
-            ans = _S1_trixel
-        elif tree[1] == 2:
-            ans = _S2_trixel
-        elif tree[1] == 3:
-            ans = _S3_trixel
-
-    if ans is None:
-        raise RuntimeError("Unable to find trixel for id %d\n %s"
-                           % (label_0, str(tree)))
-
-    for ix in range(2, len(tree)):
-        ans = ans.get_child(tree[ix])
-
-    return ans
-
-
-def _iterateTrixelFinder(pt, parent, max_level):
-    children = parent.get_children()
-    for child in children:
-        if child.contains_pt(pt):
-            if child.level == max_level:
-                return child.label
-            else:
-                return _iterateTrixelFinder(pt, child, max_level)
-
-def findHtmId(ra, dec, max_level):
-
-    raRad = np.radians(ra)
-    decRad = np.radians(dec)
-    pt = cartesianFromSpherical(raRad, decRad)
-
-    if _S0_trixel.contains_pt(pt):
-        parent = _S0_trixel
-    elif _S1_trixel.contains_pt(pt):
-        parent = _S1_trixel
-    elif _S2_trixel.contains_pt(pt):
-        parent = _S2_trixel
-    elif _S3_trixel.contains_pt(pt):
-        parent = _S3_trixel
-    elif _N0_trixel.contains_pt(pt):
-        parent = _N0_trixel
-    elif _N1_trixel.contains_pt(pt):
-        parent = _N1_trixel
-    elif _N2_trixel.contains_pt(pt):
-        parent = _N2_trixel
-    elif _N3_trixel.contains_pt(pt):
-        parent = _N3_trixel
-    else:
-        raise RuntimeError("could not find parent Trixel")
-
-    return _iterateTrixelFinder(pt, parent, max_level)
 
 
 def halfSpaceFromRaDec(ra, dec, radius):
