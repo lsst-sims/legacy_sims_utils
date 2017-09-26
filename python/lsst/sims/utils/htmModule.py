@@ -12,19 +12,22 @@ _CONVEX_SIGN_MIXED=2
 
 class Trixel(object):
 
-    def __init__(self, present_label, present_corners):
+    def __init__(self, present_htmid, present_corners):
         """
         Corners in ccw order from lower left hand corner (v0)
         """
         self._corners = present_corners
-        self._label = present_label
-        self._level = (len('{0:b}'.format(self._label))/2)-1
+        self._htmid = present_htmid
+        self._level = (len('{0:b}'.format(self._htmid))/2)-1
         self._cross01 = None
         self._cross12 = None
         self._cross20 = None
         self._w_arr = None
         self._bounding_circle = None
 
+    @property
+    def htmid(self):
+        return self._htmid
 
     def contains(self, ra, dec):
         """
@@ -73,25 +76,25 @@ class Trixel(object):
     @property
     def t0(self):
         if not hasattr(self, '_t0'):
-            self._t0 = Trixel(self._label<<2, [self._corners[0], self.w_arr[2], self.w_arr[1]])
+            self._t0 = Trixel(self.htmid<<2, [self._corners[0], self.w_arr[2], self.w_arr[1]])
         return self._t0
 
     @property
     def t1(self):
         if not hasattr(self, '_t1'):
-           self._t1 = Trixel((self._label<<2)+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
+           self._t1 = Trixel((self.htmid<<2)+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
         return self._t1
 
     @property
     def t2(self):
         if not hasattr(self, '_t2'):
-            self._t2 = Trixel((self._label<<2)+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
+            self._t2 = Trixel((self.htmid<<2)+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
         return self._t2
 
     @property
     def t3(self):
         if not hasattr(self, '_t3'):
-            self._t3 = Trixel((self._label<<2)+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
+            self._t3 = Trixel((self.htmid<<2)+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
         return self._t3
 
     def get_children(self):
@@ -121,7 +124,7 @@ class Trixel(object):
 
     @property
     def label(self):
-        return self._label
+        return self._htmid
 
     @property
     def corners(self):
@@ -478,7 +481,7 @@ class HalfSpace(object):
                     elif is_contained == 'full':
                         n_full += 1
                         # all of this trixels children, and their children are contained
-                        min_htmid = child._label << 2*(level-i_level)
+                        min_htmid = child._htmid << 2*(level-i_level)
                         max_htmid = min_htmid
                         max_htmid += max_d_htmid
                         output.append((min_htmid, max_htmid))
@@ -493,7 +496,7 @@ class HalfSpace(object):
                         #    assert self.contains_trixel(test_trix) != 'outside'
                         #except AssertionError:
                         #    print('is_contained %s' % is_contained)
-                        #    print('level %d' % levelFromHtmid(tt._label))
+                        #    print('level %d' % levelFromHtmid(tt._htmid))
                         #    raise
                     else:
                         n_outside += 1
@@ -505,9 +508,9 @@ class HalfSpace(object):
         # children are inside this HalfSpace
         for trix in active_trixels:
             for child in trix.get_children():
-               assert levelFromHtmid(child._label) == level
+               assert levelFromHtmid(child._htmid) == level
                if self.contains_trixel(child) != 'outside':
-                   output.append((child._label, child._label))
+                   output.append((child._htmid, child._htmid))
 
         return output
 
