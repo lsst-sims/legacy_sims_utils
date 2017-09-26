@@ -70,20 +70,44 @@ class Trixel(object):
             self._create_w()
         return self._w_arr
 
+    @property
+    def t0(self):
+        if not hasattr(self, '_t0'):
+            self._t0 = Trixel(self._label<<2, [self._corners[0], self.w_arr[2], self.w_arr[1]])
+        return self._t0
+
+    @property
+    def t1(self):
+        if not hasattr(self, '_t1'):
+           self._t1 = Trixel((self._label<<2)+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
+        return self._t1
+
+    @property
+    def t2(self):
+        if not hasattr(self, '_t2'):
+            self._t2 = Trixel((self._label<<2)+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
+        return self._t2
+
+    @property
+    def t3(self):
+        if not hasattr(self, '_t3'):
+            self._t3 = Trixel((self._label<<2)+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
+        return self._t3
+
     def get_children(self):
-
-        base_child = self._label << 2
-
-        t0 = Trixel(base_child, [self._corners[0], self.w_arr[2], self.w_arr[1]])
-        t1 = Trixel(base_child+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
-        t2 = Trixel(base_child+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
-        t3 = Trixel(base_child+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
-
-        return [t0, t1, t2, t3]
+        return [self.t0, self.t1, self.t2, self.t3]
 
     def get_child(self, dex):
-        children = self.get_children()
-        return children[dex]
+        if dex==0:
+            return self.t0
+        elif dex==1:
+            return self.t1
+        elif dex==2:
+            return self.t2
+        elif dex==3:
+            return self.t3
+        else:
+            raise RuntimeError("Trixel has no %d child" % dex)
 
     def get_center(self):
         xyz = self._corners[0] + self._corners[1] + self._corners[2]
