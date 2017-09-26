@@ -1,4 +1,5 @@
 import unittest
+import lsst.utils.tests
 from lsst.sims.utils import findHtmId, trixelFromLabel
 from lsst.sims.utils import HalfSpace, Convex, basic_trixels
 import time
@@ -6,6 +7,11 @@ import numpy as np
 
 from lsst.sims.utils import sphericalFromCartesian, cartesianFromSpherical
 from lsst.sims.utils import rotAboutY, rotAboutX, rotAboutZ
+
+
+def setup_module(module):
+    lsst.utils.tests.init()
+
 
 class HalfSpaceTest(unittest.TestCase):
 
@@ -407,5 +413,10 @@ class TrixelFinderTest(unittest.TestCase):
             tt2 = trixelFromLabel(ii+1)
             self.assertFalse(tt2.contains(ra, dec))
 
+
+class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
+    pass
+
 if __name__ == "__main__":
+    lsst.utils.tests.init()
     unittest.main()
