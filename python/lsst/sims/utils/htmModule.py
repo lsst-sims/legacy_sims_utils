@@ -64,17 +64,20 @@ class Trixel(object):
 
         self._w_arr = [w0, w1, w2]
 
-    def get_children(self):
-
+    @property
+    def w_arr(self):
         if self._w_arr is None:
             self._create_w()
+        return self._w_arr
+
+    def get_children(self):
 
         base_child = self._label << 2
 
-        t0 = Trixel(base_child, [self._corners[0], self._w_arr[2], self._w_arr[1]])
-        t1 = Trixel(base_child+1, [self._corners[1], self._w_arr[0],self._w_arr[2]])
-        t2 = Trixel(base_child+2, [self._corners[2], self._w_arr[1],self._w_arr[0]])
-        t3 = Trixel(base_child+3, [self._w_arr[0], self._w_arr[1], self._w_arr[2]])
+        t0 = Trixel(base_child, [self._corners[0], self.w_arr[2], self.w_arr[1]])
+        t1 = Trixel(base_child+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
+        t2 = Trixel(base_child+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
+        t3 = Trixel(base_child+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
 
         return [t0, t1, t2, t3]
 
