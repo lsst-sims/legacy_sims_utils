@@ -253,7 +253,7 @@ def _iterateTrixelFinder(pt, parent, max_level):
     for child in children:
         if child.contains_pt(pt):
             if child.level == max_level:
-                return child.label
+                return child.htmid
             else:
                 return _iterateTrixelFinder(pt, child, max_level)
 
