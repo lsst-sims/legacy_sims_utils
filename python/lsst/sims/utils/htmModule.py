@@ -391,6 +391,68 @@ class HalfSpace(object):
 
         return "outside"
 
+    def findAllTrixels(self, level):
+        """
+        Find the HTMIDs of all of the trixels filling the half space
+        """
+
+        global basic_trixels
+
+        active_trixels = []
+        for trixel_name in basic_trixels:
+            active_trixels.append(basic_trixels[trixel_name])
+
+        n_full = 0
+        n_partial = 0
+        n_outside = 0
+
+        output = []
+        max_d_htmid = 0
+        max_d_complement = 0
+        for ii in range(level-2):
+            max_d_htmid += 3
+            max_d_complement += 2
+            max_d_htmid <<= 2
+            max_d_complement <<= 2
+
+        print(len('{0:b}'.format(max_d_complement)))
+        print(len('{0:b}'.format(max_d_htmid)))
+
+        for i_level in range(3,level+1):
+            max_d_htmid >>= 2
+            max_d_complement >>= 2
+            min_d_htmid = max_d_htmid ^ max_d_complement
+
+            new_active_trixels = []
+            for tt in active_trixels:
+                children = tt.get_children()
+                for child in children:
+                    is_contained = self.contains_trixel(child)
+                    if is_contained == 'partial':
+                        n_partial += 1
+                        # need to investigate more fully
+                        new_active_trixels.append(child)
+                    elif is_contained == 'full':
+                        n_full += 1
+                        # all of this trixels children, and their children are contained
+                        min_htmid = child._label << 2*(level-i_level+1)
+                        max_htmid = min_htmid
+                        min_htmid += min_d_htmid
+                        max_htmid += max_d_htmid
+                        #assert min_htmid<max_htmid
+                        #test_trix = trixelFromLabel(min_htmid)
+                        #assert self.contains_trixel(test_trix) == 'full'
+                        #test_trix = trixelFromLabel(max_htmid)
+                        #assert self.contains_trixel(test_trix) == 'full'
+                        #output.append((min_htmid, max_htmid))
+                    else:
+                        n_outside += 1
+                active_trixels = new_active_trixels
+            if len(active_trixels) == 0:
+                break
+
+        print('full %d\npartial %d\noutside %d' % (n_full, n_partial, n_outside))
+        return output
 
 class Convex(object):
 
