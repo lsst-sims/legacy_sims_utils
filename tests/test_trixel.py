@@ -1,6 +1,6 @@
 import unittest
 import lsst.utils.tests
-from lsst.sims.utils import findHtmId, trixelFromLabel
+from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, Convex, basic_trixels
 import time
 import numpy as np
@@ -305,7 +305,7 @@ class TrixelFinderTest(unittest.TestCase):
 
     def check_pt(self, pt, answer):
         ra, dec = sphericalFromCartesian(pt)
-        ii = findHtmId(np.degrees(ra), np.degrees(dec), 3)
+        ii = findHtmid(np.degrees(ra), np.degrees(dec), 3)
         binary = '{0:b}'.format(ii)
         self.assertEqual(binary, answer)
 
@@ -405,12 +405,12 @@ class TrixelFinderTest(unittest.TestCase):
             ra, dec = sphericalFromCartesian(pt)
             ra = np.degrees(ra)
             dec = np.degrees(dec)
-            ii = findHtmId(ra, dec, 5)
-            tt = trixelFromLabel(ii)
+            ii = findHtmid(ra, dec, 5)
+            tt = trixelFromHtmid(ii)
             self.assertTrue(tt.contains(ra, dec))
-            tt1 = trixelFromLabel(ii-1)
+            tt1 = trixelFromHtmid(ii-1)
             self.assertFalse(tt1.contains(ra, dec))
-            tt2 = trixelFromLabel(ii+1)
+            tt2 = trixelFromHtmid(ii+1)
             self.assertFalse(tt2.contains(ra, dec))
 
 

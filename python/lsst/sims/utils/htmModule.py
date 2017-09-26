@@ -1,8 +1,8 @@
 import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
-__all__ = ["Trixel", "HalfSpace", "Convex", "findHtmId", "trixelFromLabel",
-           "basic_trixels", "halfSpaceFromRaDec"]
+__all__ = ["Trixel", "HalfSpace", "Convex", "findHtmid", "trixelFromHtmid",
+           "basic_trixels", "halfSpaceFromRaDec", "levelFromHtmid"]
 
 _CONVEX_SIGN_POS=1
 _CONVEX_SIGN_NEG=-1
@@ -161,41 +161,39 @@ basic_trixels = {'N0': _N0_trixel,
                  'S3': _S3_trixel}
 
 
+def levelFromHtmid(htmid):
+    """
+    Find the level of a trixel from its htmid
+    """
+    htmid_copy = htmid
+    i_level = -1
+    while htmid_copy != 0:
+        htmid_copy >>= 2
+        i_level += 1
+    return i_level
 
-
-
-def trixelFromLabel(label):
-    label_0 = label
-    tree = []
-    reduced_label = label
-    while reduced_label > 0:
-        reduced_label = label >> 2
-        d_label = label - (reduced_label << 2)
-        tree.append(d_label)
-        label = reduced_label
-
-    tree.reverse()
+def trixelFromHtmid(htmid):
+    level = levelFromHtmid(htmid)
+    base_htmid = htmid>>2*(level-1)
 
     ans = None
 
-    if tree[0] == 3:
-        if tree[1] == 0:
-            ans = _N0_trixel
-        elif tree[1] == 1:
-            ans = _N1_trixel
-        elif tree[1] == 2:
-            ans = _N2_trixel
-        elif tree[1] == 3:
-            ans = _N3_trixel
-    elif tree[0] == 2:
-        if tree[1] == 0:
-            ans = _S0_trixel
-        elif tree[1] == 1:
-            ans = _S1_trixel
-        elif tree[1] == 2:
-            ans = _S2_trixel
-        elif tree[1] == 3:
-            ans = _S3_trixel
+    if base_htmid == 8:
+        ans = _S0_trixel
+    elif base_htmid == 9:
+        ans = _S1_trixel
+    elif base_htmid == 10:
+        ans = _S2_trixel
+    elif base_htmid == 11:
+        ans = _S3_trixel
+    elif base_htmid == 12:
+        ans = _N0_trixel
+    elif base_htmid == 13:
+        ans = _N1_trixel
+    elif base_htmid == 14:
+        ans = _N2_trixel
+    elif base_htmid == 15:
+        ans = _N3_trixel
 
     if ans is None:
         num = 0
@@ -206,8 +204,16 @@ def trixelFromLabel(label):
         raise RuntimeError("Unable to find trixel for id %d\n %s\n%d"
                            % (label_0, str(tree),num))
 
-    for ix in range(2, len(tree)):
-        ans = ans.get_child(tree[ix])
+    complement = 3
+    complement <<= 2*(level-2)
+
+    for ix in range(level-1):
+        target = htmid&complement
+        target >>= 2*(level-ix-2)
+        if target>=4:
+            raise RuntimeError("target %d" % target)
+        ans = ans.get_child(target)
+        complement >>= 2
 
     return ans
 
@@ -221,7 +227,7 @@ def _iterateTrixelFinder(pt, parent, max_level):
             else:
                 return _iterateTrixelFinder(pt, child, max_level)
 
-def findHtmId(ra, dec, max_level):
+def findHtmid(ra, dec, max_level):
 
     raRad = np.radians(ra)
     decRad = np.radians(dec)
@@ -453,9 +459,9 @@ class HalfSpace(object):
                         ########################################
                         # some assertions for debugging purposes
                         #assert min_htmid<max_htmid
-                        #test_trix = trixelFromLabel(min_htmid)
+                        #test_trix = trixelFromHtmid(min_htmid)
                         #assert self.contains_trixel(test_trix) == 'full'
-                        #test_trix = trixelFromLabel(max_htmid)
+                        #test_trix = trixelFromHtmid(max_htmid)
                         #assert self.contains_trixel(test_trix) == 'full'
                     else:
                         n_outside += 1
