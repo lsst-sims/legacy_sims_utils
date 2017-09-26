@@ -408,20 +408,32 @@ class HalfSpace(object):
 
         output = []
         max_d_htmid = 0
-        max_d_complement = 0
+
+        # Once we establish that a given trixel is completely
+        # contained within a the HalfSpace, we will need to
+        # convert that trixel into a (min_htmid, max_htmid) pair.
+        # This will involve evolving up from the current level
+        # of trixel resolution to the desired level of trixel
+        # resolution, setting the resulting 2-bit pairs to 0 for
+        # min_htmid and 3 for max_htmid.  We can get min_htmid by
+        # taking the base trixel's level and multiplying by an
+        # appropriate power of 2.  We can get max_htmid by adding
+        # an integer that, in binary, is wholly comprised of 1s
+        # to min_htmid.  Here we construct that integer of 1s,
+        # starting out at level-2, since the first trixels
+        # to which we will need to add max_d_htmid will be
+        # at least at level 2 (the children of the base trixels).
         for ii in range(level-2):
             max_d_htmid += 3
-            max_d_complement += 2
             max_d_htmid <<= 2
-            max_d_complement <<= 2
 
-        print(len('{0:b}'.format(max_d_complement)))
         print(len('{0:b}'.format(max_d_htmid)))
 
-        for i_level in range(3,level+1):
+        # start iterating at level 2 because level 1 is the base trixels,
+        # where we are already starting, and i_level reallly refers to
+        # the level of the child trixels we are investigating
+        for i_level in range(2,level):
             max_d_htmid >>= 2
-            max_d_complement >>= 2
-            min_d_htmid = max_d_htmid ^ max_d_complement
 
             new_active_trixels = []
             for tt in active_trixels:
@@ -435,16 +447,18 @@ class HalfSpace(object):
                     elif is_contained == 'full':
                         n_full += 1
                         # all of this trixels children, and their children are contained
-                        min_htmid = child._label << 2*(level-i_level+1)
+                        min_htmid = child._label << 2*(level-i_level)
                         max_htmid = min_htmid
-                        min_htmid += min_d_htmid
                         max_htmid += max_d_htmid
+                        output.append((min_htmid, max_htmid))
+
+                        ########################################
+                        # some assertions for debugging purposes
                         #assert min_htmid<max_htmid
                         #test_trix = trixelFromLabel(min_htmid)
                         #assert self.contains_trixel(test_trix) == 'full'
                         #test_trix = trixelFromLabel(max_htmid)
                         #assert self.contains_trixel(test_trix) == 'full'
-                        #output.append((min_htmid, max_htmid))
                     else:
                         n_outside += 1
                 active_trixels = new_active_trixels
