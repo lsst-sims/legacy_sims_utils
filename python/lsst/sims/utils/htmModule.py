@@ -471,11 +471,11 @@ class HalfSpace(object):
                 children = tt.get_children()
                 for child in children:
                     is_contained = self.contains_trixel(child)
-                    if is_contained == 'partial' and i_level<level-1:
+                    if is_contained == 'partial':
                         n_partial += 1
                         # need to investigate more fully
                         new_active_trixels.append(child)
-                    elif is_contained == 'full' or (is_contained == 'partial' and i_level==level-1):
+                    elif is_contained == 'full':
                         n_full += 1
                         # all of this trixels children, and their children are contained
                         min_htmid = child._label << 2*(level-i_level)
@@ -486,15 +486,28 @@ class HalfSpace(object):
                         ########################################
                         # some assertions for debugging purposes
                         #assert min_htmid<max_htmid
-                        #test_trix = trixelFromHtmid(min_htmid)
-                        #assert self.contains_trixel(test_trix) == 'full'
-                        #test_trix = trixelFromHtmid(max_htmid)
-                        #assert self.contains_trixel(test_trix) == 'full'
+                        #try:
+                        #    test_trix = trixelFromHtmid(min_htmid)
+                        #    assert self.contains_trixel(test_trix) != 'outside'
+                        #    test_trix = trixelFromHtmid(max_htmid)
+                        #    assert self.contains_trixel(test_trix) != 'outside'
+                        #except AssertionError:
+                        #    print('is_contained %s' % is_contained)
+                        #    print('level %d' % levelFromHtmid(tt._label))
+                        #    raise
                     else:
                         n_outside += 1
                 active_trixels = new_active_trixels
             if len(active_trixels) == 0:
                 break
+
+        # final pass over the active_trixels to see which of their
+        # children are inside this HalfSpace
+        for trix in active_trixels:
+            for child in trix.get_children():
+               assert levelFromHtmid(child._label) == level
+               if self.contains_trixel(child) != 'outside':
+                   output.append((child._label, child._label))
 
         return output
 
