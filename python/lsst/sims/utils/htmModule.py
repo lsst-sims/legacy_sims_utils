@@ -36,22 +36,32 @@ class Trixel(object):
         xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
         return self.contains_pt(xyz)
 
+    @property
+    def cross01(self):
+        if self._cross01 is None:
+            self._cross01 = np.cross(self._corners[0], self._corners[1])
+        return self._cross01
+
+    @property
+    def cross12(self):
+        if self._cross12 is None:
+            self._cross12 = np.cross(self._corners[1], self._corners[2])
+        return self._cross12
+
+    @property
+    def cross20(self):
+        if self._cross20 is None:
+            self._cross20 = np.cross(self._corners[2], self._corners[0])
+        return self._cross20
+
     def contains_pt(self, pt):
         """
         Cartesian point
         """
 
-        if self._cross01 is None:
-            self._cross01 = np.cross(self._corners[0], self._corners[1])
-
-        if np.dot(self._cross01,pt)>0.0:
-            if self._cross12 is None:
-                self._cross12 = np.cross(self._corners[1], self._corners[2])
-
-            if np.dot(self._cross12, pt)>0.0:
-                if self._cross20 is None:
-                    self._cross20 = np.cross(self._corners[2], self._corners[0])
-                if np.dot(self._cross20, pt)>0.0:
+        if np.dot(self.cross01,pt)>=0.0:
+            if np.dot(self.cross12, pt)>=0.0:
+                if np.dot(self.cross20, pt)>=0.0:
                     return True
 
         return False
