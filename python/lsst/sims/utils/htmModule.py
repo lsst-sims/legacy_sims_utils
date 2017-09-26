@@ -440,11 +440,11 @@ class HalfSpace(object):
                 children = tt.get_children()
                 for child in children:
                     is_contained = self.contains_trixel(child)
-                    if is_contained == 'partial':
+                    if is_contained == 'partial' and i_level<level-1:
                         n_partial += 1
                         # need to investigate more fully
                         new_active_trixels.append(child)
-                    elif is_contained == 'full':
+                    elif is_contained == 'full' or (is_contained == 'partial' and i_level==level-1):
                         n_full += 1
                         # all of this trixels children, and their children are contained
                         min_htmid = child._label << 2*(level-i_level)
