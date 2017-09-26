@@ -427,8 +427,6 @@ class HalfSpace(object):
             max_d_htmid += 3
             max_d_htmid <<= 2
 
-        print(len('{0:b}'.format(max_d_htmid)))
-
         # start iterating at level 2 because level 1 is the base trixels,
         # where we are already starting, and i_level reallly refers to
         # the level of the child trixels we are investigating
@@ -465,7 +463,6 @@ class HalfSpace(object):
             if len(active_trixels) == 0:
                 break
 
-        print('full %d\npartial %d\noutside %d' % (n_full, n_partial, n_outside))
         return output
 
 class Convex(object):
