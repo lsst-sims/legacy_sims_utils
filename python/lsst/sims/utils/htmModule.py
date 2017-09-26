@@ -123,10 +123,6 @@ class Trixel(object):
         return self._level
 
     @property
-    def label(self):
-        return self._htmid
-
-    @property
     def corners(self):
         return self._corners
 
@@ -226,13 +222,7 @@ def trixelFromHtmid(htmid):
         ans = _N3_trixel
 
     if ans is None:
-        num = 0
-        fac = 4**(len(tree)-1)
-        for tt in tree:
-            num += tt*fac
-            fac = fac/4
-        raise RuntimeError("Unable to find trixel for id %d\n %s\n%d"
-                           % (label_0, str(tree),num))
+        raise RuntimeError("Unable to find trixel for id %d" % htmid)
 
     complement = 3
     complement <<= 2*(level-2)
