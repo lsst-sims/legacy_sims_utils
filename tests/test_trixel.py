@@ -2,11 +2,13 @@ import unittest
 import lsst.utils.tests
 from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, Convex, basic_trixels
+from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
 import time
 import numpy as np
 
 from lsst.sims.utils import sphericalFromCartesian, cartesianFromSpherical
 from lsst.sims.utils import rotAboutY, rotAboutX, rotAboutZ
+from lsst.sims.utils import angularSeparation
 
 
 def setup_module(module):
@@ -139,6 +141,56 @@ class HalfSpaceTest(unittest.TestCase):
         hs2 = HalfSpace(vv-1.0e-6*np.array([1.0, 0.0, 0.0]), 0.1)
         self.assertNotEqual(hs1, hs2)
 
+    def test_findAllTrixels(self):
+        """
+        Test the method that attempts to find all of the trixels
+        inside a given half space
+        """
+        level = 5
+
+        # approximate the linear angular scale (in degrees)
+        # of a trixel grid using the fact that there are
+        # 8*4**(level-1) trixels in the grid as per equation 2.5 of
+        #
+        # https://www.microsoft.com/en-us/research/wp-content/uploads/2005/09/tr-2005-123.pdf
+        angular_scale= np.sqrt(4.0*np.pi*(180.0/np.pi)**2/(8.0*4.0**(level-1)))
+
+        ra = 43.0
+        dec = 22.0
+        radius = 20.0
+        half_space = halfSpaceFromRaDec(ra, dec, radius)
+        trixel_list = half_space.findAllTrixels(level)
+
+        # first, check that all of the returned trixels are
+        # inside the HalfSpace
+        good_htmid_list = []
+        for limits in trixel_list:
+            for htmid in range(limits[0], limits[1]+1):
+                test_trixel = trixelFromHtmid(htmid)
+                ra_trix, dec_trix = test_trixel.get_center()
+                good_htmid_list.append(htmid)
+                self.assertNotEqual(half_space.contains_trixel(test_trixel),
+                                    'outside')
+
+                # check that the returned trixels are within
+                # radius+angular_scale of the center of the HalfSpace
+                self.assertLess(angularSeparation(ra, dec, ra_trix, dec_trix),
+                                radius+angular_scale)
+
+        # next, verify that all of the possible trixels that
+        # were not returned are outside the HalfSpace
+        for base_htmid in range(8,16):
+            htmid_0 = base_htmid<<2*(level-1)
+            self.assertEqual(levelFromHtmid(htmid_0), level)
+            for ii in range(2**(2*level-2)):
+                htmid = htmid_0 + ii
+                self.assertEqual(levelFromHtmid(htmid), level)
+                if htmid not in good_htmid_list:
+                    test_trixel = trixelFromHtmid(htmid)
+                    self.assertEqual(half_space.contains_trixel(test_trixel), 'outside')
+                    ra_trix, dec_trix = test_trixel.get_center()
+                    self.assertGreater(angularSeparation(ra, dec, ra_trix, dec_trix),
+                                       radius)
 
 class ConvexTestCase(unittest.TestCase):
 

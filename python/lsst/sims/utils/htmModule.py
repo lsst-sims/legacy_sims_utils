@@ -430,6 +430,15 @@ class HalfSpace(object):
     def findAllTrixels(self, level):
         """
         Find the HTMIDs of all of the trixels filling the half space
+
+        Parameters
+        ----------
+        level is an integer denoting the resolution of the trixel grid
+
+        Returns
+        -------
+        A list of tuples.  Each tuple gives an inclusive range of HTMIDs
+        corresponding to trixels within the HalfSpace
         """
 
         global basic_trixels
