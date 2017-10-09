@@ -1,3 +1,7 @@
+# This data is taken from a random
+# sampling of the stars in fatboy's
+# obafgk tables; the columns are
+# htmid, ra, dec
 10259322830548 145.47257 -55.7813218
 11454167830929 212.031586 -60.6917234
 11583061106094 268.567406 -18.4670922
