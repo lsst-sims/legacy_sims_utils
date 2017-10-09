@@ -451,7 +451,7 @@ class HalfSpace(object):
         n_partial = 0
         n_outside = 0
 
-        output = []
+        output_prelim = []
         max_d_htmid = 0
 
         # Once we establish that a given trixel is completely
@@ -493,7 +493,7 @@ class HalfSpace(object):
                         min_htmid = child._htmid << 2*(level-i_level)
                         max_htmid = min_htmid
                         max_htmid += max_d_htmid
-                        output.append((min_htmid, max_htmid))
+                        output_prelim.append((min_htmid, max_htmid))
 
                         ########################################
                         # some assertions for debugging purposes
@@ -519,7 +519,16 @@ class HalfSpace(object):
             for child in trix.get_children():
                assert levelFromHtmid(child._htmid) == level
                if self.contains_trixel(child) != 'outside':
-                   output.append((child._htmid, child._htmid))
+                   output_prelim.append((child._htmid, child._htmid))
+
+        # sort output by htmid_min
+        min_dex_arr = []
+        for oo in output_prelim:
+            min_dex_arr.append(oo[0])
+        min_dex_arr = np.argsort(min_dex_arr)
+        output = []
+        for ii in min_dex_arr:
+            output.append(output_prelim[ii])
 
         return output
 

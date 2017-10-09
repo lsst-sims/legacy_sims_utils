@@ -160,11 +160,18 @@ class HalfSpaceTest(unittest.TestCase):
         radius = 20.0
         half_space = halfSpaceFromRaDec(ra, dec, radius)
         trixel_list = half_space.findAllTrixels(level)
+        self.assertGreater(len(trixel_list), 2)
 
         # first, check that all of the returned trixels are
         # inside the HalfSpace
         good_htmid_list = []
-        for limits in trixel_list:
+        for i_limit, limits in enumerate(trixel_list):
+
+            # verify that the tuples have been sorted by
+            # htmid_min
+            if i_limit>0:
+                self.assertGreater(limits[0], trixel_list[i_limit-1][1])
+
             for htmid in range(limits[0], limits[1]+1):
                 test_trixel = trixelFromHtmid(htmid)
                 ra_trix, dec_trix = test_trixel.get_center()
