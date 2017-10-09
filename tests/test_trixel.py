@@ -5,6 +5,7 @@ from lsst.sims.utils import HalfSpace, Convex, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
 import time
 import numpy as np
+import os
 
 from lsst.sims.utils import sphericalFromCartesian, cartesianFromSpherical
 from lsst.sims.utils import rotAboutY, rotAboutX, rotAboutZ
@@ -368,6 +369,17 @@ class TrixelFinderTest(unittest.TestCase):
         binary = '{0:b}'.format(ii)
         self.assertEqual(binary, answer)
 
+    def test_against_fatboy(self):
+        """
+        Test findHtmid against a random selection of stars from fatboy
+        """
+        dtype = np.dtype([('htmid', int), ('ra', float), ('dec', float)])
+        data = np.genfromtxt(os.path.join('testData', 'htmid_test_data.txt'),
+                             dtype=dtype)
+        self.assertGreater(len(data), 20)
+        for i_pt in range(len(data)):
+            htmid_test = findHtmid(data['ra'][i_pt], data['dec'][i_pt], 21)
+            self.assertEqual(htmid_test, data['htmid'][i_pt])
 
     def test_trixel_finding(self):
         epsilon = 1.0e-6
