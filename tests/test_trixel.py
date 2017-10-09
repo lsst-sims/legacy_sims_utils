@@ -380,6 +380,8 @@ class TrixelFinderTest(unittest.TestCase):
         for i_pt in range(len(data)):
             htmid_test = findHtmid(data['ra'][i_pt], data['dec'][i_pt], 21)
             self.assertEqual(htmid_test, data['htmid'][i_pt])
+            level_test = levelFromHtmid(htmid_test)
+            self.assertEqual(level_test, 21)
 
     def test_trixel_finding(self):
         epsilon = 1.0e-6
