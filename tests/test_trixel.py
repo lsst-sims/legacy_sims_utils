@@ -140,7 +140,7 @@ class HalfSpaceTest(unittest.TestCase):
         self.assertEqual(hs1, hs2)
         hs2 = HalfSpace(vv, 0.09)
         self.assertNotEqual(hs1, hs2)
-        hs2 = HalfSpace(vv-1.0e-6*np.array([1.0, 0.0, 0.0]), 0.1)
+        hs2 = HalfSpace(vv-1.0e-4*np.array([1.0, 0.0, 0.0]), 0.1)
         self.assertNotEqual(hs1, hs2)
 
     def test_findAllTrixels(self):
