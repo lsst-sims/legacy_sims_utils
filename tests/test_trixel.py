@@ -1,5 +1,6 @@
 import unittest
 import lsst.utils.tests
+from lsst.utils import getPackageDir
 from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, Convex, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
@@ -374,7 +375,8 @@ class TrixelFinderTest(unittest.TestCase):
         Test findHtmid against a random selection of stars from fatboy
         """
         dtype = np.dtype([('htmid', int), ('ra', float), ('dec', float)])
-        data = np.genfromtxt(os.path.join('testData', 'htmid_test_data.txt'),
+        data = np.genfromtxt(os.path.join(getPackageDir('sims_utils'), 'tests',
+                                          'testData', 'htmid_test_data.txt'),
                              dtype=dtype)
         self.assertGreater(len(data), 20)
         for i_pt in range(len(data)):
