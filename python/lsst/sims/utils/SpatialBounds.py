@@ -177,7 +177,7 @@ class CircleBounds(SpatialBounds):
             RAmax = 360.0
             RAmin = 0.0
 
-        if np.isnan(RAmax) or np.isnan(RAmin):
+        if np.isnan(RAmax) or np.isnan(RAmin) or RAmin<0.0:
             RAmax = 360.0
             RAmin = 0.0
 
