@@ -25,6 +25,22 @@ class Trixel(object):
         self._w_arr = None
         self._bounding_circle = None
 
+    def __eq__(self, other):
+        if self._htmid != other._htmid:
+            return False
+        if self._level != other._level:
+            return False
+
+        tol = 1.0e-20
+
+        if not np.allclose(self._corners, other._corners, atol=tol):
+            return False
+
+        return True
+
+    def __ne__(self, other):
+        return not (self==other)
+
     @property
     def htmid(self):
         return self._htmid

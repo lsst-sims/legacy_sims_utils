@@ -488,6 +488,20 @@ class TrixelFinderTest(unittest.TestCase):
             tt2 = trixelFromHtmid(ii+1)
             self.assertFalse(tt2.contains(ra, dec))
 
+    def test_trixel_eq_ne(self):
+        """
+        Test thatthe __eq__ and __ne__ operators on the Trixel class work
+        """
+        t1 = trixelFromHtmid(8*16+1)
+        t2 = trixelFromHtmid(8*16+1)
+        self.assertEqual(t1, t2)
+        t3 = trixelFromHtmid(8*16+3)
+        self.assertNotEqual(t1, t3)
+        self.assertTrue(t1==t2)
+        self.assertFalse(t1==t3)
+        self.assertTrue(t1!=t3)
+        self.assertFalse(t2==t3)
+        self.assertTrue(t2!=t3)
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
