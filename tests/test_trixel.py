@@ -4,6 +4,7 @@ from lsst.utils import getPackageDir
 from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, Convex, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
+from lsst.sims.utils import getAllTrixels
 import time
 import numpy as np
 import os
@@ -502,6 +503,44 @@ class TrixelFinderTest(unittest.TestCase):
         self.assertTrue(t1!=t3)
         self.assertFalse(t2==t3)
         self.assertTrue(t2!=t3)
+
+    def test_get_all_trixels(self):
+        """
+        Test method to get all trixels up to a certain level
+        """
+        max_level = 5
+        n_trixel_per_level = {}
+        n_trixel_per_level[0] = 0
+        for level in range(1,max_level+1):
+            n_trixel_per_level[level] = 8*(4**(level-1))
+
+        trixel_dict = getAllTrixels(max_level)
+        n_found = {}
+        for level in range(max_level+1):
+            n_found[level] = 0
+
+        for htmid in trixel_dict:
+            level = levelFromHtmid(htmid)
+            n_found[level] += 1
+
+        # verify that the correct number of trixels were
+        # found per level
+        for level in n_found:
+            msg = 'failed on level %d' % level
+            self.assertEqual(n_found[level], n_trixel_per_level[level],
+                             msg=msg)
+
+        # make sure no trixels were duplicated
+        self.assertEqual(len(np.unique(list(trixel_dict.keys()))),
+                         len(trixel_dict))
+
+        for htmid in trixel_dict.keys():
+            level = levelFromHtmid(htmid)
+            self.assertLessEqual(level, max_level)
+            self.assertGreaterEqual(level, 1)
+            t0 = trixelFromHtmid(htmid)
+            self.assertEqual(t0, trixel_dict[htmid])
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass

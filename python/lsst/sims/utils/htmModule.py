@@ -2,7 +2,8 @@ import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
 __all__ = ["Trixel", "HalfSpace", "Convex", "findHtmid", "trixelFromHtmid",
-           "basic_trixels", "halfSpaceFromRaDec", "levelFromHtmid"]
+           "basic_trixels", "halfSpaceFromRaDec", "levelFromHtmid",
+           "getAllTrixels"]
 
 _CONVEX_SIGN_POS=1
 _CONVEX_SIGN_NEG=-1
@@ -266,6 +267,54 @@ def trixelFromHtmid(htmid):
 
     return ans
 
+def getAllTrixels(level):
+    """
+    Return a dict, keyed on htmid, that contains all of the trixels
+    up to the specified level
+    """
+
+    n_bits_added = 2*(level-1)
+
+    start_trixels = range(8,16)
+    trixel_dict = {}
+    for t0 in start_trixels:
+        trix0 = trixelFromHtmid(t0)
+        trixel_dict[t0] = trix0
+
+    ct = 0
+    for t0 in start_trixels:
+        t0 = t0 << n_bits_added
+        for dt in range(2**n_bits_added):
+            htmid = t0 + dt
+            ct += 1
+            if htmid in trixel_dict:
+                continue
+
+            parent_id = htmid >> 2
+
+            while parent_id not in trixel_dict:
+                for n_right in range(2,n_bits_added,2):
+                    if htmid >> n_right in trixel_dict:
+                        break
+                to_gen = htmid >> n_right
+                if to_gen in trixel_dict:
+                    trix0 = trixel_dict[to_gen]
+                else:
+                    trix0= trixelFromHtmid(to_gen)
+                    trixel_dict[to_gen] = trix0
+
+                trixel_dict[to_gen<<2] = trix0.get_child(0)
+                trixel_dict[(to_gen<<2)+1] = trix0.get_child(1)
+                trixel_dict[(to_gen<<2)+2] = trix0.get_child(2)
+                trixel_dict[(to_gen<<2)+3] = trix0.get_child(3)
+
+            trix0 = trixel_dict[parent_id]
+            trixel_dict[(parent_id<<2)] = trix0.get_child(0)
+            trixel_dict[(parent_id<<2)+1] = trix0.get_child(1)
+            trixel_dict[(parent_id<<2)+2] = trix0.get_child(2)
+            trixel_dict[(parent_id<<2)+3] = trix0.get_child(3)
+
+    return trixel_dict
 
 def _iterateTrixelFinder(pt, parent, max_level):
     children = parent.get_children()
