@@ -144,10 +144,13 @@ class HalfSpaceTest(unittest.TestCase):
         hs2 = HalfSpace(vv-1.0e-4*np.array([1.0, 0.0, 0.0]), 0.1)
         self.assertNotEqual(hs1, hs2)
 
-    def test_findAllTrixels(self):
+    def test_findAllTrixels_radius(self):
         """
         Test the method that attempts to find all of the trixels
-        inside a given half space
+        inside a given half space by approximating the angular
+        scale of the trixels and verifying that all returned
+        trixels are within radius+angular scale of the center
+        of the half space.
         """
         level = 5
 
@@ -473,7 +476,7 @@ class TrixelFinderTest(unittest.TestCase):
         self.check_pt(pt, '11111111')
 
 
-    def test_trixel_from_label(self):
+    def test_trixel_from_htmid(self):
         rng = np.random.RandomState(88)
         n_tests = 100
         for i_test in range(n_tests):
