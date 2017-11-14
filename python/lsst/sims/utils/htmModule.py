@@ -234,6 +234,9 @@ def trixelFromHtmid(htmid):
     if ans is None:
         raise RuntimeError("Unable to find trixel for id %d" % htmid)
 
+    if level == 1:
+        return ans
+
     complement = 3
     complement <<= 2*(level-2)
 
