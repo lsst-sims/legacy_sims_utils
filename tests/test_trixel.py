@@ -11,12 +11,130 @@ import os
 
 from lsst.sims.utils import sphericalFromCartesian, cartesianFromSpherical
 from lsst.sims.utils import rotAboutY, rotAboutX, rotAboutZ
-from lsst.sims.utils import angularSeparation
+from lsst.sims.utils import angularSeparation, _angularSeparation
 
 
 def setup_module(module):
     lsst.utils.tests.init()
 
+
+def trixel_intersects_half_space(trix, hspace):
+    """
+    This is a brute force method to determine whether a trixel
+    is inside, or at least intersects, a halfspace.
+    """
+    if hspace.phi > 0.25*np.pi:
+        raise RuntimeError("trixel_intersects_half_space is not safe for "
+                           "large HalfSpaces")
+
+    # if any of the trixel's corners are within the
+    # HalfSpace, return True
+    raRad, decRad = sphericalFromCartesian(hspace.vector)
+    for corner in trix.corners:
+        raRad1, decRad1 = sphericalFromCartesian(corner)
+        if _angularSeparation(raRad, decRad, raRad1, decRad1) < hspace.phi:
+            return True
+
+    # if the trixel contains the HalfSpace's center,
+    # return True
+    if trix.contains_pt(hspace.vector):
+        return True
+
+    sinphi = np.abs(np.sin(hspace.phi))
+
+    # Iterate over each pair of corners (c1, c2).  For each pair,
+    # construct a coordinate basis in which +z is in the
+    # direction of c3, and +x is along the
+    # unit vector defining c_i such that the angle
+    # phi of c_j in the x,y plane is positive.  This coordinate
+    # system is such that the trixel edge defined by c1, c2 is
+    # now along the equator of the unit sphere.  Find the point
+    # of closest approach of the HalfSpace's center to the equator.
+    # If that point is between c1 and c2, return True.
+    for i_c_1 in range(3):
+        c1 = trix.corners[i_c_1]
+        for i_c_2 in range(3):
+            if i_c_2 <= i_c_1:
+                continue
+            c2 = trix.corners[i_c_2]
+            i_c_3 = 3 - (i_c_1+i_c_2)
+            c3 = trix.corners[i_c_3]
+            assert i_c_3 != i_c_2
+            assert i_c_3 != i_c_1
+            assert i_c_1 != i_c_2
+
+            z_axis = np.array([c1[1]*c2[2]-c1[2]*c2[1],
+                               c2[0]*c1[2]-c1[0]*c2[2],
+                               c1[0]*c2[1]-c2[0]*c1[1]])
+            z_axis = z_axis/np.sqrt((z_axis**2).sum())
+
+            if np.dot(z_axis,c3)<0.0:
+                z_axis *= -1.0
+
+            assert np.abs(1.0-np.dot(z_axis,z_axis))<1.0e-10
+            assert np.abs(1.0-np.dot(c1,c1))<1.0e-10
+            assert np.abs(1.0-np.dot(c2,c2))<1.0e-10
+            assert np.abs(np.dot(z_axis, c1))<1.0e-10
+            assert np.abs(np.dot(z_axis, c2))<1.0e-10
+
+            # if the dot product of the center of the HalfSpace
+            # with the z axis of the new coordinate system is
+            # greater than the sine of the radius of the
+            # halfspace, then there is no way that the halfspace
+            # intersects the equator of the unit sphere in this
+            # coordinate system
+            if np.abs(np.dot(z_axis, hspace.vector)) > sinphi:
+                continue
+
+            x_axis = c1
+            y_axis = -1.0*np.array([x_axis[1]*z_axis[2]-x_axis[2]*z_axis[1],
+                                    z_axis[0]*x_axis[2]-x_axis[0]*z_axis[2],
+                                    x_axis[0]*z_axis[1]-z_axis[0]*x_axis[1]])
+
+            cos_a = np.dot(x_axis, c2)
+            sin_a = np.dot(y_axis, c2)
+
+            if sin_a < 0.0:
+                x_axis = c2
+                y_axis = -1.0*np.array([x_axis[1]*z_axis[2]-x_axis[2]*z_axis[1],
+                                        z_axis[0]*x_axis[2]-x_axis[0]*z_axis[2],
+                                        x_axis[0]*z_axis[1]-z_axis[0]*x_axis[1]])
+
+                cos_a = np.dot(x_axis, c1)
+                sin_a = np.dot(y_axis, c1)
+
+            assert cos_a >= 0.0
+            assert sin_a >= 0.0
+            assert np.abs(1.0-cos_a**2-sin_a**2)<1.0e-10
+            assert np.abs(np.dot(x_axis, z_axis))<1.0e-10
+            assert np.abs(np.dot(x_axis, y_axis))<1.0e-10
+            assert np.abs(np.dot(y_axis, z_axis))<1.0e-10
+
+            x_center = np.dot(x_axis, hspace.vector)
+
+            # if the x-coordinate of the HalfSpace's center is
+            # negative, the HalfSpace is on the opposite side
+            # of the unit sphere; ignore this pair c1, c2
+            if x_center<0.0:
+                continue
+
+            y_center = np.dot(y_axis, hspace.vector)
+
+            # tan_a is the tangent of the angle between
+            # the x_axis and the other trixel corner in
+            # the x, y plane
+            tan_a = sin_a/cos_a
+
+            # tan_extreme is the tangent of the angle in
+            # the x, y plane defining the point of closest
+            # approach of the HalfSpace's center to the
+            # equator.  If this point is between c1, c2,
+            # return True.
+            tan_extreme = y_center/x_center
+            if tan_extreme > 0.0 and tan_extreme < tan_a:
+                return True
+
+    return False
 
 class HalfSpaceTest(unittest.TestCase):
 
@@ -204,6 +322,59 @@ class HalfSpaceTest(unittest.TestCase):
                     ra_trix, dec_trix = test_trixel.get_center()
                     self.assertGreater(angularSeparation(ra, dec, ra_trix, dec_trix),
                                        radius)
+
+    def test_findAllTrixels_brute(self):
+        """
+        Use the method trixel_intersects_half_space defined at the
+        top of this script to verify that HalfSpace.findAllTrixels works
+        """
+        level = 7
+        trixel_dict = getAllTrixels(level)
+        all_htmid = []
+        for htmid in trixel_dict.keys():
+            if levelFromHtmid(htmid) == level:
+                all_htmid.append(htmid)
+
+        hspace = halfSpaceFromRaDec(36.0, 22.1, 2.0)
+
+        # make sure that the two methods of determining if
+        # a HalfSpace contains a trixel (HalfSpace.contains_trixel
+        # and trixel_interects_half_space) agree
+        for htmid in all_htmid:
+            trix = trixel_dict[htmid]
+            msg = 'offending htmid %d' % htmid
+            if trixel_intersects_half_space(trix, hspace):
+                self.assertNotEqual(hspace.contains_trixel(trix), 'outside',
+                                    msg=msg)
+            else:
+                self.assertEqual(hspace.contains_trixel(trix), 'outside',
+                                 msg=msg)
+
+        trixel_limits = hspace.findAllTrixels(level)
+        intersecting_htmid = set()
+
+        # check that all of the trixels included in the limits
+        # do, in fact, intersect or exist in the HalfSpace
+        for lim in trixel_limits:
+            for htmid in range(lim[0], lim[1]+1):
+                trix = trixel_dict[htmid]
+                self.assertTrue(trixel_intersects_half_space(trix, hspace))
+                intersecting_htmid.add(htmid)
+
+        # check that all of the trixels not included in the limits
+        # are, in fact, outside of the HalfSpace
+        self.assertLess(len(intersecting_htmid), len(all_htmid))
+        self.assertGreater(len(intersecting_htmid), 0)
+        for htmid in all_htmid:
+            if htmid in intersecting_htmid:
+                continue
+            trix = trixel_dict[htmid]
+            self.assertFalse(trixel_intersects_half_space(trix, hspace))
+
+
+        #print(trixel_intersects_half_space(trix, hspace))
+        #print(hspace.contains_trixel(trix))
+
 
 class ConvexTestCase(unittest.TestCase):
 
