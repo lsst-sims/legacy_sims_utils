@@ -164,7 +164,7 @@ class Trixel(object):
         if self._bounding_circle is None:
             vb = np.cross((self._corners[1]-self._corners[0]), (self._corners[2]-self._corners[1]))
             vb = vb/np.sqrt(np.power(vb, 2).sum())
-            dd = np.dot(self._corners[0], vb)
+            dd = np.dot(self.corners,vb).max()
             if np.abs(dd)>1.0:
                 raise RuntimeError("Bounding circle has dd %e (should be between -1 and 1)" % dd)
             self._bounding_circle = (vb, dd, np.arccos(dd))

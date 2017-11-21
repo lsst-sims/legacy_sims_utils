@@ -5,6 +5,7 @@ from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, Convex, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
 from lsst.sims.utils import getAllTrixels
+from lsst.sims.utils import arcsecFromRadians
 import time
 import numpy as np
 import os
@@ -714,6 +715,34 @@ class TrixelFinderTest(unittest.TestCase):
             self.assertGreaterEqual(level, 1)
             t0 = trixelFromHtmid(htmid)
             self.assertEqual(t0, trixel_dict[htmid])
+
+    def test_trixel_bounding_circle(self):
+        """
+        Verify that the trixel's bounding_circle method returns
+        a circle that contains all of the corners of the
+        trixel
+        """
+        rng = np.random.RandomState(142)
+        n_test_cases = 5
+        for i_test in range(n_test_cases):
+            htmid = (13<<6)+rng.randint(1,2**6-1)
+            trixel = trixelFromHtmid(htmid)
+            bounding_circle = trixel.bounding_circle
+            ra_0, dec_0 = sphericalFromCartesian(bounding_circle[0])
+            ra_list = []
+            dec_list = []
+            for cc in trixel.corners:
+                ra, dec = sphericalFromCartesian(cc)
+                ra_list.append(ra)
+                dec_list.append(dec)
+            ra_list = np.array(ra_list)
+            dec_list = np.array(dec_list)
+            distance = _angularSeparation(ra_0, dec_0,
+                                          ra_list, dec_list)
+            distance = arcsecFromRadians(distance)
+            radius = arcsecFromRadians(bounding_circle[2])
+            self.assertLessEqual(distance.max()-radius,1.0e-8)
+            self.assertLess(np.abs(distance.max()-radius), 1.0e-8)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
