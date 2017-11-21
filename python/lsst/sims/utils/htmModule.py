@@ -143,6 +143,9 @@ class Trixel(object):
         ra, dec =sphericalFromCartesian(self.bounding_circle[0])
         return np.degrees(ra), np.degrees(dec)
 
+    def get_radius(self):
+        return np.degrees(self.bounding_circle[2])
+
     @property
     def level(self):
         return self._level
