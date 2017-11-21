@@ -71,17 +71,27 @@ class Trixel(object):
             self._cross20 = np.cross(self._corners[2], self._corners[0])
         return self._cross20
 
-    def contains_pt(self, pt):
-        """
-        Cartesian point
-        """
-
+    def _contains_one_pt(self, pt):
         if np.dot(self.cross01,pt)>=0.0:
             if np.dot(self.cross12, pt)>=0.0:
                 if np.dot(self.cross20, pt)>=0.0:
                     return True
 
         return False
+
+    def _contains_many_pts(self, pts):
+        return np.where(np.logical_and(np.dot(pts, self.cross01) >= 0.0,
+                        np.logical_and(np.dot(pts, self.cross12) >= 0.0,
+                                       np.dot(pts, self.cross20) >= 0.0)),
+                        True, False)
+
+    def contains_pt(self, pt):
+        """
+        Cartesian point
+        """
+        if len(pt.shape) == 1:
+            return self._contains_one_pt(pt)
+        return self._contains_many_pts(pt)
 
     def _create_w(self):
 

@@ -744,6 +744,41 @@ class TrixelFinderTest(unittest.TestCase):
             self.assertLessEqual(distance.max()-radius,1.0e-8)
             self.assertLess(np.abs(distance.max()-radius), 1.0e-8)
 
+    def test_trixel_contains_many(self):
+        """
+        Test that trixel.contains_pt and trixel.contains can
+        work with numpy arrays of input
+        """
+        htmid = (15<<6) + 45
+        trixel = trixelFromHtmid(htmid)
+        ra_0, dec_0 = trixel.get_center()
+        radius = trixel.get_radius()
+        rng = np.random.RandomState(44)
+        n_pts = 100
+        rr = radius*rng.random_sample(n_pts)*1.1
+        theta = rng.random_sample(n_pts)*2.0*np.pi
+        ra_list = ra_0 + rr*np.cos(theta)
+        dec_list = dec_0 + rr*np.sin(theta)
+        contains_arr = trixel.contains(ra_list, dec_list)
+        n_in = 0
+        n_out = 0
+        for i_pt in range(n_pts):
+            single_contains = trixel.contains(ra_list[i_pt], dec_list[i_pt])
+            self.assertEqual(single_contains, contains_arr[i_pt])
+            if single_contains:
+                n_in += 1
+            else:
+                n_out += 1
+
+        self.assertGreater(n_in, 0)
+        self.assertGreater(n_out, 0)
+
+        xyz_list = cartesianFromSpherical(np.radians(ra_list),
+                                          np.radians(dec_list))
+
+        contains_xyz_arr = trixel.contains_pt(xyz_list)
+        np.testing.assert_array_equal(contains_xyz_arr, contains_arr)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
