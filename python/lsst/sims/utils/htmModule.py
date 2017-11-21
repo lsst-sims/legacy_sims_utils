@@ -140,9 +140,7 @@ class Trixel(object):
             raise RuntimeError("Trixel has no %d child" % dex)
 
     def get_center(self):
-        xyz = self._corners[0] + self._corners[1] + self._corners[2]
-        xyz = xyz/np.sqrt(np.power(xyz, 2).sum())
-        ra, dec = sphericalFromCartesian(xyz)
+        ra, dec =sphericalFromCartesian(self.bounding_circle[0])
         return np.degrees(ra), np.degrees(dec)
 
     @property
