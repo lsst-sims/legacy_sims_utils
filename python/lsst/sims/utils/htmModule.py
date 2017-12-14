@@ -16,21 +16,41 @@ arXiv:cs/0701164
 import numpy as np
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
-__all__ = ["Trixel", "HalfSpace", "Convex", "findHtmid", "trixelFromHtmid",
+__all__ = ["Trixel", "HalfSpace", "findHtmid", "trixelFromHtmid",
            "basic_trixels", "halfSpaceFromRaDec", "levelFromHtmid",
            "getAllTrixels"]
 
-_CONVEX_SIGN_POS=1
-_CONVEX_SIGN_NEG=-1
-_CONVEX_SIGN_ZERO=0
-_CONVEX_SIGN_MIXED=2
-
 
 class Trixel(object):
+    """
+    A trixel is a single triangle in the Hierarchical Triangular Mesh (HTM)
+    tiling scheme.  It is defined by its three corners on the unit sphere.
+
+    Instantiating this class directly is a bad idea. __init__() does nothing
+    to ensure that the parameters you give it are self-consistent.  Instead,
+    use the trixelFromHtmid() or getAllTrixels() methods in this module
+    to instantiate trixels.
+    """
 
     def __init__(self, present_htmid, present_corners):
         """
-        Corners in ccw order from lower left hand corner (v0)
+        Initialize the current Trixel
+
+        Parameters
+        ----------
+        present_htmid is the htmid of this Trixel
+
+        present_corners is a numpy array.  Each row
+        contains the Cartesian coordinates of one of
+        this Trixel's corners.
+
+        WARNING
+        -------
+        No effort is made to ensure that the parameters
+        passed in are self consistent.  You should probably
+        not being calling __init__() directly.  Use the
+        trixelFromHtmid() or getAllTrixels() methods to
+        instantiate trixels.
         """
         self._corners = present_corners
         self._htmid = present_htmid
@@ -59,34 +79,58 @@ class Trixel(object):
 
     @property
     def htmid(self):
+        """
+        The unique integer identifying this trixel.
+        """
         return self._htmid
 
     def contains(self, ra, dec):
         """
-        In degrees
+        Returns True if the specified RA, Dec are
+        inside this trixel; False if not.
+
+        RA and Dec are in degrees.
         """
         xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
         return self.contains_pt(xyz)
 
     @property
     def cross01(self):
+        """
+        The cross product of the unit vectors defining
+        the zeroth and first corners of this trixel.
+        """
         if self._cross01 is None:
             self._cross01 = np.cross(self._corners[0], self._corners[1])
         return self._cross01
 
     @property
     def cross12(self):
+        """
+        The cross product of the unit vectors defining
+        the first andsecond corners of this trixel.
+        """
         if self._cross12 is None:
             self._cross12 = np.cross(self._corners[1], self._corners[2])
         return self._cross12
 
     @property
     def cross20(self):
+        """
+        The cross product of the unit vectors defining the second
+        and zeroth corners of this trixel.
+        """
         if self._cross20 is None:
             self._cross20 = np.cross(self._corners[2], self._corners[0])
         return self._cross20
 
     def _contains_one_pt(self, pt):
+        """
+        pt is a Cartesian point (not necessarily on the unit sphere).
+
+        Returns True if the point projected onto the unit sphere
+        is contained within this trixel; False if not.
+        """
         if np.dot(self.cross01,pt)>=0.0:
             if np.dot(self.cross12, pt)>=0.0:
                 if np.dot(self.cross20, pt)>=0.0:
@@ -95,6 +139,15 @@ class Trixel(object):
         return False
 
     def _contains_many_pts(self, pts):
+        """
+        pts is an array of Cartesian points (pts[0] is the zeroth
+        point, pts[1] is the first point, etc.; not necessarily on
+        the unit sphere).
+
+        Returns an array of booleans denoting whether or not the
+        projection of each point onto the unit sphere is contained
+        within this trixel.
+        """
         return np.where(np.logical_and(np.dot(pts, self.cross01) >= 0.0,
                         np.logical_and(np.dot(pts, self.cross12) >= 0.0,
                                        np.dot(pts, self.cross20) >= 0.0)),
@@ -102,7 +155,15 @@ class Trixel(object):
 
     def contains_pt(self, pt):
         """
-        Cartesian point
+        pt is either a single Cartesian point
+        or an array of Cartesian points (pt[0]
+        is the zeroth point, pt[1] is the first
+        point, etc.).
+
+        Return a boolean or array of booleans
+        denoting whether this point(s) projected
+        onto the unit sphere is/are contained within
+        the current trixel.
         """
         if len(pt.shape) == 1:
             return self._contains_one_pt(pt)
@@ -121,38 +182,106 @@ class Trixel(object):
 
     @property
     def w_arr(self):
+        """
+        An array of vectors needed to define the child trixels
+        of this trixel.  Seeequation (3) of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        httpd://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        """
         if self._w_arr is None:
             self._create_w()
         return self._w_arr
 
     @property
     def t0(self):
+        """
+        The zeroth child trixel of this trixel.
+
+        See Figure 1 of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        """
         if not hasattr(self, '_t0'):
             self._t0 = Trixel(self.htmid<<2, [self._corners[0], self.w_arr[2], self.w_arr[1]])
         return self._t0
 
     @property
     def t1(self):
+        """
+        The first child trixel of this trixel.
+
+        See Figure 1 of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        """
         if not hasattr(self, '_t1'):
            self._t1 = Trixel((self.htmid<<2)+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
         return self._t1
 
     @property
     def t2(self):
+        """
+        The second child trixel of this trixel.
+
+        See Figure 1 of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        """
         if not hasattr(self, '_t2'):
             self._t2 = Trixel((self.htmid<<2)+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
         return self._t2
 
     @property
     def t3(self):
+        """
+        The third child trixel of this trixel.
+
+        See Figure 1 of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        """
         if not hasattr(self, '_t3'):
             self._t3 = Trixel((self.htmid<<2)+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
         return self._t3
 
     def get_children(self):
+        """
+        Return a list of all of the child trixels of this trixel.
+        """
         return [self.t0, self.t1, self.t2, self.t3]
 
     def get_child(self, dex):
+        """
+        Return a specific child trixel of this trixel.
+
+        dex is an integer in the range [0,3] denoting
+        which child to return
+
+        See Figure 1 of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+
+        for an explanation of which trixel corresponds to whic
+        index.
+        """
         if dex==0:
             return self.t0
         elif dex==1:
@@ -165,10 +294,18 @@ class Trixel(object):
             raise RuntimeError("Trixel has no %d child" % dex)
 
     def get_center(self):
+        """
+        Return the RA, Dec of the center of the circle bounding
+        this trixel (RA, Dec both in degrees)
+        """
         ra, dec =sphericalFromCartesian(self.bounding_circle[0])
         return np.degrees(ra), np.degrees(dec)
 
     def get_radius(self):
+        """
+        Return the angular radius in degrees of the circle bounding
+        this trixel.
+        """
         return np.degrees(self.bounding_circle[2])
 
     @property
@@ -182,10 +319,26 @@ class Trixel(object):
     @property
     def bounding_circle(self):
         """
-        Returns a tuple.
-        Zeroth element is the 'z-axis' vector of the bounding circle.
-        First element is the d of the bounding circle.
-        Second element is the half angular extent of the bounding circle.
+        The circle on the unitsphere that bounds this trixel.
+
+        See equation 4.2 of
+
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
+
+        Returns
+        -------
+        A tuple:
+            Zeroth element is the unit vector pointing at
+            the center of the bounding circle
+
+            First element is the distance from the center of
+            the unit sphere to the plane of the bounding circle
+            (i.e. the dot product of the first element with the
+            most distant corner of the trixel).
+
+            Second element is the half angular extent of the bounding circle.
         """
         if self._bounding_circle is None:
             vb = np.cross((self._corners[1]-self._corners[0]), (self._corners[2]-self._corners[1]))
