@@ -350,6 +350,14 @@ class Trixel(object):
 
         return self._bounding_circle
 
+# Below are defined the initial Trixels
+#
+# See equations (1) and (2) of
+#
+# Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+# Banday A, Zaroubi S, Bartelmann M. eds.
+# ESO Astrophysics Symposia
+# https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
 
 _N0_trixel = Trixel(12, [np.array([1.0, 0.0, 0.0]),
                          np.array([0.0, 0.0, 1.0]),
@@ -395,7 +403,15 @@ basic_trixels = {'N0': _N0_trixel,
 
 def levelFromHtmid(htmid):
     """
-    Find the level of a trixel from its htmid
+    Find the level of a trixel from its htmid.  The level
+    indicates how refined the triangular mesh is.
+
+    There are 8*4**(d-1) triangles in a mes of level=d
+
+    (equation 2.5 of
+    Szalay A. et al. (2007)
+    "Indexing the Sphere with the Hierarchical Triangular Mesh"
+    arXiv:cs/0701164)
     """
     htmid_copy = htmid
     i_level = -1
@@ -405,6 +421,18 @@ def levelFromHtmid(htmid):
     return i_level
 
 def trixelFromHtmid(htmid):
+    """
+    Return the trixel corresponding to the given htmid
+    (htmid is the unique integer identifying each trixel).
+
+    Note: this method is not efficient for finding many
+    trixels.  It recursively generates trixels and their
+    children until it finds the right htmid without
+    remembering which trixels it has already generated.
+    To generate many trixels, use the getAllTrixels()
+    method, which efficiently generates all of the trixels
+    up to a given mesh level.
+    """
     level = levelFromHtmid(htmid)
     base_htmid = htmid>>2*(level-1)
 
@@ -448,8 +476,10 @@ def trixelFromHtmid(htmid):
 
 def getAllTrixels(level):
     """
-    Return a dict, keyed on htmid, that contains all of the trixels
-    up to the specified level
+    Return a dict of all of the trixels up to a given mesh level.
+    The dict is keyed on htmid, unique integer identifying
+    each trixel on the unit sphere.  This method is efficient
+    at generating many trixels at once.
     """
 
     n_bits_added = 2*(level-1)
@@ -505,6 +535,27 @@ def _iterateTrixelFinder(pt, parent, max_level):
                 return _iterateTrixelFinder(pt, child, max_level)
 
 def findHtmid(ra, dec, max_level):
+    """
+    Find the htmid (the unique integer identifying
+    each trixel) of the trixel containing a given
+    RA, Dec pair.
+
+    Parameters
+    ----------
+    ra in degrees
+
+    dec in degrees
+
+    max_level is an integer denoting the mesh level
+    of the trixel you want found
+
+    Note: This method only works one point at a time.
+    It cannot take arrays of RA and Dec.
+
+    Returns
+    -------
+    An int (the htmid)
+    """
 
     raRad = np.radians(ra)
     decRad = np.radians(dec)
@@ -533,8 +584,39 @@ def findHtmid(ra, dec, max_level):
 
 
 class HalfSpace(object):
+    """
+    HalfSpaces are circles on the unit sphere defined by intersecting
+    a plane with the unit sphere.  They are specified by the unit vector
+    pointing to their center on the unit sphere and the distance from
+    the center of the unit sphere to the plane along that unit vector.
+
+    See Section 3.1 of
+
+    Szalay A. et al. (2007)
+    "Indexing the Sphere with the Hierarchical Triangular Mesh"
+    arXiv:cs/0701164
+
+    Note that the specifying distance can be negative.  In this case,
+    the halfspace is defined as the larger of the two regions on the
+    unit sphere divided by the circle where the plane of the halfspace
+    intersects the unit sphere.
+    """
 
     def __init__(self, vector, length):
+        """
+        Parameters
+        ----------
+        vector is the unit vector pointing to the center of
+        the halfspace on the unit sphere
+
+        length is the distance from the center of the unit
+        sphere to theplane defining the half space along
+        vector.  This length can be negative, in which case,
+        the halfspace is defined as the larger of the two
+        regions on the unit sphere divided by the circle
+        where the plane of the halfspace intersects the
+        unit sphere.
+        """
         self._v = vector/np.sqrt(np.power(vector, 2).sum())
         self._d = length
         if np.abs(self._d)<1.0:
@@ -578,7 +660,10 @@ class HalfSpace(object):
 
     def contains_pt(self, pt):
         """
-        Cartesian point
+        pt is a cartesian point (not necessarily on
+        the unit sphere).  The method returns True if
+        the projection of that point onto the unit sphere
+        is contained in the halfspace; False otherwise.
         """
         norm_pt = pt/np.sqrt(np.power(pt, 2).sum())
 
@@ -591,10 +676,14 @@ class HalfSpace(object):
 
     def intersects_edge(self, pt1, pt2):
         """
-        pt1 and pt2 are two unit vectors; the edge goes from pt1 to pt2
+        pt1 and pt2 are two unit vectors; the edge goes from pt1 to pt2.
+        Return True if the edge intersects this halfspace; False otherwise.
 
-        see equation 4.8 of Szalay et al 2005
-        https://www.microsoft.com/en-us/research/wp-content/uploads/2005/09/tr-2005-123.pdf
+        see equation 4.8 of
+
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
         """
         costheta = np.dot(pt1, pt2)
         u=np.sqrt((1-costheta)/(1+costheta))  # using trig identity for tan(theta/2)
@@ -621,6 +710,16 @@ class HalfSpace(object):
         return False
 
     def intersects_bounding_circle(self, tx):
+        """
+        tx is a Trixel.  Return True if this halfspace intersects
+        the bounding circle of the trixel; False otherwise.
+
+        See the discussion around equation 4.2 of
+
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
+        """
 
         dotproduct = np.dot(tx.bounding_circle[0], self._v)
         if np.abs(dotproduct) < 1.0:
@@ -638,6 +737,24 @@ class HalfSpace(object):
         return True
 
     def contains_trixel(self, tx):
+        """
+        tx is a Trixel.
+
+        Return "full" if the Trixel is fully contained by
+        this halfspace.
+
+        Return "partial" if the Trixel is only partially
+        contained by this halfspace
+
+        Return "outside" if no part of the Trixel is
+        contained by this halfspace.
+
+        See section 4.1 of
+
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
+        """
 
         n_corners_contained = 0
         for corner in tx.corners:
