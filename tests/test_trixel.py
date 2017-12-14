@@ -382,6 +382,12 @@ class TrixelFinderTest(unittest.TestCase):
     longMessage = True
 
     def check_pt(self, pt, answer):
+        """
+        Take a Cartesian point (pt) and a known
+        htmid for that point (answer).  Find the htmid
+        for the point using findHtmid and verify that
+        we get the expected answer.
+        """
         ra, dec = sphericalFromCartesian(pt)
         ii = findHtmid(np.degrees(ra), np.degrees(dec), 3)
         binary = '{0:b}'.format(ii)
@@ -403,6 +409,13 @@ class TrixelFinderTest(unittest.TestCase):
             self.assertEqual(level_test, 21)
 
     def test_trixel_finding(self):
+        """
+        Check that findHtmid works by passing in some
+        points whose htmid are known because of their
+        proximity to the corners of low-level Trixels.
+        Use check_pt to verify that findHtmid gives
+        the right answer.
+        """
         epsilon = 1.0e-6
         dx = np.array([epsilon, 0.0, 0.0])
         dy = np.array([0.0, epsilon, 0.0])
@@ -490,6 +503,14 @@ class TrixelFinderTest(unittest.TestCase):
 
 
     def test_trixel_from_htmid(self):
+        """
+        Check that trixelFromHtmid works by
+        finding the htmid from an RA, Dec pair,
+        instantiating the Trixel corresponding
+        to that htmid, and verifying that that
+        Trixel (and not its neighbors) contains
+        the RA, Dec pair.
+        """
         rng = np.random.RandomState(88)
         n_tests = 100
         for i_test in range(n_tests):
@@ -507,7 +528,7 @@ class TrixelFinderTest(unittest.TestCase):
 
     def test_trixel_eq_ne(self):
         """
-        Test thatthe __eq__ and __ne__ operators on the Trixel class work
+        Test that the __eq__ and __ne__ operators on the Trixel class work
         """
         t1 = trixelFromHtmid(8*16+1)
         t2 = trixelFromHtmid(8*16+1)
