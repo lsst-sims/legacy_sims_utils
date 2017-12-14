@@ -6,7 +6,7 @@ with nested triangles.  The HTM is described in these references
 Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
 Banday A, Zaroubi S, Bartelmann M. eds.
 ESO Astrophysics Symposia
-httpd://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
 
 Szalay A. et al. (2007)
 "Indexing the Sphere with the Hierarchical Triangular Mesh"
