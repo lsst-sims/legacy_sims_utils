@@ -167,11 +167,9 @@ class CircleBounds(SpatialBounds):
 
         if np.abs(cosDec) > 1.0e-20:
             RAmax = self.RAdeg + \
-                360.0 * np.arcsin(np.sin(self.radius) /
-                                  cosDec) / np.pi
+                    2.0*np.degrees(np.arcsin(np.sin(self.radius)/cosDec))
             RAmin = self.RAdeg - \
-                360.0 * np.arcsin(np.sin(self.radius) /
-                                  cosDec) / np.pi
+                    2.0*np.degrees(np.arcsin(np.sin(self.radius)/cosDec))
         else:
             # just in case, for some reason, we are looking at the poles
             RAmax = 360.0
