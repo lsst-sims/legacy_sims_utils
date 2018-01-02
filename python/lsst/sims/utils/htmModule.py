@@ -757,7 +757,7 @@ class HalfSpace(object):
         """
         norm_pt = pt/np.sqrt(np.power(pt, 2).sum())
 
-        dot_product = np.dot(pt, self._v)
+        dot_product = np.dot(norm_pt, self._v)
 
         if dot_product > self._d:
             return True
