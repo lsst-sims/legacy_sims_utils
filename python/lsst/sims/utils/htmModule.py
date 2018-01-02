@@ -339,11 +339,17 @@ class Trixel(object):
             Second element is the half angular extent of the bounding circle.
         """
         if self._bounding_circle is None:
+            # find the unit vector pointing to the center of the trixel
             vb = np.cross((self._corners[1]-self._corners[0]), (self._corners[2]-self._corners[1]))
             vb = vb/np.sqrt(np.power(vb, 2).sum())
+
+            # find the distance from the center of the trixel
+            # to the most distant corner of the trixel
             dd = np.dot(self.corners,vb).max()
+
             if np.abs(dd)>1.0:
                 raise RuntimeError("Bounding circle has dd %e (should be between -1 and 1)" % dd)
+
             self._bounding_circle = (vb, dd, np.arccos(dd))
 
         return self._bounding_circle
