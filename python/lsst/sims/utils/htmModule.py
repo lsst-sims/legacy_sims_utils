@@ -441,7 +441,7 @@ def levelFromHtmid(htmid):
     Find the level of a trixel from its htmid.  The level
     indicates how refined the triangular mesh is.
 
-    There are 8*4**(d-1) triangles in a mes of level=d
+    There are 8*4**(d-1) triangles in a mesh of level=d
 
     (equation 2.5 of
     Szalay A. et al. (2007)
