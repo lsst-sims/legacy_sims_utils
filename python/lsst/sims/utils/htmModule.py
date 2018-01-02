@@ -333,7 +333,7 @@ class Trixel(object):
 
             First element is the distance from the center of
             the unit sphere to the plane of the bounding circle
-            (i.e. the dot product of the first element with the
+            (i.e. the dot product of the zeroth element with the
             most distant corner of the trixel).
 
             Second element is the half angular extent of the bounding circle.
