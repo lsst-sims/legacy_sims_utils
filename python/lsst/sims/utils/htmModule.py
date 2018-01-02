@@ -264,7 +264,8 @@ class Trixel(object):
         arXiv:cs/0701164
         """
         if not hasattr(self, '_t3'):
-            self._t3 = Trixel((self.htmid<<2)+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
+            self._t3 = Trixel((self.htmid << 2)+3,
+                              [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
         return self._t3
 
     def get_children(self):
@@ -290,13 +291,13 @@ class Trixel(object):
         for an explanation of which trixel corresponds to whic
         index.
         """
-        if dex==0:
+        if dex == 0:
             return self.t0
-        elif dex==1:
+        elif dex == 1:
             return self.t1
-        elif dex==2:
+        elif dex == 2:
             return self.t2
-        elif dex==3:
+        elif dex == 3:
             return self.t3
         else:
             raise RuntimeError("Trixel has no %d child" % dex)
@@ -306,7 +307,7 @@ class Trixel(object):
         Return the RA, Dec of the center of the circle bounding
         this trixel (RA, Dec both in degrees)
         """
-        ra, dec =sphericalFromCartesian(self.bounding_circle[0])
+        ra, dec = sphericalFromCartesian(self.bounding_circle[0])
         return np.degrees(ra), np.degrees(dec)
 
     def get_radius(self):
@@ -376,14 +377,15 @@ class Trixel(object):
 
             # find the distance from the center of the trixel
             # to the most distant corner of the trixel
-            dd = np.dot(self.corners,vb).max()
+            dd = np.dot(self.corners, vb).max()
 
-            if np.abs(dd)>1.0:
+            if np.abs(dd) > 1.0:
                 raise RuntimeError("Bounding circle has dd %e (should be between -1 and 1)" % dd)
 
             self._bounding_circle = (vb, dd, np.arccos(dd))
 
         return self._bounding_circle
+
 
 # Below are defined the initial Trixels
 #
@@ -398,9 +400,9 @@ _N0_trixel = Trixel(12, [np.array([1.0, 0.0, 0.0]),
                          np.array([0.0, 0.0, 1.0]),
                          np.array([0.0, -1.0, 0.0])])
 
-_N1_trixel = Trixel(13,[np.array([0.0, -1.0, 0.0]),
-                        np.array([0.0, 0.0, 1.0]),
-                        np.array([-1.0, 0.0, 0.0])])
+_N1_trixel = Trixel(13, [np.array([0.0, -1.0, 0.0]),
+                         np.array([0.0, 0.0, 1.0]),
+                         np.array([-1.0, 0.0, 0.0])])
 
 _N2_trixel = Trixel(14, [np.array([-1.0, 0.0, 0.0]),
                          np.array([0.0, 0.0, 1.0]),
@@ -463,6 +465,7 @@ def levelFromHtmid(htmid):
 
     return i_level
 
+
 def trixelFromHtmid(htmid):
     """
     Return the trixel corresponding to the given htmid
@@ -479,7 +482,7 @@ def trixelFromHtmid(htmid):
     Note: valid htmids have 4+2n bits with a leading bit of 1
     """
     level = levelFromHtmid(htmid)
-    base_htmid = htmid>>2*(level-1)
+    base_htmid = htmid >> 2*(level-1)
 
     ans = None
 
@@ -521,16 +524,17 @@ def trixelFromHtmid(htmid):
         # stored in ans are.  These two bits
         # determine which child of ans we need
         # to return.
-        target = htmid&complement
+        target = htmid & complement
         target >>= 2*(level-ix-2)
 
-        if target>=4:
+        if target >= 4:
             raise RuntimeError("target %d" % target)
 
         ans = ans.get_child(target)
         complement >>= 2
 
     return ans
+
 
 def getAllTrixels(level):
     """
@@ -545,7 +549,7 @@ def getAllTrixels(level):
     n_bits_added = 2*(level-1)
 
     # first, put the base trixels into the dict
-    start_trixels = range(8,16)
+    start_trixels = range(8, 16)
     trixel_dict = {}
     for t0 in start_trixels:
         trix0 = trixelFromHtmid(t0)
@@ -567,7 +571,7 @@ def getAllTrixels(level):
                 # find the highest-level ancestor trixel
                 # of htmid that has already
                 # been generated and added to trixel_dict
-                for n_right in range(2,n_bits_added,2):
+                for n_right in range(2, n_bits_added, 2):
                     if htmid >> n_right in trixel_dict:
                         break
 
@@ -577,24 +581,25 @@ def getAllTrixels(level):
                 if to_gen in trixel_dict:
                     trix0 = trixel_dict[to_gen]
                 else:
-                    trix0= trixelFromHtmid(to_gen)
+                    trix0 = trixelFromHtmid(to_gen)
                     trixel_dict[to_gen] = trix0
 
                 # add the children of to_gen to trixel_dict
-                trixel_dict[to_gen<<2] = trix0.get_child(0)
-                trixel_dict[(to_gen<<2)+1] = trix0.get_child(1)
-                trixel_dict[(to_gen<<2)+2] = trix0.get_child(2)
-                trixel_dict[(to_gen<<2)+3] = trix0.get_child(3)
+                trixel_dict[to_gen << 2] = trix0.get_child(0)
+                trixel_dict[(to_gen << 2)+1] = trix0.get_child(1)
+                trixel_dict[(to_gen << 2)+2] = trix0.get_child(2)
+                trixel_dict[(to_gen << 2)+3] = trix0.get_child(3)
 
             # add all of the children of parent_id to
             # trixel_dict
             trix0 = trixel_dict[parent_id]
-            trixel_dict[(parent_id<<2)] = trix0.get_child(0)
-            trixel_dict[(parent_id<<2)+1] = trix0.get_child(1)
-            trixel_dict[(parent_id<<2)+2] = trix0.get_child(2)
-            trixel_dict[(parent_id<<2)+3] = trix0.get_child(3)
+            trixel_dict[(parent_id << 2)] = trix0.get_child(0)
+            trixel_dict[(parent_id << 2)+1] = trix0.get_child(1)
+            trixel_dict[(parent_id << 2)+2] = trix0.get_child(2)
+            trixel_dict[(parent_id << 2)+3] = trix0.get_child(3)
 
     return trixel_dict
+
 
 def _iterateTrixelFinder(pt, parent, max_level):
     """
@@ -623,6 +628,7 @@ def _iterateTrixelFinder(pt, parent, max_level):
                 return child.htmid
             else:
                 return _iterateTrixelFinder(pt, child, max_level)
+
 
 def findHtmid(ra, dec, max_level):
     """
