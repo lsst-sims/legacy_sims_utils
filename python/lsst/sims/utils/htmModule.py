@@ -527,8 +527,11 @@ def getAllTrixels(level):
     at generating many trixels at once.
     """
 
+    # find how many bits should be added to the htmids
+    # of the base trixels to get up to the desired level
     n_bits_added = 2*(level-1)
 
+    # first, put the base trixels into the dict
     start_trixels = range(8,16)
     trixel_dict = {}
     for t0 in start_trixels:
@@ -539,17 +542,24 @@ def getAllTrixels(level):
     for t0 in start_trixels:
         t0 = t0 << n_bits_added
         for dt in range(2**n_bits_added):
-            htmid = t0 + dt
+            htmid = t0 + dt  # htmid we are currently generating
             ct += 1
             if htmid in trixel_dict:
                 continue
 
-            parent_id = htmid >> 2
+            parent_id = htmid >> 2  # the immediate parent of htmid
 
             while parent_id not in trixel_dict:
+
+                # find the highest-level ancestor trixel
+                # of htmid that has already
+                # been generated and added to trixel_dict
                 for n_right in range(2,n_bits_added,2):
                     if htmid >> n_right in trixel_dict:
                         break
+
+                # generate the next highest level ancestor
+                # of the current htmid
                 to_gen = htmid >> n_right
                 if to_gen in trixel_dict:
                     trix0 = trixel_dict[to_gen]
@@ -557,11 +567,14 @@ def getAllTrixels(level):
                     trix0= trixelFromHtmid(to_gen)
                     trixel_dict[to_gen] = trix0
 
+                # add the children of to_gen to trixel_dict
                 trixel_dict[to_gen<<2] = trix0.get_child(0)
                 trixel_dict[(to_gen<<2)+1] = trix0.get_child(1)
                 trixel_dict[(to_gen<<2)+2] = trix0.get_child(2)
                 trixel_dict[(to_gen<<2)+3] = trix0.get_child(3)
 
+            # add all of the children of parent_id to
+            # trixel_dict
             trix0 = trixel_dict[parent_id]
             trixel_dict[(parent_id<<2)] = trix0.get_child(0)
             trixel_dict[(parent_id<<2)+1] = trix0.get_child(1)
