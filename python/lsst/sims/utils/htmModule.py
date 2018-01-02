@@ -506,10 +506,21 @@ def trixelFromHtmid(htmid):
     if level == 1:
         return ans
 
+    # create an integer that is 4 bits
+    # shorter than htmid (so it excludes
+    # the bits corresponding to the base
+    # trixel),with 11 in the two leading
+    # positions
     complement = 3
     complement <<= 2*(level-2)
 
     for ix in range(level-1):
+        # Use bitwise and to figure out what the
+        # two bits to the right of the bits
+        # corresponding to the trixel currently
+        # stored in ans are.  These two bits
+        # determine which child of ans we need
+        # to return.
         target = htmid&complement
         target >>= 2*(level-ix-2)
         if target>=4:
