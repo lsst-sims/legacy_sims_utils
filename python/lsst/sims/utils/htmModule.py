@@ -128,6 +128,13 @@ class Trixel(object):
 
         Returns True if the point projected onto the unit sphere
         is contained within this trixel; False if not.
+
+        See equation 5 of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
         """
         if np.dot(self.cross01,pt)>=0.0:
             if np.dot(self.cross12, pt)>=0.0:
