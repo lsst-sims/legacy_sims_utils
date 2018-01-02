@@ -776,7 +776,7 @@ class HalfSpace(object):
         arXiv:cs/0701164
         """
         costheta = np.dot(pt1, pt2)
-        u=np.sqrt((1-costheta)/(1+costheta))  # using trig identity for tan(theta/2)
+        u = np.sqrt((1-costheta)/(1+costheta))  # using trig identity for tan(theta/2)
         gamma1 = np.dot(self._v, pt1)
         gamma2 = np.dot(self._v, pt2)
         b = gamma1*(u*u-1.0) + gamma2*(u*u+1)
@@ -784,7 +784,7 @@ class HalfSpace(object):
         c = gamma1 - self._d
 
         det = b*b - 4*a*c
-        if det<0.0:
+        if det < 0.0:
             return False
 
         sqrt_det = np.sqrt(det)
@@ -814,9 +814,9 @@ class HalfSpace(object):
         dotproduct = np.dot(tx.bounding_circle[0], self._v)
         if np.abs(dotproduct) < 1.0:
             theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
-        elif dotproduct<1.000000001:
+        elif dotproduct < 1.000000001:
             theta = 0.0
-        elif dotproduct>-1.000000001:
+        elif dotproduct > -1.000000001:
             theta = np.pi
         else:
             raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
@@ -929,7 +929,7 @@ class HalfSpace(object):
         # start iterating at level 2 because level 1 is the base trixels,
         # where we are already starting, and i_level reallly refers to
         # the level of the child trixels we are investigating
-        for i_level in range(2,level):
+        for i_level in range(2, level):
             max_d_htmid >>= 2
 
             new_active_trixels = []
@@ -951,16 +951,16 @@ class HalfSpace(object):
 
                         ########################################
                         # some assertions for debugging purposes
-                        #assert min_htmid<max_htmid
-                        #try:
-                        #    test_trix = trixelFromHtmid(min_htmid)
-                        #    assert self.contains_trixel(test_trix) != 'outside'
-                        #    test_trix = trixelFromHtmid(max_htmid)
-                        #    assert self.contains_trixel(test_trix) != 'outside'
-                        #except AssertionError:
-                        #    print('is_contained %s' % is_contained)
-                        #    print('level %d' % levelFromHtmid(tt._htmid))
-                        #    raise
+                        # assert min_htmid<max_htmid
+                        # try:
+                        #     test_trix = trixelFromHtmid(min_htmid)
+                        #     assert self.contains_trixel(test_trix) != 'outside'
+                        #     test_trix = trixelFromHtmid(max_htmid)
+                        #     assert self.contains_trixel(test_trix) != 'outside'
+                        # except AssertionError:
+                        #     print('is_contained %s' % is_contained)
+                        #     print('level %d' % levelFromHtmid(tt._htmid))
+                        #     raise
                     else:
                         n_outside += 1
                 active_trixels = new_active_trixels
