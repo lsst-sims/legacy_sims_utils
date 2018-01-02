@@ -6,7 +6,6 @@ from lsst.sims.utils import HalfSpace, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
 from lsst.sims.utils import getAllTrixels
 from lsst.sims.utils import arcsecFromRadians
-import time
 import numpy as np
 import os
 
@@ -69,14 +68,14 @@ def trixel_intersects_half_space(trix, hspace):
                                c1[0]*c2[1]-c2[0]*c1[1]])
             z_axis = z_axis/np.sqrt((z_axis**2).sum())
 
-            if np.dot(z_axis,c3)<0.0:
+            if np.dot(z_axis, c3) < 0.0:
                 z_axis *= -1.0
 
-            assert np.abs(1.0-np.dot(z_axis,z_axis))<1.0e-10
-            assert np.abs(1.0-np.dot(c1,c1))<1.0e-10
-            assert np.abs(1.0-np.dot(c2,c2))<1.0e-10
-            assert np.abs(np.dot(z_axis, c1))<1.0e-10
-            assert np.abs(np.dot(z_axis, c2))<1.0e-10
+            assert np.abs(1.0-np.dot(z_axis, z_axis)) < 1.0e-10
+            assert np.abs(1.0-np.dot(c1, c1)) < 1.0e-10
+            assert np.abs(1.0-np.dot(c2, c2)) < 1.0e-10
+            assert np.abs(np.dot(z_axis, c1)) < 1.0e-10
+            assert np.abs(np.dot(z_axis, c2)) < 1.0e-10
 
             # if the dot product of the center of the HalfSpace
             # with the z axis of the new coordinate system is
@@ -106,17 +105,17 @@ def trixel_intersects_half_space(trix, hspace):
 
             assert cos_a >= 0.0
             assert sin_a >= 0.0
-            assert np.abs(1.0-cos_a**2-sin_a**2)<1.0e-10
-            assert np.abs(np.dot(x_axis, z_axis))<1.0e-10
-            assert np.abs(np.dot(x_axis, y_axis))<1.0e-10
-            assert np.abs(np.dot(y_axis, z_axis))<1.0e-10
+            assert np.abs(1.0-cos_a**2-sin_a**2) < 1.0e-10
+            assert np.abs(np.dot(x_axis, z_axis)) < 1.0e-10
+            assert np.abs(np.dot(x_axis, y_axis)) < 1.0e-10
+            assert np.abs(np.dot(y_axis, z_axis)) < 1.0e-10
 
             x_center = np.dot(x_axis, hspace.vector)
 
             # if the x-coordinate of the HalfSpace's center is
             # negative, the HalfSpace is on the opposite side
             # of the unit sphere; ignore this pair c1, c2
-            if x_center<0.0:
+            if x_center < 0.0:
                 continue
 
             y_center = np.dot(y_axis, hspace.vector)
@@ -136,6 +135,7 @@ def trixel_intersects_half_space(trix, hspace):
                 return True
 
     return False
+
 
 class HalfSpaceTest(unittest.TestCase):
 
@@ -216,7 +216,7 @@ class HalfSpaceTest(unittest.TestCase):
         rng = np.random.RandomState(8812)
         random_pts = rng.random_sample((100, 3))*5.0
         for pt in random_pts:
-            norm = np.sqrt(np.power(pt,2).sum())
+            norm = np.sqrt(np.power(pt, 2).sum())
             self.assertGreater(np.abs(1.0-norm), 0.01)
             unnormed_ans = hs.contains_pt(pt)
             normed_pt = pt/norm
@@ -265,7 +265,6 @@ class HalfSpaceTest(unittest.TestCase):
 
         # test halfspace that totally contains N3
         ra, dec = basic_trixels['N3'].get_center()
-        xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
         hs = HalfSpace(np.array([1.0, 1.0, 1.0]), np.cos(0.31*np.pi))
         for tx in basic_trixels:
             status = hs.contains_trixel(basic_trixels[tx])
