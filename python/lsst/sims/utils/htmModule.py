@@ -182,7 +182,7 @@ class Trixel(object):
     def w_arr(self):
         """
         An array of vectors needed to define the child trixels
-        of this trixel.  Seeequation (3) of
+        of this trixel.  See equation (3) of
 
         Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
         Banday A, Zaroubi S, Bartelmann M. eds.
