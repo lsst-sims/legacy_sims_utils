@@ -106,7 +106,7 @@ class Trixel(object):
     def cross12(self):
         """
         The cross product of the unit vectors defining
-        the first andsecond corners of this trixel.
+        the first and second corners of this trixel.
         """
         if self._cross12 is None:
             self._cross12 = np.cross(self._corners[1], self._corners[2])
