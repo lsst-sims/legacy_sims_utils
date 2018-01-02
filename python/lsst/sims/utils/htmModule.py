@@ -73,7 +73,7 @@ class Trixel(object):
         return False
 
     def __ne__(self, other):
-        return not (self==other)
+        return not (self == other)
 
     @property
     def htmid(self):
@@ -136,9 +136,9 @@ class Trixel(object):
         ESO Astrophysics Symposia
         https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
         """
-        if np.dot(self.cross01,pt)>=0.0:
-            if np.dot(self.cross12, pt)>=0.0:
-                if np.dot(self.cross20, pt)>=0.0:
+        if np.dot(self.cross01, pt) >= 0.0:
+            if np.dot(self.cross12, pt) >= 0.0:
+                if np.dot(self.cross20, pt) >= 0.0:
                     return True
 
         return False
@@ -219,7 +219,8 @@ class Trixel(object):
         arXiv:cs/0701164
         """
         if not hasattr(self, '_t0'):
-            self._t0 = Trixel(self.htmid<<2, [self._corners[0], self.w_arr[2], self.w_arr[1]])
+            self._t0 = Trixel(self.htmid << 2,
+                              [self._corners[0], self.w_arr[2], self.w_arr[1]])
         return self._t0
 
     @property
@@ -234,7 +235,8 @@ class Trixel(object):
         arXiv:cs/0701164
         """
         if not hasattr(self, '_t1'):
-           self._t1 = Trixel((self.htmid<<2)+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
+            self._t1 = Trixel((self.htmid << 2)+1,
+                              [self._corners[1], self.w_arr[0], self.w_arr[2]])
         return self._t1
 
     @property
@@ -249,7 +251,8 @@ class Trixel(object):
         arXiv:cs/0701164
         """
         if not hasattr(self, '_t2'):
-            self._t2 = Trixel((self.htmid<<2)+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
+            self._t2 = Trixel((self.htmid << 2)+2,
+                              [self._corners[2], self.w_arr[1], self.w_arr[0]])
         return self._t2
 
     @property
