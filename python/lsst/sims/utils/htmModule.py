@@ -318,6 +318,22 @@ class Trixel(object):
 
     @property
     def level(self):
+        """
+        Return the level of subdivision for this trixel.  A higher
+        level means a finer subdivision of the unit sphere and smaller
+        trixels.  What we refer to as 'level' is denoted by 'd' in
+        equation 2.5 of
+
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
+
+        For a given level == ell, there are 8*4**(ell-1) trixels in
+        the entire unit sphere.
+
+        The htmid values of trixels with level==ell will consist
+        of 4 + 2*(ell-1) bits
+        """
         return self._level
 
     @property
