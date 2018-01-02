@@ -613,7 +613,8 @@ def _iterateTrixelFinder(pt, parent, max_level):
 
     Returns
     -------
-    The htmid at the desired level of the trixel containing the point.
+    The htmid at the desired level of the trixel containing the unit sphere
+    projection of the point in pt.
     """
     children = parent.get_children()
     for child in children:
