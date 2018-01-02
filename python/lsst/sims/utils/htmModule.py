@@ -449,13 +449,12 @@ def levelFromHtmid(htmid):
     arXiv:cs/0701164)
     """
     htmid_copy = htmid
-    i_level = -1
-    while htmid_copy != 0:
+    i_level = 1
+    while htmid_copy > 15:
         htmid_copy >>= 2
         i_level += 1
 
-    leading_bit = 2**(3+2*(i_level-1))
-    if leading_bit & htmid == 0:
+    if htmid_copy < 8:
         raise RuntimeError('\n%d is not a valid htmid.\n' % htmid
                            + 'Valid htmids will have 4+2n bits\n'
                            + 'with a leading bit of 1\n')
