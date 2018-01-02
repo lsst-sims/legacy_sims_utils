@@ -597,6 +597,24 @@ def getAllTrixels(level):
     return trixel_dict
 
 def _iterateTrixelFinder(pt, parent, max_level):
+    """
+    Method to iteratively find the htmid of the trixel containing
+    a point.
+
+    Parameters
+    ----------
+    pt is a Cartesian point (not necessarily on the unit sphere)
+
+    parent is the largest trixel currently known to contain the point
+
+    max_level is the level of the triangular mesh at which we want
+    to find the htmid.  Higher levels correspond to finer meshes.
+    A mesh with level == ell contains 8*4**(ell-1) trixels.
+
+    Returns
+    -------
+    The htmid at the desired level of the trixel containing the point.
+    """
     children = parent.get_children()
     for child in children:
         if child.contains_pt(pt):
