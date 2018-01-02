@@ -647,9 +647,9 @@ def findHtmid(ra, dec, max_level):
     An int (the htmid)
     """
 
-    raRad = np.radians(ra)
-    decRad = np.radians(dec)
-    pt = cartesianFromSpherical(raRad, decRad)
+    ra_rad = np.radians(ra)
+    dec_rad = np.radians(dec)
+    pt = cartesianFromSpherical(ra_rad, dec_rad)
 
     if _S0_trixel.contains_pt(pt):
         parent = _S0_trixel
@@ -709,7 +709,7 @@ class HalfSpace(object):
         """
         self._v = vector/np.sqrt(np.power(vector, 2).sum())
         self._d = length
-        if np.abs(self._d)<1.0:
+        if np.abs(self._d) < 1.0:
             self._phi = np.arccos(self._d)  # half angular extent of the half space
         else:
             if self._d > 0.0:
@@ -719,9 +719,9 @@ class HalfSpace(object):
 
     def __eq__(self, other):
         tol = 1.0e-10
-        if np.abs(self.dd-other.dd)>tol:
+        if np.abs(self.dd-other.dd) > tol:
             return False
-        if np.abs(np.dot(self.vector, other.vector)-1.0)>tol:
+        if np.abs(np.dot(self.vector, other.vector)-1.0) > tol:
             return False
         return True
 
