@@ -305,7 +305,7 @@ class HalfSpaceTest(unittest.TestCase):
         # 8*4**(level-1) trixels in the grid as per equation 2.5 of
         #
         # https://www.microsoft.com/en-us/research/wp-content/uploads/2005/09/tr-2005-123.pdf
-        angular_scale= np.sqrt(4.0*np.pi*(180.0/np.pi)**2/(8.0*4.0**(level-1)))
+        angular_scale = np.sqrt(4.0*np.pi*(180.0/np.pi)**2/(8.0*4.0**(level-1)))
 
         ra = 43.0
         dec = 22.0
@@ -321,7 +321,7 @@ class HalfSpaceTest(unittest.TestCase):
 
             # verify that the tuples have been sorted by
             # htmid_min
-            if i_limit>0:
+            if i_limit > 0:
                 self.assertGreater(limits[0], trixel_list[i_limit-1][1])
 
             for htmid in range(limits[0], limits[1]+1):
@@ -338,8 +338,8 @@ class HalfSpaceTest(unittest.TestCase):
 
         # next, verify that all of the possible trixels that
         # were not returned are outside the HalfSpace
-        for base_htmid in range(8,16):
-            htmid_0 = base_htmid<<2*(level-1)
+        for base_htmid in range(8, 16):
+            htmid_0 = base_htmid << 2*(level-1)
             self.assertEqual(levelFromHtmid(htmid_0), level)
             for ii in range(2**(2*level-2)):
                 htmid = htmid_0 + ii
@@ -400,10 +400,6 @@ class HalfSpaceTest(unittest.TestCase):
             self.assertFalse(trixel_intersects_half_space(trix, hspace))
 
 
-        #print(trixel_intersects_half_space(trix, hspace))
-        #print(hspace.contains_trixel(trix))
-
-
 class TrixelFinderTest(unittest.TestCase):
 
     longMessage = True
@@ -439,7 +435,7 @@ class TrixelFinderTest(unittest.TestCase):
         """
         Test that levelFromHtmid behaves as expected
         """
-        for ii in range(8,16):
+        for ii in range(8, 16):
             self.assertEqual(levelFromHtmid(ii), 1)
 
         self.assertEqual(levelFromHtmid(2**9+5), 4)
@@ -508,19 +504,19 @@ class TrixelFinderTest(unittest.TestCase):
         self.check_pt(pt, '11010100')
 
         pt = -xx + dz + dy
-        #N200
+        # N200
         self.check_pt(pt, '11100000')
 
-        pt = -xx -dz + dy
+        pt = -xx - dz + dy
         # S120
         self.check_pt(pt, '10011000')
 
         pt = -xx - dz - dy
-        #S200
+        # S200
         self.check_pt(pt, '10100000')
 
         pt = -yy + dx + dz
-        #N020
+        # N020
         self.check_pt(pt, '11001000')
 
         pt = -yy - dx + dz
@@ -532,21 +528,20 @@ class TrixelFinderTest(unittest.TestCase):
         self.check_pt(pt, '10101000')
 
         pt = -zz + dx + dy
-        #S010
+        # S010
         self.check_pt(pt, '10000100')
 
-        pt = -zz -dx +dy
-        #S110
+        pt = -zz - dx + dy
+        # S110
         self.check_pt(pt, '10010100')
 
-        pt = -zz -dx -dy
+        pt = -zz - dx - dy
         # S210
         self.check_pt(pt, '10100100')
 
         pt = xx + yy + zz
         # N333
         self.check_pt(pt, '11111111')
-
 
     def test_trixel_from_htmid(self):
         """
@@ -581,11 +576,11 @@ class TrixelFinderTest(unittest.TestCase):
         self.assertEqual(t1, t2)
         t3 = trixelFromHtmid(8*16+3)
         self.assertNotEqual(t1, t3)
-        self.assertTrue(t1==t2)
-        self.assertFalse(t1==t3)
-        self.assertTrue(t1!=t3)
-        self.assertFalse(t2==t3)
-        self.assertTrue(t2!=t3)
+        self.assertTrue(t1 == t2)
+        self.assertFalse(t1 == t3)
+        self.assertTrue(t1 != t3)
+        self.assertFalse(t2 == t3)
+        self.assertTrue(t2 != t3)
 
     def test_get_all_trixels(self):
         """
@@ -594,7 +589,7 @@ class TrixelFinderTest(unittest.TestCase):
         max_level = 5
         n_trixel_per_level = {}
         n_trixel_per_level[0] = 0
-        for level in range(1,max_level+1):
+        for level in range(1, max_level+1):
             n_trixel_per_level[level] = 8*(4**(level-1))
 
         trixel_dict = getAllTrixels(max_level)
@@ -633,7 +628,7 @@ class TrixelFinderTest(unittest.TestCase):
         rng = np.random.RandomState(142)
         n_test_cases = 5
         for i_test in range(n_test_cases):
-            htmid = (13<<6)+rng.randint(1,2**6-1)
+            htmid = (13 << 6)+rng.randint(1, 2**6-1)
             trixel = trixelFromHtmid(htmid)
             bounding_circle = trixel.bounding_circle
             ra_0, dec_0 = sphericalFromCartesian(bounding_circle[0])
@@ -649,7 +644,7 @@ class TrixelFinderTest(unittest.TestCase):
                                           ra_list, dec_list)
             distance = arcsecFromRadians(distance)
             radius = arcsecFromRadians(bounding_circle[2])
-            self.assertLessEqual(distance.max()-radius,1.0e-8)
+            self.assertLessEqual(distance.max()-radius, 1.0e-8)
             self.assertLess(np.abs(distance.max()-radius), 1.0e-8)
 
     def test_trixel_contains_many(self):
@@ -657,7 +652,7 @@ class TrixelFinderTest(unittest.TestCase):
         Test that trixel.contains_pt and trixel.contains can
         work with numpy arrays of input
         """
-        htmid = (15<<6) + 45
+        htmid = (15 << 6) + 45
         trixel = trixelFromHtmid(htmid)
         ra_0, dec_0 = trixel.get_center()
         radius = trixel.get_radius()
@@ -690,6 +685,7 @@ class TrixelFinderTest(unittest.TestCase):
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
+
 
 if __name__ == "__main__":
     lsst.utils.tests.init()
