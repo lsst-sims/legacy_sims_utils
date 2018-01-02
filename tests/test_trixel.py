@@ -412,13 +412,20 @@ class TrixelFinderTest(unittest.TestCase):
         """
         Test that levelFromHtmid behaves as expected
         """
+        for ii in range(8,16):
+            self.assertEqual(levelFromHtmid(ii), 1)
+
         self.assertEqual(levelFromHtmid(2**9+5), 4)
-        self.assertEqual(levelFromHtmid(15), 1)
         self.assertEqual(levelFromHtmid(2**15+88), 7)
 
         with self.assertRaises(RuntimeError) as context:
             levelFromHtmid(2**10)
         self.assertIn("4+2n", context.exception.args[0])
+
+        for ii in range(8):
+            with self.assertRaises(RuntimeError) as context:
+                levelFromHtmid(2**10)
+            self.assertIn("4+2n", context.exception.args[0])
 
     def test_trixel_finding(self):
         """
