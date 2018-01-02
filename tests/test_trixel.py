@@ -203,6 +203,33 @@ class HalfSpaceTest(unittest.TestCase):
             self.assertFalse(hs.contains_pt(xyz))
             self.assertTrue(nhs.contains_pt(xyz))
 
+    def test_halfspace_contains_pt_scaled(self):
+        """
+        Test that HalfSpace.contains_pt returns the same answer
+        for points on and off the unit sphere
+        """
+        vv = np.array([0.5*np.sqrt(2), -0.5*np.sqrt(2), 0.0])
+        hs = HalfSpace(vv, 0.3)
+
+        ct_inside = 0
+        ct_outside = 0
+        rng = np.random.RandomState(8812)
+        random_pts = rng.random_sample((100, 3))*5.0
+        for pt in random_pts:
+            norm = np.sqrt(np.power(pt,2).sum())
+            self.assertGreater(np.abs(1.0-norm), 0.01)
+            unnormed_ans = hs.contains_pt(pt)
+            normed_pt = pt/norm
+            normed_ans = hs.contains_pt(normed_pt)
+            self.assertEqual(unnormed_ans, normed_ans)
+
+            if normed_ans:
+                ct_inside += 1
+            else:
+                ct_outside += 1
+
+        self.assertGreater(ct_inside, 0)
+        self.assertGreater(ct_outside, 0)
 
     def test_halfspace_contains_trixel(self):
 
