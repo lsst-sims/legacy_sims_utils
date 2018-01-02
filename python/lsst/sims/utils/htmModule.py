@@ -212,12 +212,11 @@ class Trixel(object):
         """
         The zeroth child trixel of this trixel.
 
-        See Figure 1 of
+        See Figure 2 of
 
-        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
-        Banday A, Zaroubi S, Bartelmann M. eds.
-        ESO Astrophysics Symposia
-        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
         """
         if not hasattr(self, '_t0'):
             self._t0 = Trixel(self.htmid<<2, [self._corners[0], self.w_arr[2], self.w_arr[1]])
@@ -228,12 +227,11 @@ class Trixel(object):
         """
         The first child trixel of this trixel.
 
-        See Figure 1 of
+        See Figure 2 of
 
-        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
-        Banday A, Zaroubi S, Bartelmann M. eds.
-        ESO Astrophysics Symposia
-        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
         """
         if not hasattr(self, '_t1'):
            self._t1 = Trixel((self.htmid<<2)+1, [self._corners[1], self.w_arr[0],self.w_arr[2]])
@@ -244,12 +242,11 @@ class Trixel(object):
         """
         The second child trixel of this trixel.
 
-        See Figure 1 of
+        See Figure 2 of
 
-        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
-        Banday A, Zaroubi S, Bartelmann M. eds.
-        ESO Astrophysics Symposia
-        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
         """
         if not hasattr(self, '_t2'):
             self._t2 = Trixel((self.htmid<<2)+2, [self._corners[2], self.w_arr[1],self.w_arr[0]])
@@ -260,12 +257,11 @@ class Trixel(object):
         """
         The third child trixel of this trixel.
 
-        See Figure 1 of
+        See Figure 2 of
 
-        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
-        Banday A, Zaroubi S, Bartelmann M. eds.
-        ESO Astrophysics Symposia
-        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
+        Szalay A. et al. (2007)
+        "Indexing the Sphere with the Hierarchical Triangular Mesh"
+        arXiv:cs/0701164
         """
         if not hasattr(self, '_t3'):
             self._t3 = Trixel((self.htmid<<2)+3, [self.w_arr[0], self.w_arr[1], self.w_arr[2]])
