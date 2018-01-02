@@ -859,6 +859,96 @@ class testCoordinateTransformations(unittest.TestCase):
         self.assertRaises(RuntimeError, utils.rotationMatrixFromVectors, v1, v2)
         self.assertRaises(RuntimeError, utils.rotationMatrixFromVectors, v2, v1)
 
+class RotationTestCase(unittest.TestCase):
+
+    def setUp(self):
+        self.sqrt2o2 = np.sqrt(2.0)/2.0
+        self.x_vec = np.array([1.0, 0.0, 0.0])
+        self.y_vec = np.array([0.0, 1.0, 0.0])
+        self.z_vec = np.array([0.0, 0.0, 1.0])
+        self.px_py_vec = np.array([self.sqrt2o2, self.sqrt2o2, 0.0])
+        self.px_ny_vec = np.array([self.sqrt2o2, -self.sqrt2o2, 0.0])
+        self.nx_py_vec = np.array([-self.sqrt2o2, self.sqrt2o2, 0.0])
+        self.nx_ny_vec = np.array([-self.sqrt2o2, -self.sqrt2o2, 0.0])
+
+        self.px_pz_vec = np.array([self.sqrt2o2, 0.0, self.sqrt2o2])
+        self.px_nz_vec = np.array([self.sqrt2o2, 0.0, -self.sqrt2o2])
+        self.nx_pz_vec = np.array([-self.sqrt2o2, 0.0, self.sqrt2o2])
+        self.nx_nz_vec = np.array([-self.sqrt2o2, 0.0, -self.sqrt2o2])
+
+        self.py_pz_vec = np.array([0.0, self.sqrt2o2, self.sqrt2o2])
+        self.ny_pz_vec = np.array([0.0, -self.sqrt2o2, self.sqrt2o2])
+        self.py_nz_vec = np.array([0.0, self.sqrt2o2, -self.sqrt2o2])
+        self.ny_nz_vec = np.array([0.0, -self.sqrt2o2, -self.sqrt2o2])
+
+    def test_rot_z(self):
+        out = utils.rotAboutZ(self.x_vec, 0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, self.y_vec, decimal=10)
+        out = utils.rotAboutZ(self.x_vec, -0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.y_vec, decimal=10)
+        out = utils.rotAboutZ(self.x_vec, np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.x_vec, decimal=10)
+        out = utils.rotAboutZ(self.x_vec, 0.25*np.pi)
+        np.testing.assert_array_almost_equal(out, self.px_py_vec, decimal=10)
+        out = utils.rotAboutZ(self.x_vec, -0.25*np.pi)
+        np.testing.assert_array_almost_equal(out, self.px_ny_vec, decimal=10)
+        out = utils.rotAboutZ(self.x_vec, 0.75*np.pi)
+        np.testing.assert_array_almost_equal(out, self.nx_py_vec, decimal=10)
+        out = utils.rotAboutZ(self.y_vec, 0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.x_vec, decimal=10)
+        out = utils.rotAboutZ(self.px_py_vec, 0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, self.nx_py_vec, decimal=10)
+        out = utils.rotAboutZ(self.px_py_vec, 0.75*np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.x_vec, decimal=10)
+
+        out = utils.rotAboutZ(np.array([self.x_vec, self.y_vec, self.nx_py_vec, self.nx_ny_vec]),
+                              -0.25*np.pi)
+        np.testing.assert_array_almost_equal(out[0], self.px_ny_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[1], self.px_py_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[2], self.y_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[3], -1.0*self.x_vec, decimal=10)
+
+    def test_rot_y(self):
+        out = utils.rotAboutY(self.x_vec, 0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.z_vec, decimal=10)
+        out = utils.rotAboutY(self.z_vec, 0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, self.x_vec, decimal=10)
+        out = utils.rotAboutY(self.px_pz_vec, 0.75*np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.z_vec, decimal=10)
+        out = utils.rotAboutY(self.px_pz_vec, -0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, self.nx_pz_vec, decimal=10)
+
+        out = utils.rotAboutY(np.array([self.px_pz_vec, self.nx_pz_vec, self.z_vec, self.x_vec]),
+                              -0.75*np.pi)
+
+        np.testing.assert_array_almost_equal(out[0], -1.0*self.x_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[1], -1.0*self.z_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[2], self.nx_nz_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[3], self.nx_pz_vec, decimal=10)
+
+    def test_rot_x(self):
+        out = utils.rotAboutX(self.y_vec, 0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, self.z_vec, decimal=10)
+        out = utils.rotAboutX(self.y_vec, 0.75*np.pi)
+        np.testing.assert_array_almost_equal(out, self.ny_pz_vec, decimal=10)
+        out = utils.rotAboutX(self.z_vec, 0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.y_vec, decimal=10)
+        out = utils.rotAboutX(self.z_vec, -0.25*np.pi)
+        np.testing.assert_array_almost_equal(out, self.py_pz_vec, decimal=10)
+        out = utils.rotAboutX(self.py_nz_vec, -0.5*np.pi)
+        np.testing.assert_array_almost_equal(out, self.ny_nz_vec, decimal=10)
+        out = utils.rotAboutX(self.ny_nz_vec, 0.25*np.pi)
+        np.testing.assert_array_almost_equal(out, -1.0*self.z_vec, decimal=10)
+
+        out = utils.rotAboutX(np.array([self.z_vec, self.py_pz_vec, self.ny_pz_vec, self.y_vec]),
+                              0.25*np.pi)
+
+        np.testing.assert_array_almost_equal(out[0], self.ny_pz_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[1], self.z_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[2], -1.0*self.y_vec, decimal=10)
+        np.testing.assert_array_almost_equal(out[3], self.py_pz_vec, decimal=10)
+
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass

@@ -9,6 +9,12 @@ from astropy.utils.iers.iers import IERSRangeError
 __all__ = ["ModifiedJulianDate", "MJDWarning", "UTCtoUT1Warning"]
 
 
+# Filter out ERFA's complaints that we are simulating dates which
+# are in the future
+warnings.filterwarnings("ignore",
+                        message='.*taiutc.*dubious.year.*')
+
+
 class MJDWarning(Warning):
     """
     A sub-class of Warning.  All of the warnings raised by ModifiedJulianDate
