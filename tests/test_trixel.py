@@ -408,6 +408,18 @@ class TrixelFinderTest(unittest.TestCase):
             level_test = levelFromHtmid(htmid_test)
             self.assertEqual(level_test, 21)
 
+    def test_levelFromHtmid(self):
+        """
+        Test that levelFromHtmid behaves as expected
+        """
+        self.assertEqual(levelFromHtmid(2**9+5), 4)
+        self.assertEqual(levelFromHtmid(15), 1)
+        self.assertEqual(levelFromHtmid(2**15+88), 7)
+
+        with self.assertRaises(RuntimeError) as context:
+            levelFromHtmid(2**10)
+        self.assertIn("4+2n", context.exception.args[0])
+
     def test_trixel_finding(self):
         """
         Check that findHtmid works by passing in some

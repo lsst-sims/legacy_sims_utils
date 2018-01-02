@@ -453,6 +453,13 @@ def levelFromHtmid(htmid):
     while htmid_copy != 0:
         htmid_copy >>= 2
         i_level += 1
+
+    leading_bit = 2**(3+2*(i_level-1))
+    if leading_bit & htmid == 0:
+        raise RuntimeError('\n%d is not a valid htmid.\n' % htmid
+                           + 'Valid htmids will have 4+2n bits\n'
+                           + 'with a leading bit of 1\n')
+
     return i_level
 
 def trixelFromHtmid(htmid):
