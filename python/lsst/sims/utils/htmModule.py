@@ -338,6 +338,11 @@ class Trixel(object):
 
     @property
     def corners(self):
+        """
+        A numpy array containing the unit vectors pointing to the
+        corners of this trixel.  corners[0] is the zeroth corner,
+        corners[1] is the first corner, etc.
+        """
         return self._corners
 
     @property
