@@ -447,6 +447,8 @@ def levelFromHtmid(htmid):
     Szalay A. et al. (2007)
     "Indexing the Sphere with the Hierarchical Triangular Mesh"
     arXiv:cs/0701164)
+
+    Note: valid htmids have 4+2n bits with a leading bit of 1
     """
     htmid_copy = htmid
     i_level = 1
@@ -473,6 +475,8 @@ def trixelFromHtmid(htmid):
     To generate many trixels, use the getAllTrixels()
     method, which efficiently generates all of the trixels
     up to a given mesh level.
+
+    Note: valid htmids have 4+2n bits with a leading bit of 1
     """
     level = levelFromHtmid(htmid)
     base_htmid = htmid>>2*(level-1)
