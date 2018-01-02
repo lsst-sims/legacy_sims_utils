@@ -317,7 +317,7 @@ class Trixel(object):
     @property
     def bounding_circle(self):
         """
-        The circle on the unitsphere that bounds this trixel.
+        The circle on the unit sphere that bounds this trixel.
 
         See equation 4.2 of
 
