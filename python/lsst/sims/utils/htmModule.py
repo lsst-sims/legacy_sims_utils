@@ -523,8 +523,10 @@ def trixelFromHtmid(htmid):
         # to return.
         target = htmid&complement
         target >>= 2*(level-ix-2)
+
         if target>=4:
             raise RuntimeError("target %d" % target)
+
         ans = ans.get_child(target)
         complement >>= 2
 
