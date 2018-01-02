@@ -152,6 +152,13 @@ class Trixel(object):
         Returns an array of booleans denoting whether or not the
         projection of each point onto the unit sphere is contained
         within this trixel.
+
+        See equation 5 of
+
+        Kunszt P., Szalay A., Thakar A. (2006) in "Mining The Sky",
+        Banday A, Zaroubi S, Bartelmann M. eds.
+        ESO Astrophysics Symposia
+        https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
         """
         return np.where(np.logical_and(np.dot(pts, self.cross01) >= 0.0,
                         np.logical_and(np.dot(pts, self.cross12) >= 0.0,
