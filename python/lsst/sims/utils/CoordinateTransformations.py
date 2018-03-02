@@ -7,7 +7,6 @@ from __future__ import division
 import numpy as np
 import numbers
 import palpy
-import warnings
 
 from lsst.sims.utils.CodeUtilities import _validate_inputs
 
@@ -185,9 +184,8 @@ def cartesianFromSpherical(longitude, latitude):
 
     All angles are in radians
 
-    This function is deprecated and was kept here for backward capability. Use xyz_from_ra_dec instead.
+    Also, look at xyz_from_ra_dec().
     """
-    warnings.warn('This function is deprecated use xyz_from_ra_dec instead.', DeprecationWarning)
     return _xyz_from_ra_dec(longitude, latitude).transpose()
 
 
@@ -202,10 +200,8 @@ def sphericalFromCartesian(xyz):
 
     All angles are in radians
 
-    This function is deprecated and was kept here for backward capability. Use ra_dec_from_xyz instead.
+    Also, look at ra_dec_from_xyz().
     """
-    warnings.warn('This function is deprecated use ra_dec_from_xyz instead.', DeprecationWarning)
-
     if not isinstance(xyz, np.ndarray):
         raise RuntimeError("You need to pass a numpy array to sphericalFromCartesian")
 
