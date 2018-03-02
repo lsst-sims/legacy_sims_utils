@@ -7,12 +7,16 @@ from __future__ import division
 import numpy as np
 import numbers
 import palpy
+import warnings
 
 from lsst.sims.utils.CodeUtilities import _validate_inputs
 
 __all__ = ["_galacticFromEquatorial", "galacticFromEquatorial",
            "_equatorialFromGalactic", "equatorialFromGalactic",
            "sphericalFromCartesian", "cartesianFromSpherical",
+           "xyz_from_ra_dec", "_xyz_from_ra_dec",
+           "_ra_dec_from_xyz", "ra_dec_from_xyz",
+           "xyz_angular_radius", "_xyz_angular_radius",
            "rotationMatrixFromVectors",
            "rotAboutZ", "rotAboutY", "rotAboutX",
            "equationOfEquinoxes", "calcGmstGast", "calcLmstLast",
@@ -180,19 +184,11 @@ def cartesianFromSpherical(longitude, latitude):
     output[i][2] will be the z-coordinate of the ith point
 
     All angles are in radians
+
+    This function is deprecated and was kept here for backward capability. Use xyz_from_ra_dec instead.
     """
-
-    valid_type = False
-    if isinstance(longitude, np.ndarray) and isinstance(latitude, np.ndarray):
-        valid_type = True
-    elif isinstance(longitude, numbers.Number) and isinstance(latitude, numbers.Number):
-        valid_type = True
-
-    if not valid_type:
-        raise RuntimeError("Longitude and latitude must both be either numpy arrays or numbers")
-
-    cosDec = np.cos(latitude)
-    return np.array([np.cos(longitude) * cosDec, np.sin(longitude) * cosDec, np.sin(latitude)]).transpose()
+    warnings.warn('This function is deprecated use xyz_from_ra_dec instead.', DeprecationWarning)
+    return _xyz_from_ra_dec(longitude, latitude).transpose()
 
 
 def sphericalFromCartesian(xyz):
@@ -205,21 +201,141 @@ def sphericalFromCartesian(xyz):
     @param [out] returns longitude and latitude
 
     All angles are in radians
+
+    This function is deprecated and was kept here for backward capability. Use ra_dec_from_xyz instead.
     """
+    warnings.warn('This function is deprecated use ra_dec_from_xyz instead.', DeprecationWarning)
 
     if not isinstance(xyz, np.ndarray):
         raise RuntimeError("You need to pass a numpy array to sphericalFromCartesian")
 
     if len(xyz.shape) > 1:
-        rad = np.sqrt(np.power(xyz, 2).sum(axis=1))
-        longitude = np.arctan2(xyz[:, 1], xyz[:, 0])
-        latitude = np.arcsin(xyz[:, 2] / rad)
+        return _ra_dec_from_xyz(xyz[:, 0], xyz[:, 1], xyz[:, 2])
     else:
-        rad = np.sqrt(np.dot(xyz, xyz))
-        longitude = np.arctan2(xyz[1], xyz[0])
-        latitude = np.arcsin(xyz[2] / rad)
+        return _ra_dec_from_xyz(xyz[0], xyz[1], xyz[2])
 
-    return longitude, latitude
+
+def xyz_from_ra_dec(ra, dec):
+    """
+    Utility to convert RA,dec positions in x,y,z space.
+
+    Parameters
+    ----------
+    ra : float or array
+        RA in degrees
+    dec : float or array
+        Dec in degrees
+
+    Returns
+    -------
+    x,y,z : floats or arrays
+        The position of the given points on the unit sphere.
+    """
+    return _xyz_from_ra_dec(np.radians(ra), np.radians(dec))
+
+
+def _xyz_from_ra_dec(ra, dec):
+    """
+    Utility to convert RA,dec positions in x,y,z space.
+
+    Parameters
+    ----------
+    ra : float or array
+        RA in radians
+    dec : float or array
+        Dec in radians
+
+    Returns
+    -------
+    x,y,z : floats or arrays
+        The position of the given points on the unit sphere.
+    """
+    # It is ok to mix floats and numpy arrays.
+
+    cosDec = np.cos(dec)
+    return np.array([np.cos(ra) * cosDec, np.sin(ra) * cosDec, np.sin(dec)])
+
+
+def _ra_dec_from_xyz(x, y, z):
+    """
+    Utility to convert x,y,z Cartesian coordinates to RA, dec positions in space.
+
+    Parameters
+    ----------
+    x : float or array
+        The position on the x-axis of the given points on the unit sphere
+    y : float or array
+        The position on the y-axis of the given points on the unit sphere
+    z : float or array
+        The position on the z-axis of the given points on the unit sphere
+
+    Returns
+    -------
+    ra, dec : floats or arrays
+        Ra and dec coordinates in radians.
+    """
+    rad = np.sqrt(x**2 + y**2 + z**2)
+    ra = np.arctan2(y, x)
+    dec = np.arcsin(z / rad)
+
+    return ra, dec
+
+
+def ra_dec_from_xyz(x, y, z):
+    """
+    Utility to convert x,y,z Cartesian coordinates to RA, dec positions in space.
+
+    Parameters
+    ----------
+    x : float or array
+        The position on the x-axis of the given points on the unit sphere
+    y : float or array
+        The position on the y-axis of the given points on the unit sphere
+    z : float or array
+        The position on the z-axis of the given points on the unit sphere
+
+    Returns
+    -------
+    ra, dec : floats or arrays
+        Ra and dec coordinates in degrees.
+    """
+
+    return np.degrees(_ra_dec_from_xyz(x, y, z))
+
+
+def xyz_angular_radius(radius=1.75):
+    """
+    Convert an angular radius into a physical radius for a kdtree search.
+
+    Parameters
+    ----------
+    radius : float
+        Radius in degrees.
+
+    Returns
+    -------
+    radius : float
+    """
+    return _xyz_angular_radius(np.radians(radius))
+
+
+def _xyz_angular_radius(radius):
+    """
+    Convert an angular radius into a physical radius for a kdtree search.
+
+    Parameters
+    ----------
+    radius : float
+        Radius in radians.
+
+    Returns
+    -------
+    radius : float
+    """
+    x0, y0, z0 = (1, 0, 0)
+    x1, y1, z1 = _xyz_from_ra_dec(radius, 0)
+    result = np.sqrt((x1-x0)**2+(y1-y0)**2+(z1-z0)**2)
+    return result
 
 
 def zRotationMatrix(theta):
