@@ -206,14 +206,20 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         ra = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(raCenter)
         dec = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(decCenter)
         xp, yp = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs, epoch=2000.0)
+
         raTest, decTest = _raDecFromPupilCoords(
             xp, yp, obs_metadata=obs, epoch=2000.0)
+
         distance = arcsecFromRadians(haversine(ra, dec, raTest, decTest))
+
         dex = np.argmax(distance)
+
         worstSolarDistance = distanceToSun(
             np.degrees(ra[dex]), np.degrees(dec[dex]), mjd)
+
         msg = "_raDecFromPupilCoords off by %e arcsec at distance to Sun of %e degrees" % \
               (distance.max(), worstSolarDistance)
+
         self.assertLess(distance.max(), 0.005, msg=msg)
 
         # now check that passing in the xp, yp values one at a time still gives
