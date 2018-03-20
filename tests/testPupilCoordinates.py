@@ -348,6 +348,68 @@ class PupilCoordinateUnitTest(unittest.TestCase):
             self.assertAlmostEqual(rr, raObs_deg[ii], 16)
             self.assertAlmostEqual(dd, decObs_deg[ii], 16)
 
+    def testObservedFromPupil_noRefraction(self):
+        """
+        Test conversion from pupil coordinates to observed coordinates
+        when includeRefraction=False
+        """
+
+        mjd = ModifiedJulianDate(TAI=53000.0)
+        solarRA, solarDec = solarRaDec(mjd)
+
+        # to make sure that we are more than 45 degrees from the Sun as required
+        # for _icrsFromObserved to be at all accurate
+        raCenter = solarRA + 100.0
+        decCenter = solarDec - 30.0
+
+        obs = ObservationMetaData(pointingRA=raCenter,
+                                  pointingDec=decCenter,
+                                  boundType='circle',
+                                  boundLength=0.1,
+                                  rotSkyPos=23.0,
+                                  mjd=mjd)
+
+        nSamples = 1000
+        rng = np.random.RandomState(4453)
+        ra = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(raCenter)
+        dec = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(decCenter)
+        xp, yp = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs, epoch=2000.0,
+                                       includeRefraction=False)
+
+        raObs, decObs = _observedFromICRS(ra, dec, obs_metadata=obs, epoch=2000.0,
+                                          includeRefraction=False)
+
+        raObs_test, decObs_test = _observedFromPupilCoords(xp, yp, obs_metadata=obs,
+                                                           epoch=2000.0,
+                                                           includeRefraction=False)
+
+        dist = arcsecFromRadians(haversine(raObs, decObs, raObs_test, decObs_test))
+        self.assertLess(dist.max(), 1.0e-6)
+
+        # test output in degrees
+        raObs_deg, decObs_deg = observedFromPupilCoords(xp, yp, obs_metadata=obs,
+                                                        epoch=2000.0,
+                                                        includeRefraction=False)
+
+        np.testing.assert_array_almost_equal(raObs_deg, np.degrees(raObs_test), decimal=16)
+        np.testing.assert_array_almost_equal(decObs_deg, np.degrees(decObs_test), decimal=16)
+
+        # test one-at-a-time input
+        for ii in range(len(raObs)):
+            rr, dd = _observedFromPupilCoords(xp[ii], yp[ii],
+                                              obs_metadata=obs,
+                                              epoch=2000.0,
+                                              includeRefraction=False)
+            self.assertAlmostEqual(rr, raObs_test[ii], 16)
+            self.assertAlmostEqual(dd, decObs_test[ii], 16)
+
+            rr, dd = observedFromPupilCoords(xp[ii], yp[ii],
+                                             obs_metadata=obs,
+                                             epoch=2000.0,
+                                             includeRefraction=False)
+            self.assertAlmostEqual(rr, raObs_deg[ii], 16)
+            self.assertAlmostEqual(dd, decObs_deg[ii], 16)
+
     def testNaNs(self):
         """
         Test how _pupilCoordsFromRaDec handles improper values
