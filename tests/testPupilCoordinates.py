@@ -231,6 +231,61 @@ class PupilCoordinateUnitTest(unittest.TestCase):
             dist_f = arcsecFromRadians(haversine(ra_f, dec_f, raTest[ix], decTest[ix]))
             self.assertLess(dist_f, 1.0e-9)
 
+    def testRaDecFromPupil_noRefraction(self):
+        """
+        Test conversion from pupil coordinates back to Ra, Dec
+        with includeRefraction=False
+        """
+
+        mjd = ModifiedJulianDate(TAI=52000.0)
+        solarRA, solarDec = solarRaDec(mjd)
+
+        # to make sure that we are more than 45 degrees from the Sun as required
+        # for _icrsFromObserved to be at all accurate
+        raCenter = solarRA + 100.0
+        decCenter = solarDec - 30.0
+
+        obs = ObservationMetaData(pointingRA=raCenter,
+                                  pointingDec=decCenter,
+                                  boundType='circle',
+                                  boundLength=0.1,
+                                  rotSkyPos=23.0,
+                                  mjd=mjd)
+
+        nSamples = 1000
+        rng = np.random.RandomState(42)
+        ra = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(raCenter)
+        dec = (rng.random_sample(nSamples) * 0.1 - 0.2) + np.radians(decCenter)
+        xp, yp = _pupilCoordsFromRaDec(ra, dec, obs_metadata=obs, epoch=2000.0,
+                                       includeRefraction=False)
+
+        raTest, decTest = _raDecFromPupilCoords(
+            xp, yp, obs_metadata=obs, epoch=2000.0,
+            includeRefraction=False)
+
+        distance = arcsecFromRadians(haversine(ra, dec, raTest, decTest))
+
+        dex = np.argmax(distance)
+
+        worstSolarDistance = distanceToSun(
+            np.degrees(ra[dex]), np.degrees(dec[dex]), mjd)
+
+        msg = "_raDecFromPupilCoords off by %e arcsec at distance to Sun of %e degrees" % \
+              (distance.max(), worstSolarDistance)
+
+        self.assertLess(distance.max(), 1.0e-6, msg=msg)
+
+        # now check that passing in the xp, yp values one at a time still gives
+        # the right answer
+        for ix in range(len(ra)):
+            ra_f, dec_f = _raDecFromPupilCoords(xp[ix], yp[ix], obs_metadata=obs, epoch=2000.0,
+                                                includeRefraction=False)
+            self.assertIsInstance(ra_f, np.float)
+            self.assertIsInstance(dec_f, np.float)
+            dist_f = arcsecFromRadians(haversine(ra_f, dec_f, raTest[ix], decTest[ix]))
+            self.assertLess(dist_f, 1.0e-9)
+
+
     def testNaNs(self):
         """
         Test how _pupilCoordsFromRaDec handles improper values
