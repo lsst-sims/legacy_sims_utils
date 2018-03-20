@@ -285,7 +285,6 @@ class PupilCoordinateUnitTest(unittest.TestCase):
             dist_f = arcsecFromRadians(haversine(ra_f, dec_f, raTest[ix], decTest[ix]))
             self.assertLess(dist_f, 1.0e-9)
 
-
     def testNaNs(self):
         """
         Test how _pupilCoordsFromRaDec handles improper values
