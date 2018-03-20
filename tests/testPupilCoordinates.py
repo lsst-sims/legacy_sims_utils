@@ -406,7 +406,7 @@ class PupilCoordinateUnitTest(unittest.TestCase):
 
             distance = arcsecFromRadians(np.sqrt(np.power(xp_test-xp_control, 2) +
                                                  np.power(yp_test-yp_control, 2)))
-            self.assertLess(distance.max(), 0.006)
+            self.assertLess(distance.max(), 1.0e-6)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
