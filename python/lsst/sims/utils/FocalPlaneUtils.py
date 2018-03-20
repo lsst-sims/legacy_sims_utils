@@ -309,7 +309,8 @@ def _observedFromPupilCoords(xPupil, yPupil, obs_metadata=None,
     return raObs, decObs
 
 
-def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
+def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None,
+                         includeRefraction=True, epoch=2000.0):
     """
     @param [in] xPupil -- pupil coordinates in radians.
     Can be a numpy array or a number.
@@ -319,6 +320,10 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 
     @param [in] obs_metadata -- an instantiation of ObservationMetaData characterizing
     the state of the telescope
+
+    @param[in] includeRefraction -- a boolean which controls the effects of refraction
+    (refraction is used when finding the observed coordinates of the boresite specified
+    by obs_metadata)
 
     @param [in] epoch -- julian epoch of the mean equinox used for the coordinate
     transformations (in years; defaults to 2000)
@@ -333,12 +338,14 @@ def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 
     output = _raDecFromPupilCoords(xPupil, yPupil,
                                    obs_metadata=obs_metadata,
-                                   epoch=epoch)
+                                   epoch=epoch,
+                                   includeRefraction=includeRefraction)
 
     return np.degrees(output)
 
 
-def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
+def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None,
+                          includeRefraction=True, epoch=2000.0):
     """
     @param [in] xPupil -- pupil coordinates in radians.
     Can be a numpy array or a number.
@@ -348,6 +355,10 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
 
     @param [in] obs_metadata -- an instantiation of ObservationMetaData characterizing
     the state of the telescope
+
+    @param[in] includeRefraction -- a boolean which controls the effects of refraction
+    (refraction is used when finding the observed coordinates of the boresite specified
+    by obs_metadata)
 
     @param [in] epoch -- julian epoch of the mean equinox used for the coordinate
     transformations (in years; defaults to 2000)
@@ -383,10 +394,11 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
     raObs, decObs = _observedFromPupilCoords(xPupil, yPupil,
                                              obs_metadata=obs_metadata,
                                              epoch=epoch,
-                                             includeRefraction=True)
+                                             includeRefraction=includeRefraction)
 
     ra_icrs, dec_icrs = _icrsFromObserved(raObs, decObs,
                                           obs_metadata=obs_metadata,
-                                          epoch=epoch, includeRefraction=True)
+                                          epoch=epoch,
+                                          includeRefraction=includeRefraction)
 
     return np.array([ra_icrs, dec_icrs])
