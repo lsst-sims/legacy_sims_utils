@@ -7,7 +7,8 @@ from lsst.sims.utils import radiansFromArcsec
 
 __all__ = ["_pupilCoordsFromObserved",
            "_pupilCoordsFromRaDec", "pupilCoordsFromRaDec",
-           "_raDecFromPupilCoords", "raDecFromPupilCoords"]
+           "_raDecFromPupilCoords", "raDecFromPupilCoords",
+           "_observedFromPupilCoords", "observedFromPupilCoords"]
 
 
 def pupilCoordsFromRaDec(ra_in, dec_in,
@@ -307,6 +308,45 @@ def _observedFromPupilCoords(xPupil, yPupil, obs_metadata=None,
         raObs, decObs = palpy.dtp2s(x_g, y_g, ra_pointing, dec_pointing)
 
     return raObs, decObs
+
+
+def observedFromPupilCoords(xPupil, yPupil, obs_metadata=None,
+                             includeRefraction=True,
+                             epoch=2000.0):
+    """
+    Convert pupil coordinates into observed (RA, Dec)
+
+    @param [in] xPupil -- pupil coordinates in radians.
+    Can be a numpy array or a number.
+
+    @param [in] yPupil -- pupil coordinates in radians.
+    Can be a numpy array or a number.
+
+    @param [in] obs_metadata -- an instantiation of ObservationMetaData characterizing
+    the state of the telescope
+
+    @param [in] epoch -- julian epoch of the mean equinox used for the coordinate
+    transformations (in years; defaults to 2000)
+
+    @param[in] includeRefraction -- a boolean which controls the effects of refraction
+    (refraction is used when finding the observed coordinates of the boresite specified
+    by obs_metadata)
+
+    @param [out] a 2-D numpy array in which the first row is observed RA and the second
+    row is observed Dec (both in degrees).  Note: these are not ICRS coordinates.
+    These are RA and Dec-like coordinates resulting from applying precession, nutation,
+    diurnal aberration and annual aberration on top of ICRS coordinates.
+
+    WARNING: This method does not account for apparent motion due to parallax.
+    This method is only useful for mapping positions on a theoretical focal plane
+    to positions on the celestial sphere.
+    """
+    ra_rad, dec_rad = _observedFromPupilCoords(xPupil, yPupil,
+                                               obs_metadata=obs_metadata,
+                                               includeRefraction=includeRefraction,
+                                               epoch=2000.0)
+
+    return np.degrees(ra_rad), np.degrees(dec_rad)
 
 
 def raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None,
