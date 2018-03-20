@@ -377,7 +377,7 @@ def _raDecFromPupilCoords(xPupil, yPupil, obs_metadata=None, epoch=2000.0):
                            "without pointingRA, pointingDec in obs_metadata")
 
     if obs_metadata.mjd is None:
-        raise RuntimeError("Cannot calculate x_pupil, y_pupil without mjd " +
+        raise RuntimeError("Cannot calculate RA, Dec without mjd " +
                            "in obs_metadata")
 
     raObs, decObs = _observedFromPupilCoords(xPupil, yPupil,
