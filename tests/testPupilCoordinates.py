@@ -220,7 +220,7 @@ class PupilCoordinateUnitTest(unittest.TestCase):
         msg = "_raDecFromPupilCoords off by %e arcsec at distance to Sun of %e degrees" % \
               (distance.max(), worstSolarDistance)
 
-        self.assertLess(distance.max(), 0.005, msg=msg)
+        self.assertLess(distance.max(), 1.0e-6, msg=msg)
 
         # now check that passing in the xp, yp values one at a time still gives
         # the right answer
