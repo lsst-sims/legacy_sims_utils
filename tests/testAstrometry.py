@@ -991,7 +991,7 @@ class astrometryUnitTest(unittest.TestCase):
                         distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
                                                                     ra_icrs[valid_pts], dec_icrs[valid_pts]))
 
-                        self.assertLess(distance.max(), 0.01)
+                        self.assertLess(distance.max(), 1.0e-6)
 
                         # test a round-trip between observedFromAppGeo and
                         # appGeoFromObserved
@@ -1007,7 +1007,7 @@ class astrometryUnitTest(unittest.TestCase):
                         distance = arcsecFromRadians(pal.dsepVector(ra_in[valid_pts], dec_in[valid_pts],
                                                                     ra_app[valid_pts], dec_app[valid_pts]))
 
-                        self.assertLess(distance.max(), 0.01)
+                        self.assertLess(distance.max(), 1.0e-6)
 
                         # test that passing arguments in as floats gives consistent
                         # results
