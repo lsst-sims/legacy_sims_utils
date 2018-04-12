@@ -46,6 +46,12 @@ class ZernikeTestCase(unittest.TestCase):
         cls.r_grid = mesh[0].flatten()
         cls.phi_grid = mesh[1].flatten()
 
+        r_grid = np.arange(0.0, 1.0, 0.1)
+        phi_grid =np.arange(0.0, 2.0*np.pi, 0.05*np.pi)
+        mesh=np.meshgrid(r_grid, phi_grid)
+        cls.r_grid_small = mesh[0].flatten()
+        cls.phi_grid_small = mesh[1].flatten()
+
     def test_orthogonality(self):
 
         polynomials = {}
@@ -86,9 +92,11 @@ class ZernikeTestCase(unittest.TestCase):
         z_gen = ZernikePolynomialGenerator()
         n = 2
         m = -2
-        val_arr = z_gen.evaluate(self.r_grid, self.phi_grid, n, m)
-        self.assertEqual(len(val_arr), len(self.r_grid))
-        for ii, (rr, pp) in enumerate(zip(self.r_grid, self.phi_grid)):
+        val_arr = z_gen.evaluate(self.r_grid_small, self.phi_grid_small, n, m)
+        self.assertEqual(len(val_arr), len(self.r_grid_small))
+        for ii, (rr, pp) in enumerate(zip(self.r_grid_small,
+                                          self.phi_grid_small)):
+
             vv = z_gen.evaluate(rr, pp, n, m)
             self.assertAlmostEqual(vv, val_arr[ii], 14)
 
@@ -96,11 +104,12 @@ class ZernikeTestCase(unittest.TestCase):
         n = 4
         m = 2
         z_gen = ZernikePolynomialGenerator()
-        x = self.r_grid*np.cos(self.phi_grid)
-        y = self.r_grid*np.sin(self.phi_grid)
+        x = self.r_grid_small*np.cos(self.phi_grid_small)
+        y = self.r_grid_small*np.sin(self.phi_grid_small)
         val_arr = z_gen.evaluate_xy(x, y, n, m)
         self.assertGreater(np.abs(val_arr).max(), 1.0e-6)
-        for ii, (rr, pp) in enumerate(zip(self.r_grid, self.phi_grid)):
+        for ii, (rr, pp) in enumerate(zip(self.r_grid_small,
+                                          self.phi_grid_small)):
             vv = z_gen.evaluate(rr, pp, n, m)
             self.assertAlmostEqual(vv, val_arr[ii], 14)
 
@@ -108,11 +117,12 @@ class ZernikeTestCase(unittest.TestCase):
         n = 4
         m = 2
         z_gen = ZernikePolynomialGenerator()
-        x = self.r_grid*np.cos(self.phi_grid)
-        y = self.r_grid*np.sin(self.phi_grid)
+        x = self.r_grid_small*np.cos(self.phi_grid_small)
+        y = self.r_grid_small*np.sin(self.phi_grid_small)
 
-        for ii in range(len(self.r_grid)):
-            vv_r = z_gen.evaluate(self.r_grid[ii], self.phi_grid[ii], n, m)
+        for ii in range(len(self.r_grid_small)):
+            vv_r = z_gen.evaluate(self.r_grid_small[ii],
+                                  self.phi_grid_small[ii], n, m)
             vv_xy = z_gen.evaluate_xy(x[ii], y[ii], n, m)
             self.assertAlmostEqual(vv_r, vv_xy, 14)
             self.assertIsInstance(vv_xy, numbers.Number)
