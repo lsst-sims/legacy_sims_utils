@@ -89,7 +89,7 @@ class ZernikeTestCase(unittest.TestCase):
         self.assertEqual(len(val_arr), len(self.r_grid))
         for ii, (rr, pp) in enumerate(zip(self.r_grid, self.phi_grid)):
             vv = z_gen.evaluate(rr, pp, n, m)
-            self.assertAlmostEqual(vv, val_arr[ii], 10)
+            self.assertAlmostEqual(vv, val_arr[ii], 14)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
