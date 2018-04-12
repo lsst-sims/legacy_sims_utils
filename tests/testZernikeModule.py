@@ -103,6 +103,7 @@ class ZernikeTestCase(unittest.TestCase):
             vv = z_gen.evaluate(rr, pp, n, m)
             self.assertAlmostEqual(vv, val_arr[ii], 14)
 
+
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
 
