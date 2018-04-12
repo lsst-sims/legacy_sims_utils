@@ -85,7 +85,7 @@ class ZernikePolynomialGenerator(object):
 
         nm_tuple = self._validate_nm(n,m)
 
-        if nm_tuple[0]-nm_tuple[1] % 2 == 1:
+        if (nm_tuple[0]-nm_tuple[1]) % 2 == 1:
             return 0.0
 
         if nm_tuple not in self._coeffs:

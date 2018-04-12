@@ -72,6 +72,16 @@ class ZernikeTestCase(unittest.TestCase):
                 msg = '\n%s norm %e\n dot %e\n' % (p1_name, integral, dot)
                 self.assertLess(np.abs(dot/integral), 0.01, msg=msg)
 
+    def test_zeros(self):
+        rng = np.random.RandomState(88)
+        z_gen = ZernikePolynomialGenerator()
+        for n in range(4):
+            for m in range(-(n-1), n, 2):
+                r = rng.random_sample()
+                phi = rng.random_sample()*2.0*np.pi
+                self.assertAlmostEqual(0.0, z_gen.evaluate(r, phi, n, m), 10)
+
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
