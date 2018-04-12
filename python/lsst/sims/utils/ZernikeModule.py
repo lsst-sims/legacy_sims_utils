@@ -78,6 +78,10 @@ class ZernikePolynomialGenerator(object):
         self._coeffs[(n,m)] = local_coeffs
         self._powers[(n,m)] = local_powers
 
+    def _evaluate_radial_number(self, r, nm_tuple):
+        r_term = np.power(r, self._powers[nm_tuple])
+        return (self._coeffs[nm_tuple]*r_term).sum()
+
     def _evaluate_radial(self, r, n, m):
 
         if not isinstance(r, numbers.Number):
@@ -91,8 +95,7 @@ class ZernikePolynomialGenerator(object):
         if nm_tuple not in self._coeffs:
             self._make_polynomial(nm_tuple[0], nm_tuple[1])
 
-        r_term = np.power(r, self._powers[nm_tuple])
-        return (self._coeffs[nm_tuple]*r_term).sum()
+        return self._evaluate_radial_number(r, nm_tuple)
 
     def evaluate(self, r, phi, n, m):
         """
