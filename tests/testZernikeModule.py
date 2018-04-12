@@ -25,6 +25,8 @@ class FactorialTestCase(unittest.TestCase):
         self.assertEqual(ii, ans)
 
         self.assertEqual(gen.evaluate(0), 1)
+        self.assertEqual(gen.evaluate(1), 1)
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
