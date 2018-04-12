@@ -91,6 +91,17 @@ class ZernikeTestCase(unittest.TestCase):
             vv = z_gen.evaluate(rr, pp, n, m)
             self.assertAlmostEqual(vv, val_arr[ii], 14)
 
+    def test_xy(self):
+        n = 4
+        m = 2
+        z_gen = ZernikePolynomialGenerator()
+        x = self.r_grid*np.cos(self.phi_grid)
+        y = self.r_grid*np.sin(self.phi_grid)
+        val_arr = z_gen.evaluate_xy(x, y, n, m)
+        self.assertGreater(np.abs(val_arr).max(), 1.0e-6)
+        for ii, (rr, pp) in enumerate(zip(self.r_grid, self.phi_grid)):
+            vv = z_gen.evaluate(rr, pp, n, m)
+            self.assertAlmostEqual(vv, val_arr[ii], 14)
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
