@@ -1,5 +1,6 @@
 import unittest
 import numpy as np
+import numbers
 
 import lsst.utils.tests
 
@@ -102,6 +103,19 @@ class ZernikeTestCase(unittest.TestCase):
         for ii, (rr, pp) in enumerate(zip(self.r_grid, self.phi_grid)):
             vv = z_gen.evaluate(rr, pp, n, m)
             self.assertAlmostEqual(vv, val_arr[ii], 14)
+
+    def test_xy_one_at_a_time(self):
+        n = 4
+        m = 2
+        z_gen = ZernikePolynomialGenerator()
+        x = self.r_grid*np.cos(self.phi_grid)
+        y = self.r_grid*np.sin(self.phi_grid)
+
+        for ii in range(len(self.r_grid)):
+            vv_r = z_gen.evaluate(self.r_grid[ii], self.phi_grid[ii], n, m)
+            vv_xy = z_gen.evaluate_xy(x[ii], y[ii], n, m)
+            self.assertAlmostEqual(vv_r, vv_xy, 14)
+            self.assertIsInstance(vv_xy, numbers.Number)
 
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
