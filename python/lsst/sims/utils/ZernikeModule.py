@@ -82,18 +82,28 @@ class ZernikePolynomialGenerator(object):
         r_term = np.power(r, self._powers[nm_tuple])
         return (self._coeffs[nm_tuple]*r_term).sum()
 
+    def _evaluate_radial_array(self, r, nm_tuple):
+        r_power = np.exp(np.outer(np.log(r), self._powers[nm_tuple]))
+        return np.dot(r_power, self._coeffs[nm_tuple])
+
     def _evaluate_radial(self, r, n, m):
 
+        is_array = False
         if not isinstance(r, numbers.Number):
-            raise RuntimeError("Cannot yet handle arrays of r in Zernike")
+            is_array = True
 
         nm_tuple = self._validate_nm(n,m)
 
         if (nm_tuple[0]-nm_tuple[1]) % 2 == 1:
+            if is_array:
+                return np.zeros(len(r), dtype=float)
             return 0.0
 
         if nm_tuple not in self._coeffs:
             self._make_polynomial(nm_tuple[0], nm_tuple[1])
+
+        if is_array:
+            return self._evaluate_radial_array(r, nm_tuple)
 
         return self._evaluate_radial_number(r, nm_tuple)
 
