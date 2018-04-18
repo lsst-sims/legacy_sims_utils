@@ -83,7 +83,8 @@ class ZernikePolynomialGenerator(object):
         return (self._coeffs[nm_tuple]*r_term).sum()
 
     def _evaluate_radial_array(self, r, nm_tuple):
-        r_power = np.exp(np.outer(np.log(r), self._powers[nm_tuple]))
+        log_r = np.where(r>0.0, np.log(r), -1.0e10)
+        r_power = np.exp(np.outer(log_r, self._powers[nm_tuple]))
         return np.dot(r_power, self._coeffs[nm_tuple])
 
     def _evaluate_radial(self, r, n, m):
