@@ -83,8 +83,14 @@ class ZernikePolynomialGenerator(object):
         return (self._coeffs[nm_tuple]*r_term).sum()
 
     def _evaluate_radial_array(self, r, nm_tuple):
-        log_r = np.where(r>0.0, np.log(r), -1.0e10)
-        r_power = np.exp(np.outer(log_r, self._powers[nm_tuple]))
+        # since we use np.where to handle cases of
+        # r==0, use np.errstate to temporarily
+        # turn off the divide by zero and
+        # invalid double scalar RuntimeWarnings
+        with np.errstate(divide='ignore', invalid='ignore'):
+            log_r = np.log(r)
+            log_r = np.where(np.isfinite(log_r), log_r, -1.0e10)
+            r_power = np.exp(np.outer(log_r, self._powers[nm_tuple]))
         return np.dot(r_power, self._coeffs[nm_tuple])
 
     def _evaluate_radial(self, r, n, m):
@@ -126,8 +132,13 @@ class ZernikePolynomialGenerator(object):
         return eps*np.pi/(nm_tuple[0]*2+2)
 
     def evaluate_xy(self, x, y, n, m):
-        r = np.sqrt(x**2+y**2)
-        cos_phi = np.where(r>0.0, x/r, 0.0)
-        arccos_phi = np.arccos(cos_phi)
-        phi = np.where(y>=0.0, arccos_phi, 0.0-arccos_phi)
+        # since we use np.where to handle r==0 cases,
+        # use np.errstate to temporarily turn off the
+        # divide by zero and invalid double scalar
+        # RuntimeWarnings
+        with np.errstate(divide='ignore', invalid='ignore'):
+            r = np.sqrt(x**2+y**2)
+            cos_phi = np.where(r>0.0, x/r, 0.0)
+            arccos_phi = np.arccos(cos_phi)
+            phi = np.where(y>=0.0, arccos_phi, 0.0-arccos_phi)
         return self.evaluate(r, phi, n, m)
