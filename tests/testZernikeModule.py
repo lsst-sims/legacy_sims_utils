@@ -53,6 +53,10 @@ class ZernikeTestCase(unittest.TestCase):
         cls.phi_grid_small = mesh[1].flatten()
 
     def test_orthogonality(self):
+        """
+        Test that ZernikePolynomialGenerator returns
+        polynomials that are orthogonal on the unit disc
+        """
 
         polynomials = {}
         z_gen = ZernikePolynomialGenerator()
@@ -80,6 +84,10 @@ class ZernikeTestCase(unittest.TestCase):
                 self.assertLess(np.abs(dot/integral), 0.01, msg=msg)
 
     def test_zeros(self):
+        """
+        Test that ZernikePolynomialGenerator returns zero
+        when values of n and m require it.
+        """
         rng = np.random.RandomState(88)
         z_gen = ZernikePolynomialGenerator()
         for n in range(4):
@@ -89,6 +97,9 @@ class ZernikeTestCase(unittest.TestCase):
                 self.assertAlmostEqual(0.0, z_gen.evaluate(r, phi, n, m), 10)
 
     def test_array(self):
+        """
+        Test that ZernikePolynomialGenerator can handle arrays of inputs
+        """
         z_gen = ZernikePolynomialGenerator()
         n = 2
         m = -2
@@ -101,6 +112,9 @@ class ZernikeTestCase(unittest.TestCase):
             self.assertAlmostEqual(vv, val_arr[ii], 14)
 
     def test_xy(self):
+        """
+        Test that ZernikePolynomialGenerator can handle Cartesian coordinates
+        """
         n = 4
         m = 2
         z_gen = ZernikePolynomialGenerator()
@@ -114,6 +128,11 @@ class ZernikeTestCase(unittest.TestCase):
             self.assertAlmostEqual(vv, val_arr[ii], 14)
 
     def test_xy_one_at_a_time(self):
+        """
+        Test that ZernikePolynomialGenerator can handle
+        scalar Cartesian coordinates (as opposed to arrays
+        of Cartesian coordinates)
+        """
         n = 4
         m = 2
         z_gen = ZernikePolynomialGenerator()
