@@ -4,12 +4,20 @@ import numbers
 __all__ = ["_FactorialGenerator", "ZernikePolynomialGenerator"]
 
 class _FactorialGenerator(object):
+    """
+    A class that generates factorials
+    and stores them in a dict to be referenced
+    as needed.
+    """
 
     def __init__(self):
         self._values = {0:1, 1:1}
         self._max_i = 1
 
     def evaluate(self, num):
+        """
+        Return the factorial of num
+        """
         if num<0:
             raise RuntimeError("Cannot handle negative factorial")
 
@@ -27,6 +35,12 @@ class _FactorialGenerator(object):
 
 
 class ZernikePolynomialGenerator(object):
+    """
+    A class to generate and evaluate the Zernike
+    polynomials.  Definitions of Zernike polynomials
+    are taken from
+    https://en.wikipedia.org/wiki/Zernike_polynomials
+    """
 
     def __init__(self):
         self._factorial = _FactorialGenerator()
@@ -34,6 +48,14 @@ class ZernikePolynomialGenerator(object):
         self._powers = {}
 
     def _validate_nm(self, n, m):
+        """
+        Make sure that n, m are a valid pair of indices for
+        a Zernike polynomial.
+
+        n is the radial order
+
+        m is the angular order
+        """
         if not isinstance(n, int) and not isinstance(n, np.int64):
             raise RuntimeError('Zernike polynomial n must be int')
         if not isinstance(m,int) and not isinstance(m, np.int64):
@@ -52,6 +74,21 @@ class ZernikePolynomialGenerator(object):
         return (n, m)
 
     def _make_polynomial(self, n, m):
+        """
+        Make the radial part of the n, m Zernike
+        polynomial.
+
+        n is the radial order
+
+        m is the angular order
+
+        Returns 2 numpy arrays: coeffs and powers.
+
+        The radial part of the Zernike polynomial is
+
+        sum([coeffs[ii]*power(r, powers[ii])
+             for ii in range(len(coeffs))])
+        """
 
         n, m = self._validate_nm(n, m)
 
@@ -79,10 +116,30 @@ class ZernikePolynomialGenerator(object):
         self._powers[(n,m)] = local_powers
 
     def _evaluate_radial_number(self, r, nm_tuple):
+        """
+        Evaluate the radial part of a Zernike polynomial.
+
+        r is a scalar value
+
+        nm_tuple is a tuple of the form (radial order, angular order)
+        denoting the polynomial to evaluate
+
+        Return the value of the radial part of the polynomial at r
+        """
         r_term = np.power(r, self._powers[nm_tuple])
         return (self._coeffs[nm_tuple]*r_term).sum()
 
     def _evaluate_radial_array(self, r, nm_tuple):
+        """
+        Evaluate the radial part of a Zernike polynomial.
+
+        r is a numpy array of radial values
+
+        nm_tuple is a tuple of the form (radial order, angular order)
+        denoting the polynomial to evaluate
+
+        Return the values of the radial part of the polynomial at r
+        """
         # since we use np.where to handle cases of
         # r==0, use np.errstate to temporarily
         # turn off the divide by zero and
@@ -94,6 +151,17 @@ class ZernikePolynomialGenerator(object):
         return np.dot(r_power, self._coeffs[nm_tuple])
 
     def _evaluate_radial(self, r, n, m):
+        """
+        Evaluate the radial part of a Zernike polynomial
+
+        r is a radial value or an array of radial values
+
+        n is the radial order of the polynomial
+
+        m is the angular order of the polynomial
+
+        Return the value(s) of the radial part of the polynomial at r
+        """
 
         is_array = False
         if not isinstance(r, numbers.Number):
@@ -116,7 +184,17 @@ class ZernikePolynomialGenerator(object):
 
     def evaluate(self, r, phi, n, m):
         """
-        phi is in radians
+        Evaluate a Zernike polynomial in polar coordinates
+
+        r is the radial coordinate (a scalar or an array)
+
+        phi is the angular coordinate in radians (a scalar or an array)
+
+        n is the radial order of the polynomial
+
+        m is the angular order of the polynomial
+
+        Return the value(s) of the polynomial at r, phi
         """
         radial_part = self._evaluate_radial(r, n, np.abs(m))
         if m>=0:
@@ -124,6 +202,14 @@ class ZernikePolynomialGenerator(object):
         return radial_part*np.sin(m*phi)
 
     def norm(self, n, m):
+        """
+        Return the normalization of the n, m Zernike
+        polynomial
+
+        n is the radial order
+
+        m is the angular order
+        """
         nm_tuple = self._validate_nm(n, np.abs(m))
         if nm_tuple[1] == 0:
             eps = 2.0
@@ -132,6 +218,19 @@ class ZernikePolynomialGenerator(object):
         return eps*np.pi/(nm_tuple[0]*2+2)
 
     def evaluate_xy(self, x, y, n, m):
+        """
+        Evaluate a Zernike polynomial at a point in
+        Cartesian space.
+
+        x and y are the Cartesian coordinaes (either scalars
+        or arrays)
+
+        n is the radial order of the polynomial
+
+        m is the angular order of the polynomial
+
+        Return the value(s) of the polynomial at x, y
+        """
         # since we use np.where to handle r==0 cases,
         # use np.errstate to temporarily turn off the
         # divide by zero and invalid double scalar
