@@ -146,6 +146,44 @@ class ZernikeTestCase(unittest.TestCase):
             self.assertAlmostEqual(vv_r, vv_xy, 14)
             self.assertIsInstance(vv_xy, numbers.Number)
 
+    def test_Zernike_origin(self):
+        """
+        Test that ZernikePolynomialGenerator is well-behaved
+        at r=0
+        """
+        n = 4
+        m = 2
+        z_gen = ZernikePolynomialGenerator()
+        ans = z_gen.evaluate(0.0, 1.2, n, m)
+        self.assertEqual(ans, 0.0)
+        ans = z_gen.evaluate(np.array([0.0, 0.0]),
+                             np.array([1.2, 2.1]),
+                             n, m)
+
+        np.testing.assert_array_equal(ans, np.zeros(2, dtype=float))
+        ans = z_gen.evaluate_xy(0.0, 0.0, n, m)
+        self.assertEqual(ans, 0.0)
+        ans = z_gen.evaluate_xy(np.zeros(2, dtype=float),
+                                np.zeros(2, dtype=float),
+                                n, m)
+        np.testing.assert_array_equal(ans, np.zeros(2, dtype=float))
+
+        n = 0
+        m = 0
+        ans = z_gen.evaluate(0.0, 1.2, n, m)
+        self.assertEqual(ans, 1.0)
+        ans = z_gen.evaluate(np.array([0.0, 0.0]),
+                             np.array([1.2, 2.1]),
+                             n, m)
+
+        np.testing.assert_array_equal(ans, np.ones(2, dtype=float))
+        ans = z_gen.evaluate_xy(0.0, 0.0, n, m)
+        self.assertEqual(ans, 1.0)
+        ans = z_gen.evaluate_xy(np.zeros(2, dtype=float),
+                                np.zeros(2, dtype=float),
+                                n, m)
+        np.testing.assert_array_equal(ans, np.ones(2, dtype=float))
+
 
 class MemoryTestClass(lsst.utils.tests.MemoryTestCase):
     pass
