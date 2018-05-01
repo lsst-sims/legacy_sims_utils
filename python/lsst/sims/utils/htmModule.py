@@ -802,7 +802,7 @@ def findHtmid(ra, dec, max_level):
         are_arrays = True
 
     if are_arrays:
-        if max_level <= 10:
+        if max_level <= 10 and len(ra)>100:
             return _findHtmid_fast(ra, dec, max_level)
         else:
             htmid_arr = np.zeros(len(ra), dtype=int)
