@@ -6,6 +6,7 @@ import lsst.utils.tests
 
 from lsst.sims.utils import _FactorialGenerator
 from lsst.sims.utils import ZernikePolynomialGenerator
+from lsst.sims.utils import ZernikeRadialError
 
 
 def setup_module(module):
@@ -95,6 +96,25 @@ class ZernikeTestCase(unittest.TestCase):
                 r = rng.random_sample()
                 phi = rng.random_sample()*2.0*np.pi
                 self.assertAlmostEqual(0.0, z_gen.evaluate(r, phi, n, m), 10)
+
+    def test_r_greater_than_one(self):
+        """
+        Test that the expected error is raised if we try to evaluate
+        the Zernike polynomial with r>1
+        """
+        z_gen = ZernikePolynomialGenerator()
+        with self.assertRaises(ZernikeRadialError) as context:
+            z_gen.evaluate(1.2, 2.1, 2, 0)
+        with self.assertRaises(ZernikeRadialError) as context:
+            z_gen.evaluate(np.array([0.1, 0.5, 1.2]),
+                           np.array([0.1, 0.2, 0.3]),
+                           2, -2)
+        with self.assertRaises(ZernikeRadialError) as context:
+            z_gen.evaluate_xy(1.1, 1.2, 4, -2)
+        with self.assertRaises(ZernikeRadialError) as context:
+            z_gen.evaluate_xy(np.array([0.1, 0.2, 0.3]),
+                              np.array([0.1, 1.0, 0.1]),
+                              4, 2)
 
     def test_array(self):
         """
