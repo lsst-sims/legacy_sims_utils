@@ -1,7 +1,17 @@
 import numpy as np
 import numbers
 
-__all__ = ["_FactorialGenerator", "ZernikePolynomialGenerator"]
+__all__ = ["_FactorialGenerator", "ZernikePolynomialGenerator",
+           "ZernikeRadialError"]
+
+
+class ZernikeRadialError(RuntimeError):
+    """
+    An error class to be raised when we ask for a Zernike
+    polynomial evaluated at r > 1.0
+    """
+    pass
+
 
 class _FactorialGenerator(object):
     """
@@ -126,6 +136,10 @@ class ZernikePolynomialGenerator(object):
 
         Return the value of the radial part of the polynomial at r
         """
+        if r > 1.0:
+            raise ZernikeRadialError("passed r = %e > 1.0 " % r
+                                     + "to Zernike polynomial")
+
         r_term = np.power(r, self._powers[nm_tuple])
         return (self._coeffs[nm_tuple]*r_term).sum()
 
@@ -140,6 +154,9 @@ class ZernikePolynomialGenerator(object):
 
         Return the values of the radial part of the polynomial at r
         """
+        if r.max() > 1.0:
+            raise ZernikeRadialError("passed r > 1.0 to Zernike polynomial")
+
         # since we use np.where to handle cases of
         # r==0, use np.errstate to temporarily
         # turn off the divide by zero and
