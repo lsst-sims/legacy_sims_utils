@@ -154,6 +154,9 @@ class ZernikePolynomialGenerator(object):
 
         Return the values of the radial part of the polynomial at r
         """
+        if len(r) == 0:
+            return np.array([],dtype=float)
+
         if r.max() > 1.0:
             raise ZernikeRadialError("passed r > 1.0 to Zernike polynomial")
 
