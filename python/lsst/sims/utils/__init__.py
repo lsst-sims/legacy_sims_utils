@@ -15,3 +15,4 @@ from .m5_flat_sed import *
 from .htmModule import *
 from .treeUtils import *
 from .timeHandler import *
+from .ZernikeModule import *
