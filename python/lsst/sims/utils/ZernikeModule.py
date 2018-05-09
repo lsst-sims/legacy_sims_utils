@@ -157,8 +157,8 @@ class ZernikePolynomialGenerator(object):
             log_r = np.where(np.isfinite(log_r), log_r, -1.0e10)
             r_power = np.exp(np.outer(log_r, self._powers[nm_tuple]))
 
-        results = np.dot(r_power, self._coeffs[nm_tuple])
-        return np.where(r<1.0, results, np.NaN)
+            results = np.dot(r_power, self._coeffs[nm_tuple])
+            return np.where(r<1.0, results, np.NaN)
 
     def _evaluate_radial(self, r, n, m):
         """
