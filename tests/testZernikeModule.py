@@ -6,7 +6,6 @@ import lsst.utils.tests
 
 from lsst.sims.utils import _FactorialGenerator
 from lsst.sims.utils import ZernikePolynomialGenerator
-from lsst.sims.utils import ZernikeRadialError
 
 
 def setup_module(module):
@@ -103,18 +102,22 @@ class ZernikeTestCase(unittest.TestCase):
         the Zernike polynomial with r>1
         """
         z_gen = ZernikePolynomialGenerator()
-        with self.assertRaises(ZernikeRadialError) as context:
-            z_gen.evaluate(1.2, 2.1, 2, 0)
-        with self.assertRaises(ZernikeRadialError) as context:
-            z_gen.evaluate(np.array([0.1, 0.5, 1.2]),
-                           np.array([0.1, 0.2, 0.3]),
-                           2, -2)
-        with self.assertRaises(ZernikeRadialError) as context:
-            z_gen.evaluate_xy(1.1, 1.2, 4, -2)
-        with self.assertRaises(ZernikeRadialError) as context:
-            z_gen.evaluate_xy(np.array([0.1, 0.2, 0.3]),
-                              np.array([0.1, 1.0, 0.1]),
-                              4, 2)
+        vv = z_gen.evaluate(1.2, 2.1, 2, 0)
+        self.assertTrue(np.isnan(vv))
+        vv = z_gen.evaluate(np.array([0.1, 0.5, 1.2]),
+                            np.array([0.1, 0.2, 0.3]),
+                            2, -2)
+        self.assertTrue(np.isnan(vv[2]))
+        self.assertFalse(np.isnan(vv[0]))
+        self.assertFalse(np.isnan(vv[1]))
+        vv = z_gen.evaluate_xy(1.1, 1.2, 4, -2)
+        self.assertTrue(np.isnan(vv))
+        vv = z_gen.evaluate_xy(np.array([0.1, 0.2, 0.3]),
+                               np.array([0.1, 1.0, 0.1]),
+                               4, 2)
+        self.assertTrue(np.isnan(vv[1]))
+        self.assertFalse(np.isnan(vv[0]))
+        self.assertFalse(np.isnan(vv[2]))
 
     def test_array(self):
         """
