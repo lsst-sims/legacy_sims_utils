@@ -11,6 +11,7 @@ from builtins import object
 
 import numpy as np
 from future.utils import with_metaclass
+from lsst.sims.utils import cartesianFromSpherical
 
 __all__ = ["SpatialBounds", "CircleBounds", "BoxBounds"]
 
@@ -163,29 +164,14 @@ class CircleBounds(SpatialBounds):
 
     def to_SQL(self, RAname, DECname):
 
-        cosDec = np.cos(self.DEC)
+        xyz = cartesianFromSpherical(self.RA, self.DEC)
 
-        if np.abs(cosDec) > 1.0e-20:
-            RAmax = self.RAdeg + \
-                    2.0*np.degrees(np.arcsin(np.sin(self.radius)/cosDec))
-            RAmin = self.RAdeg - \
-                    2.0*np.degrees(np.arcsin(np.sin(self.radius)/cosDec))
-        else:
-            # just in case, for some reason, we are looking at the poles
-            RAmax = 360.0
-            RAmin = 0.0
-
-        if np.isnan(RAmax) or np.isnan(RAmin) or RAmin<0.0:
-            RAmax = 360.0
-            RAmin = 0.0
-
-        DECmax = self.DECdeg + self.radiusdeg
-        DECmin = self.DECdeg - self.radiusdeg
-
-        # initially demand that all objects are within a box containing the circle
-        # set from the DEC1=DEC2 and RA1=RA2 limits of the haversine function
-        bound = ("%s between %f and %f and %s between %f and %f "
-                 % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
+        # initially demand that all objects are within self.radius
+        # linear distance in Cartesian Coordinates before applying
+        # the haversine function
+        bound = ("SQRT(POWER(COS(0.5*PI()*%s)*COS(0.5*PI()*%s)-%e,2)" % (RAname, DECname, xyz[0]))
+        bound += ("+POWER(SIN(0.5*PI()*%s)*COS(0.5*PI()*%s)-%e,2)" % (RAname, DECname, xyz[1]))
+        bound += ("POWER(SIN(0.5*PI()*%s)-%e,2)) < %e" % (DECname, xyz[2], self.radius))
 
         # then use the Haversine function to constrain the angular distance form boresite to be within
         # the desired radius.  See
