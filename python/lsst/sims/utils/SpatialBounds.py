@@ -186,8 +186,11 @@ class CircleBounds(SpatialBounds):
 
         # initially demand that all objects are within a box containing the circle
         # set from the DEC1=DEC2 and RA1=RA2 limits of the haversine function
-        bound = ("%s between %f and %f and %s between %f and %f "
-                 % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
+        if RAmax-RAmin<361.0:
+            bound = ("%s between %f and %f and %s between %f and %f "
+                     % (RAname, RAmin, RAmax, DECname, DECmin, DECmax))
+        else:
+            bound = ('%s between %f and %f ' % (DECname, DECmin, DECmax))
 
         # then use the Haversine function to constrain the angular distance form boresite to be within
         # the desired radius.  See
