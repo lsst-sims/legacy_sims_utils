@@ -299,6 +299,8 @@ class BoxBounds(SpatialBounds):
             bound = ("%s not between %f and %f and %s between %f and %f"
                      % (RAname, self.RAmaxDeg, self.RAminDeg,
                         DECname, self.DECminDeg, self.DECmaxDeg))
+            bound += (" and %s+360.0 not between %f and %f" %
+                      (RAname, self.RAmaxDeg, self.RAminDeg))
         else:
             bound = ("%s between %f and %f and %s between %f and %f"
                      % (RAname, self.RAminDeg, self.RAmaxDeg, DECname, self.DECminDeg, self.DECmaxDeg))
