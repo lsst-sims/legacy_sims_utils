@@ -706,6 +706,12 @@ def _findHtmid_fast(ra, dec, max_level):
     a given level.  Do not call it on max_level>10
     """
 
+    if max_level>10:
+        raise RuntimeError("Do not call _findHtmid_fast with max_level>10; "
+                           "the cache of trixels generated will be too large. "
+                           "Call findHtmid or _findHtmid_slow (findHtmid will "
+                           "redirect to _findHtmid_slow for large max_level).")
+
     if (not hasattr(_findHtmid_fast, '_trixel_dict') or
         _findHtmid_fast._level < max_level):
 
