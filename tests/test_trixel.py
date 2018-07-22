@@ -6,8 +6,12 @@ from lsst.sims.utils import HalfSpace, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
 from lsst.sims.utils import getAllTrixels
 from lsst.sims.utils import arcsecFromRadians
+from lsst.sims.utils.htmModule import _findHtmid_fast
+from lsst.sims.utils.htmModule import _findHtmid_slow
+
 import numpy as np
 import os
+import numbers
 
 from lsst.sims.utils import sphericalFromCartesian, cartesianFromSpherical
 from lsst.sims.utils import rotAboutY, rotAboutX, rotAboutZ
@@ -429,6 +433,28 @@ class TrixelFinderTest(unittest.TestCase):
             self.assertEqual(htmid_test, data['htmid'][i_pt])
             level_test = levelFromHtmid(htmid_test)
             self.assertEqual(level_test, 21)
+
+    def test_findHtmid_vectorized(self):
+        """
+        Test that findHtmid works correctly on vectors
+        """
+        rng = np.random.RandomState(81723122)
+        n_samples = 1000
+        ra = rng.random_sample(n_samples)*360.0
+        dec = rng.random_sample(n_samples)*180.0-90.0
+        level = 7
+        htmid_vec = findHtmid(ra, dec, level)
+        self.assertIsInstance(htmid_vec, np.ndarray)
+        htmid_fast = _findHtmid_fast(ra, dec, level)
+        self.assertIsInstance(htmid_fast, np.ndarray)
+        np.testing.assert_array_equal(htmid_vec, htmid_fast)
+        for ii in range(n_samples):
+            htmid_slow = _findHtmid_slow(ra[ii], dec[ii], level)
+            self.assertIsInstance(htmid_slow, numbers.Number)
+            self.assertEqual(htmid_slow, htmid_vec[ii])
+            htmid_single = findHtmid(ra[ii], dec[ii], level)
+            self.assertIsInstance(htmid_single, numbers.Number)
+            self.assertEqual(htmid_single, htmid_vec[ii])
 
     def test_levelFromHtmid(self):
         """

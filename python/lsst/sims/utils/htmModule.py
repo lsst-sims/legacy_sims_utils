@@ -14,6 +14,7 @@ arXiv:cs/0701164
 """
 
 import numpy as np
+import numbers
 from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
 __all__ = ["Trixel", "HalfSpace", "findHtmid", "trixelFromHtmid",
@@ -633,7 +634,7 @@ def _iterateTrixelFinder(pt, parent, max_level):
                 return _iterateTrixelFinder(pt, child, max_level)
 
 
-def findHtmid(ra, dec, max_level):
+def _findHtmid_slow(ra, dec, max_level):
     """
     Find the htmid (the unique integer identifying
     each trixel) of the trixel containing a given
@@ -681,6 +682,141 @@ def findHtmid(ra, dec, max_level):
 
     return _iterateTrixelFinder(pt, parent, max_level)
 
+
+def _findHtmid_fast(ra, dec, max_level):
+    """
+    Find the htmid (the unique integer identifying
+    each trixel) of the trixels containing arrays
+    of RA, Dec pairs
+
+    Parameters
+    ----------
+    ra in degrees (a numpy array)
+
+    dec in degrees (a numpy array)
+
+    max_level is an integer denoting the mesh level
+    of the trixel you want found
+
+    Returns
+    -------
+    A numpy array of ints (the htmids)
+
+    Note: this method works by caching all of the trixels up to
+    a given level.  Do not call it on max_level>10
+    """
+
+    if max_level>10:
+        raise RuntimeError("Do not call _findHtmid_fast with max_level>10; "
+                           "the cache of trixels generated will be too large. "
+                           "Call findHtmid or _findHtmid_slow (findHtmid will "
+                           "redirect to _findHtmid_slow for large max_level).")
+
+    if (not hasattr(_findHtmid_fast, '_trixel_dict') or
+        _findHtmid_fast._level < max_level):
+
+        _findHtmid_fast._trixel_dict = getAllTrixels(max_level)
+        _findHtmid_fast._level = max_level
+
+    ra_rad = np.radians(ra)
+    dec_rad = np.radians(dec)
+    pt_arr = cartesianFromSpherical(ra_rad, dec_rad)
+
+    base_trixels = [_S0_trixel,
+                    _S1_trixel,
+                    _S2_trixel,
+                    _S3_trixel,
+                    _N0_trixel,
+                    _N1_trixel,
+                    _N2_trixel,
+                    _N3_trixel]
+
+    htmid_arr = np.zeros(len(pt_arr), dtype=int)
+
+    parent_dict = {}
+    for parent in base_trixels:
+        is_contained = parent.contains_pt(pt_arr)
+        valid_dexes = np.where(is_contained)
+        if len(valid_dexes[0]) == 0:
+            continue
+        htmid_arr[valid_dexes] = parent.htmid
+        parent_dict[parent.htmid] = valid_dexes[0]
+
+    for level in range(1, max_level):
+        new_parent_dict = {}
+        for parent_htmid in parent_dict.keys():
+            considered_raw = parent_dict[parent_htmid]
+
+            next_htmid = parent_htmid << 2
+            children_htmid = [next_htmid, next_htmid+1,
+                              next_htmid+2, next_htmid+3]
+
+            is_found = np.zeros(len(considered_raw), dtype=int)
+            for child in children_htmid:
+                un_found = np.where(is_found==0)[0]
+                considered = considered_raw[un_found]
+                if len(considered) == 0:
+                    break
+                child_trixel = _findHtmid_fast._trixel_dict[child]
+                contains = child_trixel.contains_pt(pt_arr[considered])
+                valid = np.where(contains)
+                if len(valid[0]) == 0:
+                    continue
+
+                valid_dexes = considered[valid]
+                is_found[un_found[valid[0]]] = 1
+                htmid_arr[valid_dexes] = child
+                new_parent_dict[child] = valid_dexes
+        parent_dict = new_parent_dict
+
+    return htmid_arr
+
+def findHtmid(ra, dec, max_level):
+    """
+    Find the htmid (the unique integer identifying
+    each trixel) of the trixel containing a given
+    RA, Dec pair.
+
+    Parameters
+    ----------
+    ra in degrees (either a number or a numpy array)
+
+    dec in degrees (either a number or a numpy array)
+
+    max_level is an integer denoting the mesh level
+    of the trixel you want found
+
+    Returns
+    -------
+    An int (the htmid) or an array of ints
+    """
+    if isinstance(ra, numbers.Number):
+        are_arrays = False
+    elif isinstance(ra, list):
+        ra = np.array(ra)
+        dec = np.array(dec)
+        are_arrays = True
+    else:
+        try:
+            assert isinstance(ra, np.ndarray)
+            assert isinstance(dec, np.ndarray)
+        except AssertionError:
+            raise RuntimeError("\nfindHtmid can handle types\n"
+                               + "RA: %s" % type(ra)
+                               + "Dec: %s" % type(dec)
+                               + "\n")
+        are_arrays = True
+
+    if are_arrays:
+        if max_level <= 10 and len(ra)>100:
+            return _findHtmid_fast(ra, dec, max_level)
+        else:
+            htmid_arr = np.zeros(len(ra), dtype=int)
+            for ii in range(len(ra)):
+                htmid_arr[ii] = _findHtmid_slow(ra[ii], dec[ii], max_level)
+            return htmid_arr
+
+    return _findHtmid_slow(ra, dec, max_level)
 
 class HalfSpace(object):
     """
