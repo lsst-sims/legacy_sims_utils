@@ -105,8 +105,8 @@ def approx_RaDec2AltAz(ra, dec, lat, lon, mjd, lmst=None):
     az : numpy.array
         Azimuth, same length as `ra` and `dec`. degrees.
     """
-    alt, az = _approx_RaDec2AltAz(np.degrees(ra), np.degrees(dec), np.degrees(lat),
-                                  np.degrees(lon), mjd, lmst=lmst)
+    alt, az = _approx_RaDec2AltAz(np.radians(ra), np.radians(dec), np.radians(lat),
+                                  np.radians(lon), mjd, lmst=lmst)
     return np.degrees(alt), np.degrees(az)
 
 
