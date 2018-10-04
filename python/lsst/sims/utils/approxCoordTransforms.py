@@ -6,7 +6,7 @@ __all__ = ['_approx_altAz2RaDec', '_approx_RaDec2AltAz', 'approx_altAz2RaDec', '
 
 def approx_altAz2RaDec(alt, az, lat, lon, mjd, lmst=None):
     """
-    Convert alt, az to RA, Dec without taking into account abberation, precesion, diffraction, etc.
+    Convert alt, az to RA, Dec without taking into account aberration, precession, diffraction, etc.
 
     Parameters
     ----------
@@ -37,7 +37,7 @@ def approx_altAz2RaDec(alt, az, lat, lon, mjd, lmst=None):
 
 def _approx_altAz2RaDec(alt, az, lat, lon, mjd, lmst=None):
     """
-    Convert alt, az to RA, Dec without taking into account abberation, precesion, diffraction, etc.
+    Convert alt, az to RA, Dec without taking into account aberration, precession, diffraction, etc.
 
     Parameters
     ----------
@@ -81,7 +81,7 @@ def approx_RaDec2AltAz(ra, dec, lat, lon, mjd, lmst=None):
     Convert Ra,Dec to Altitude and Azimuth.
 
     Coordinate transformation is killing performance. Just use simple equations to speed it up
-    and ignore abberation, precesion, nutation, nutrition, etc.
+    and ignore aberration, precession, nutation, nutrition, etc.
 
     Parameters
     ----------
@@ -115,7 +115,7 @@ def _approx_RaDec2AltAz(ra, dec, lat, lon, mjd, lmst=None):
     Convert Ra,Dec to Altitude and Azimuth.
 
     Coordinate transformation is killing performance. Just use simple equations to speed it up
-    and ignore abberation, precesion, nutation, nutrition, etc.
+    and ignore aberration, precession, nutation, nutrition, etc.
 
     Parameters
     ----------
