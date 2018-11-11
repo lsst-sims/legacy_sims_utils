@@ -81,7 +81,8 @@ def _validate_inputs(input_list, input_names, method_name):
         desired_type = numbers.Number
     else:
         raise RuntimeError("The arg %s input to method %s " % (input_names[0], method_name) +
-                           "should be either a number or a numpy array")
+                           "should be either a number or a numpy array" +
+                           "it is %s" % str(type(input_list[0])))
 
     valid_type = True
     bad_names = []
