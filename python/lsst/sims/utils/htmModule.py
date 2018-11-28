@@ -859,7 +859,7 @@ class HalfSpace(object):
             if self._phi > np.pi:
                 raise RuntimeError("phi %e d %e" % (self._phi, self._d))
         else:
-            if self._d > 0.0:
+            if self._d < 0.0:
                 self._phi = np.pi
             else:
                 self._phi = 0.0
