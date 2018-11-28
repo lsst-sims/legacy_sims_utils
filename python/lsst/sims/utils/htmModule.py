@@ -19,7 +19,8 @@ from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
 __all__ = ["Trixel", "HalfSpace", "findHtmid", "trixelFromHtmid",
            "basic_trixels", "halfSpaceFromRaDec", "levelFromHtmid",
-           "getAllTrixels", "halfSpaceFromPoints"]
+           "getAllTrixels", "halfSpaceFromPoints",
+           "intersectHalfSpaces"]
 
 
 class Trixel(object):
@@ -1203,3 +1204,45 @@ def halfSpaceFromPoints(pt1, pt2, pt3):
         axis *= -1.0
 
     return HalfSpace(axis, 0.0)
+
+def intersectHalfSpaces(hs1, hs2):
+    """
+    Parameters
+    ----------
+    hs1, hs2 are Half Spaces
+
+    Returns
+    -------
+    A list of the cartesian points where the Half Spaces intersect
+
+    Based on section 3.5 of
+    Szalay A. et al. (2007)
+    "Indexing the Sphere with the Hierarchical Triangular Mesh"
+    arXiv:cs/0701164
+    """
+    gamma = np.dot(hs1.vector, hs2.vector)
+    if np.abs(1.0-np.abs(gamma))<1.0e-20:
+        # Half Spaces are based on parallel planes that don't intersect
+        return []
+
+    denom = 1.0-gamma**2
+    if denom<0.0:
+        return []
+
+    num = hs1.dd**2+hs2.dd**2-2.0*gamma*hs1.dd*hs2.dd
+    if denom < num:
+        return []
+
+    uu = (hs1.dd-gamma*hs2.dd)/denom
+    vv = (hs2.dd-gamma*hs1.dd)/denom
+
+    ww = np.sqrt((1.0-num/denom)/denom)
+    cross_product = np.array([hs1.vector[1]*hs2.vector[2]-hs1.vector[2]*hs2.vector[1],
+                              hs1.vector[2]*hs2.vector[0]-hs1.vector[0]*hs2.vector[2],
+                              hs1.vector[0]*hs2.vector[1]-hs1.vector[1]*hs2.vector[0]])
+
+    pt1 = uu*hs1.vector + vv*hs2.vector + ww*cross_product
+    pt2 = uu*hs1.vector + vv*hs2.vector - ww*cross_product
+    if np.abs(1.0-np.dot(pt1, pt2))<1.0e-20:
+        return pt1
+    return [pt1, pt2]

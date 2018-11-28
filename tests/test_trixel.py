@@ -5,6 +5,7 @@ from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
 from lsst.sims.utils import halfSpaceFromPoints
+from lsst.sims.utils import intersectHalfSpaces
 from lsst.sims.utils import getAllTrixels
 from lsst.sims.utils import arcsecFromRadians
 from lsst.sims.utils.htmModule import _findHtmid_fast
@@ -425,6 +426,57 @@ class HalfSpaceTest(unittest.TestCase):
             vv2 = cartesianFromSpherical(np.radians(pt2[0]), np.radians(pt2[1]))
             self.assertAlmostEqual(np.dot(vv1,hs.vector), 0.0, 10)
             self.assertAlmostEqual(np.dot(vv2,hs.vector), 0.0, 10)
+
+    def test_HalfSpaceIntersection(self):
+
+        # Test that the two roots of an intersection are the
+        # correct angular distance from the centers of the
+        # half spaces
+        ra1 = 22.0
+        dec1 = 45.0
+        rad1 = 10.0
+        ra2 = 23.5
+        dec2 = 37.9
+        rad2 = 9.2
+        hs1 = halfSpaceFromRaDec(ra1, dec1, rad1)
+        hs2 = halfSpaceFromRaDec(ra2, dec2, rad2)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 2)
+        self.assertAlmostEqual(np.sqrt(np.sum(roots[0]**2)), 1.0, 10)
+        self.assertAlmostEqual(np.sqrt(np.sum(roots[1]**2)), 1.0, 10)
+        ra_r1, dec_r1 = np.degrees(sphericalFromCartesian(roots[0]))
+        ra_r2, dec_r2 = np.degrees(sphericalFromCartesian(roots[1]))
+        dd = angularSeparation(ra1, dec1, ra_r1, dec_r1)
+        self.assertAlmostEqual(dd, rad1, 10)
+        dd = angularSeparation(ra1, dec1, ra_r2, dec_r2)
+        self.assertAlmostEqual(dd, rad1, 10)
+        dd = angularSeparation(ra2, dec2, ra_r1, dec_r1)
+        self.assertAlmostEqual(dd, rad2, 10)
+        dd = angularSeparation(ra2, dec2, ra_r2, dec_r2)
+        self.assertAlmostEqual(dd, rad2, 10)
+
+        # test that two non-intersecting HalfSpaces return no roots
+        hs1 = halfSpaceFromRaDec(0.0, 90.0, 1.0)
+        hs2 = halfSpaceFromRaDec(20.0, -75.0, 5.0)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 0)
+
+        # test that two half spaces that are inside each other
+        # return no roots
+        hs1 = halfSpaceFromRaDec(77.0, 10.0, 20.0)
+        hs2 = halfSpaceFromRaDec(75.0, 8.0, 0.2)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 0)
+
+        # test that two half spaces with identical centers
+        # return no roots
+        hs1 = halfSpaceFromRaDec(11.0, -23.0, 1.0)
+        hs2 = halfSpaceFromRaDec(11.0, -23.0, 0.2)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 0)
+
+        roots = intersectHalfSpaces(hs1, hs1)
+        self.assertEqual(len(roots), 0)
 
 
 class TrixelFinderTest(unittest.TestCase):
