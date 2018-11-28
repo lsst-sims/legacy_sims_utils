@@ -961,9 +961,9 @@ class HalfSpace(object):
         dotproduct = np.dot(center, self._v)
         if np.abs(dotproduct) < 1.0:
             theta = np.arccos(np.dot(center, self._v))
-        elif dotproduct < 1.000000001:
+        elif (dotproduct < 1.000000001 and dotproduct>0.0):
             theta = 0.0
-        elif dotproduct > -1.000000001:
+        elif (dotproduct > -1.000000001 and dotproduct<0.0):
             theta = np.pi
         else:
             raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
