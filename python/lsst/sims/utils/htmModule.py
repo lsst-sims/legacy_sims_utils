@@ -870,6 +870,9 @@ class HalfSpace(object):
             return False
         return True
 
+    def __ne__(self, other):
+        return not (self == other)
+
     @property
     def vector(self):
         """
