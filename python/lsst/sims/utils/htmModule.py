@@ -856,6 +856,8 @@ class HalfSpace(object):
         self._d = length
         if np.abs(self._d) < 1.0:
             self._phi = np.arccos(self._d)  # half angular extent of the half space
+            if self._phi > np.pi:
+                raise RuntimeError("phi %e d %e" % (self._phi, self._d))
         else:
             if self._d > 0.0:
                 self._phi = np.pi
