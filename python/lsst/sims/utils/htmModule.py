@@ -947,6 +947,32 @@ class HalfSpace(object):
 
         return False
 
+    def intersects_circle(self, center, radius_rad):
+        """
+        Does this Half Space intersect a circle on the unit sphere
+
+        center is the unit vector pointing to the center of the circle
+
+        radius_rad is the radius of the circle in radians
+
+        Returns a boolean
+        """
+
+        dotproduct = np.dot(center, self._v)
+        if np.abs(dotproduct) < 1.0:
+            theta = np.arccos(np.dot(center, self._v))
+        elif dotproduct < 1.000000001:
+            theta = 0.0
+        elif dotproduct > -1.000000001:
+            theta = np.pi
+        else:
+            raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
+
+        if theta > self._phi + radius_rad:
+            return False
+
+        return True
+
     def intersects_bounding_circle(self, tx):
         """
         tx is a Trixel.  Return True if this halfspace intersects
@@ -958,21 +984,8 @@ class HalfSpace(object):
         "Indexing the Sphere with the Hierarchical Triangular Mesh"
         arXiv:cs/0701164
         """
-
-        dotproduct = np.dot(tx.bounding_circle[0], self._v)
-        if np.abs(dotproduct) < 1.0:
-            theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
-        elif dotproduct < 1.000000001:
-            theta = 0.0
-        elif dotproduct > -1.000000001:
-            theta = np.pi
-        else:
-            raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
-
-        if theta > self._phi + tx.bounding_circle[2]:
-            return False
-
-        return True
+        return self.intersects_circle(tx.bounding_circle[0],
+                                      tx.bounding_circle[1])
 
     def contains_trixel(self, tx):
         """
