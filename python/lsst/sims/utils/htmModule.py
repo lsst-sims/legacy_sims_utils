@@ -845,7 +845,7 @@ class HalfSpace(object):
         the halfspace on the unit sphere
 
         length is the distance from the center of the unit
-        sphere to the plane defining the half space along
+        sphere to the plane defining the half space along the
         vector.  This length can be negative, in which case,
         the halfspace is defined as the larger of the two
         regions on the unit sphere divided by the circle
