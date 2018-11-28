@@ -19,7 +19,7 @@ from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
 __all__ = ["Trixel", "HalfSpace", "findHtmid", "trixelFromHtmid",
            "basic_trixels", "halfSpaceFromRaDec", "levelFromHtmid",
-           "getAllTrixels"]
+           "getAllTrixels", "halfSpaceFromPoints"]
 
 
 class Trixel(object):
@@ -1155,3 +1155,36 @@ def halfSpaceFromRaDec(ra, dec, radius):
     dd = np.cos(np.radians(radius))
     xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
     return HalfSpace(xyz, dd)
+
+
+def halfSpaceFromPoints(pt1, pt2, pt3):
+    """
+    Return a Half Space defined by two points on a Great Circle
+    and a third point contained in the Half Space.
+
+    Parameters
+    ----------
+    pt1, pt2 -- two tuples containing (RA, Dec) in degrees of
+    the points on the Great Circle defining the Half Space
+
+    pt3 -- a tuple containing (RA, Dec) in degrees of a point
+    contained in the Half Space
+
+    Returns
+    --------
+    A Half Space
+    """
+
+    vv1 = cartesianFromSpherical(np.radians(pt1[0]), np.radians(pt1[1]))
+    vv2 = cartesianFromSpherical(np.radians(pt2[0]), np.radians(pt2[1]))
+    axis = np.array([vv1[1]*vv2[2]-vv1[2]*vv2[1],
+                     vv1[2]*vv2[0]-vv1[0]*vv2[2],
+                     vv1[0]*vv2[1]-vv1[1]*vv2[0]])
+
+    axis /= np.sqrt(np.sum(axis**2))
+
+    vv3 = cartesianFromSpherical(np.radians(pt3[0]), np.radians(pt3[1]))
+    if np.dot(axis, vv3)<0.0:
+        axis *= -1.0
+
+    return HalfSpace(axis, 0.0)

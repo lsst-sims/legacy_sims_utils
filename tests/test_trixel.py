@@ -4,6 +4,7 @@ from lsst.utils import getPackageDir
 from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
+from lsst.sims.utils import halfSpaceFromPoints
 from lsst.sims.utils import getAllTrixels
 from lsst.sims.utils import arcsecFromRadians
 from lsst.sims.utils.htmModule import _findHtmid_fast
@@ -401,6 +402,29 @@ class HalfSpaceTest(unittest.TestCase):
                 continue
             trix = trixel_dict[htmid]
             self.assertFalse(trixel_intersects_half_space(trix, hspace))
+
+    def test_halfSpaceFromPoints(self):
+        rng = np.random.RandomState(88)
+        for ii in range(10):
+            pt1 = (rng.random_sample()*360.0, rng.random_sample()*180.0-90.0)
+            pt2 = (rng.random_sample()*360.0, rng.random_sample()*180.0-90.0)
+            pt3 = (rng.random_sample()*360.0, rng.random_sample()*180.0-90.0)
+            hs = halfSpaceFromPoints(pt1, pt2, pt3)
+
+            # check that the HalfSpace contains pt3
+            vv3 = cartesianFromSpherical(np.radians(pt3[0]), np.radians(pt3[1]))
+            self.assertTrue(hs.contains_pt(vv3))
+
+            # check that the HalfSpace encompasses 1/2 of the unit sphere
+            self.assertAlmostEqual(hs.phi, 0.5*np.pi, 10)
+            self.assertAlmostEqual(hs.dd, 0.0, 10)
+
+            # check that pt1 and pt2 are 90 degrees away from the center
+            # of the HalfSpace
+            vv1 = cartesianFromSpherical(np.radians(pt1[0]), np.radians(pt1[1]))
+            vv2 = cartesianFromSpherical(np.radians(pt2[0]), np.radians(pt2[1]))
+            self.assertAlmostEqual(np.dot(vv1,hs.vector), 0.0, 10)
+            self.assertAlmostEqual(np.dot(vv2,hs.vector), 0.0, 10)
 
 
 class TrixelFinderTest(unittest.TestCase):
