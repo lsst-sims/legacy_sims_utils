@@ -497,6 +497,28 @@ class HalfSpaceTest(unittest.TestCase):
         shld_be = [(7,8), (11, 15), (35,44)]
         self.assertEqual(result, shld_be)
 
+    def test_contains_many_pts(self):
+        """
+        Test that HalfSpace.contains_many_pts works
+        """
+        rng = np.random.RandomState(5142)
+        n_pts = 100
+        vv_list = np.zeros((n_pts,3), dtype=float)
+        for ii in range(n_pts):
+            vv = rng.random_sample(3)-0.5
+            vv /= np.sqrt(np.sum(vv**2))
+            vv_list[ii] = vv
+
+        vv = rng.random_sample(3)-0.5
+        vv /= np.sqrt(np.sum(vv**2))
+        hs = HalfSpace(vv, 0.3)
+        results = hs.contains_many_pts(vv_list)
+        is_true = np.where(results)[0]
+        self.assertGreater(len(is_true), n_pts//4)
+        self.assertLess(len(is_true), 3*n_pts//4)
+        for i_vv, vv in enumerate(vv_list):
+            self.assertEqual(hs.contains_pt(vv), results[i_vv])
+
 
 class TrixelFinderTest(unittest.TestCase):
 

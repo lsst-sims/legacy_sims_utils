@@ -915,6 +915,21 @@ class HalfSpace(object):
 
         return False
 
+    def contains_many_pts(self, pts):
+        """
+        Parameters
+        ----------
+        pts is a numpy array in which each row is a point on the
+        unit sphere (note: must be normalized)
+
+        Returns
+        -------
+        numpy array of booleans indicating which of pts are contained
+        by this HalfSpace
+        """
+        dot_product = np.dot(pts, self._v)
+        return (dot_product>self._d)
+
     def intersects_edge(self, pt1, pt2):
         """
         pt1 and pt2 are two unit vectors; the edge goes from pt1 to pt2.
