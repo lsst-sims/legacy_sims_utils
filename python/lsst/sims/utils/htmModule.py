@@ -1045,6 +1045,33 @@ class HalfSpace(object):
 
         return "outside"
 
+    @staticmethod
+    def merge_trixel_bounds(bounds):
+        """
+        Take a list of trixel bounds as returned by HalfSpace.findAllTrixels
+        and merge any tuples that should be merged
+
+        Parameters
+        ----------
+        bounds is a list of trixel bounds as returned by HalfSpace.findAllTrixels
+
+        Returns
+        -------
+        A new, equivalent list of trixel bounds
+        """
+        final_output = []
+        current_list = []
+        for row in bounds:
+            if len(current_list) == 0 or row[0] == current_list[-1]+1:
+                current_list.append(row[0])
+                current_list.append(row[1])
+            else:
+                final_output.append((min(current_list), max(current_list)))
+                current_list = [row[0], row[1]]
+        if len(current_list) >0:
+            final_output.append((min(current_list), max(current_list)))
+        return final_output
+
     def findAllTrixels(self, level):
         """
         Find the HTMIDs of all of the trixels filling the half space
@@ -1148,19 +1175,7 @@ class HalfSpace(object):
         for ii in min_dex_arr:
             output.append(output_prelim[ii])
 
-        final_output = []
-        current_list = []
-        for row in output:
-            if len(current_list) == 0 or row[0] == current_list[-1]+1:
-                current_list.append(row[0])
-                current_list.append(row[1])
-            else:
-                final_output.append((min(current_list), max(current_list)))
-                current_list = [row[0], row[1]]
-        if len(current_list) >0:
-            final_output.append((min(current_list), max(current_list)))
-
-        return final_output
+        return self.merge_trixel_bounds(output)
 
 
 def halfSpaceFromRaDec(ra, dec, radius):
