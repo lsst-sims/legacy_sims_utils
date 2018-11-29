@@ -482,9 +482,8 @@ class HalfSpaceTest(unittest.TestCase):
         """
         Test that the merge_trixel_bounds method works
         """
-        dummy_hs = HalfSpace(np.array([1.0,0.0,0.0]), 0.0)
         input_bound = [(1,7), (2,4), (21,35), (8,11), (36, 42), (43, 43)]
-        result = dummy_hs.merge_trixel_bounds(input_bound)
+        result = HalfSpace.merge_trixel_bounds(input_bound)
         shld_be = [(1, 11), (21, 43)]
         self.assertEqual(result, shld_be)
 
@@ -492,11 +491,9 @@ class HalfSpaceTest(unittest.TestCase):
         """
         Test that HalfSpace.join_trixel_bound_sets works
         """
-        dummy_hs = HalfSpace(np.array([1.0,0.0,0.0]), 0.0)
-
         b1 = [(32,47), (6,8), (11,19), (12,14), (66,73)]
         b2 = [(7,15), (35,44)]
-        result = dummy_hs.join_trixel_bound_sets(b1, b2)
+        result = HalfSpace.join_trixel_bound_sets(b1, b2)
         shld_be = [(7,8), (11, 15), (35,44)]
         self.assertEqual(result, shld_be)
 
