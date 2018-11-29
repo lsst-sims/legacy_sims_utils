@@ -483,9 +483,9 @@ class HalfSpaceTest(unittest.TestCase):
         Test that the merge_trixel_bounds method works
         """
         dummy_hs = HalfSpace(np.array([1.0,0.0,0.0]), 0.0)
-        input_bound = [(1,7), (2,4), (21,35), (8,11), (36, 42), (37,37)]
+        input_bound = [(1,7), (2,4), (21,35), (8,11), (36, 42), (43, 43)]
         result = dummy_hs.merge_trixel_bounds(input_bound)
-        shld_be = [(1, 11), (21, 42)]
+        shld_be = [(1, 11), (21, 43)]
         self.assertEqual(result, shld_be)
 
 
