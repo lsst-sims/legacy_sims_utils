@@ -1080,6 +1080,65 @@ class HalfSpace(object):
             final_output.append((min(current_list), max(current_list)))
         return final_output
 
+    @staticmethod
+    def join_trixel_bound_sets(b1, b2):
+        """
+        Take two sets of trixel bounds as returned by HalfSpace.findAllTrixels
+        and return a set of trixel bounds that represents the intersection of
+        the original sets of bounds
+        """
+        b1_sorted = HalfSpace.merge_trixel_bounds(b1)
+        b2_sorted = HalfSpace.merge_trixel_bounds(b2)
+
+        # maximum/minimum trixel bounds outside of which trixel ranges
+        # will be considered invalid
+        global_t_min = max(b1_sorted[0][0], b2_sorted[0][0])
+        global_t_max = min(b1_sorted[-1][1], b2_sorted[-1][1])
+
+        b1_keep = [r for r in b1_sorted if r[0]<global_t_max and r[1]>global_t_min]
+        b2_keep = [r for r in b2_sorted if r[0]<global_t_max and r[1]>global_t_min]
+
+        dex1 = 0
+        dex2 = 0
+        n_b1 = len(b1_keep)
+        n_b2 = len(b2_keep)
+        joint_bounds = []
+        while True:
+            r1 = b1_keep[dex1]
+            r2 = b2_keep[dex2]
+            if r1[0]<r2[0] and r1[1]>r2[1]:
+                # r2 is completely inside r1;
+                # keep r2 and advance dex2
+                joint_bounds.append(r2)
+                dex2 += 1
+            elif r2[0]<r1[0] and r2[1]>r1[1]:
+                # r1 is completely inside r2;
+                # keep r1 and advance dex1
+                joint_bounds.append(r1)
+                dex1 += 1
+            else:
+                # The two bounds are either disjoint, or they overlap;
+                # find the intersection
+                local_min = max(r1[0], r2[0])
+                local_max = min(r1[1], r2[1])
+                if local_min<=local_max:
+                    # if we have a valid range, keep it
+                    joint_bounds.append((local_min, local_max))
+
+                # advance the bound that is lowest
+                if r1[1] < r2[1]:
+                        dex1 += 1
+                else:
+                    dex2 += 1
+
+            # if we have finished scanning one or another of the
+            # bounds, leave the loop
+            if dex1 >= n_b1 or dex2 >= n_b2:
+                break
+
+        return HalfSpace.merge_trixel_bounds(joint_bounds)
+
+
     def findAllTrixels(self, level):
         """
         Find the HTMIDs of all of the trixels filling the half space

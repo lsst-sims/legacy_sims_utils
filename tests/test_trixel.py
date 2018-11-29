@@ -488,6 +488,18 @@ class HalfSpaceTest(unittest.TestCase):
         shld_be = [(1, 11), (21, 43)]
         self.assertEqual(result, shld_be)
 
+    def test_join_trixel_bound_sets(self):
+        """
+        Test that HalfSpace.join_trixel_bound_sets works
+        """
+        dummy_hs = HalfSpace(np.array([1.0,0.0,0.0]), 0.0)
+
+        b1 = [(32,47), (6,8), (11,19), (12,14), (66,73)]
+        b2 = [(7,15), (35,44)]
+        result = dummy_hs.join_trixel_bound_sets(b1, b2)
+        shld_be = [(7,8), (11, 15), (35,44)]
+        self.assertEqual(result, shld_be)
+
 
 class TrixelFinderTest(unittest.TestCase):
 
