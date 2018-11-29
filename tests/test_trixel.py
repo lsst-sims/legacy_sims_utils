@@ -478,6 +478,16 @@ class HalfSpaceTest(unittest.TestCase):
         roots = intersectHalfSpaces(hs1, hs1)
         self.assertEqual(len(roots), 0)
 
+    def test_merge_trixel_bounds(self):
+        """
+        Test that the merge_trixel_bounds method works
+        """
+        dummy_hs = HalfSpace(np.array([1.0,0.0,0.0]), 0.0)
+        input_bound = [(1,7), (2,4), (21,35), (8,11), (36, 42), (37,37)]
+        result = dummy_hs.merge_trixel_bounds(input_bound)
+        shld_be = [(1, 11), (21, 42)]
+        self.assertEqual(result, shld_be)
+
 
 class TrixelFinderTest(unittest.TestCase):
 
