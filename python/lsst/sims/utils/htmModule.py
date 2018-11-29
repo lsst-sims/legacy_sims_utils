@@ -1059,15 +1059,23 @@ class HalfSpace(object):
         -------
         A new, equivalent list of trixel bounds
         """
+        list_of_mins = np.array([r[0] for r in bounds])
+        sorted_dex = np.argsort(list_of_mins)
+        bounds_sorted = np.array(bounds)[sorted_dex]
         final_output = []
         current_list = []
-        for row in bounds:
-            if len(current_list) == 0 or row[0] == current_list[-1]+1:
+        current_max = -1
+        for row in bounds_sorted:
+            if len(current_list) == 0 or row[0] <= current_max+1:
                 current_list.append(row[0])
                 current_list.append(row[1])
+                if row[1]>current_max:
+                    current_max = row[1]
             else:
                 final_output.append((min(current_list), max(current_list)))
                 current_list = [row[0], row[1]]
+                current_max = row[1]
+
         if len(current_list) >0:
             final_output.append((min(current_list), max(current_list)))
         return final_output
