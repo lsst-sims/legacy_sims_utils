@@ -492,7 +492,7 @@ class HalfSpaceTest(unittest.TestCase):
         Test that HalfSpace.join_trixel_bound_sets works
         """
         b1 = [(32,47), (6,8), (11,19), (12,14), (66,73)]
-        b2 = [(7,15), (35,44)]
+        b2 = [(35,41), (7,15), (41, 44)]
         result = HalfSpace.join_trixel_bound_sets(b1, b2)
         shld_be = [(7,8), (11, 15), (35,44)]
         self.assertEqual(result, shld_be)
