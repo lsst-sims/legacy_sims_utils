@@ -1142,7 +1142,7 @@ class HalfSpace(object):
 
                 # advance the bound that is lowest
                 if r1[1] < r2[1]:
-                        dex1 += 1
+                    dex1 += 1
                 else:
                     dex2 += 1
 
