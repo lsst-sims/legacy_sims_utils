@@ -1110,8 +1110,8 @@ class HalfSpace(object):
         global_t_min = max(b1_sorted[0][0], b2_sorted[0][0])
         global_t_max = min(b1_sorted[-1][1], b2_sorted[-1][1])
 
-        b1_keep = [r for r in b1_sorted if r[0]<global_t_max and r[1]>global_t_min]
-        b2_keep = [r for r in b2_sorted if r[0]<global_t_max and r[1]>global_t_min]
+        b1_keep = [r for r in b1_sorted if r[0]<=global_t_max and r[1]>=global_t_min]
+        b2_keep = [r for r in b2_sorted if r[0]<=global_t_max and r[1]>=global_t_min]
 
         dex1 = 0
         dex2 = 0
@@ -1121,12 +1121,12 @@ class HalfSpace(object):
         while True:
             r1 = b1_keep[dex1]
             r2 = b2_keep[dex2]
-            if r1[0]<r2[0] and r1[1]>r2[1]:
+            if r1[0]<=r2[0] and r1[1]>=r2[1]:
                 # r2 is completely inside r1;
                 # keep r2 and advance dex2
                 joint_bounds.append(r2)
                 dex2 += 1
-            elif r2[0]<r1[0] and r2[1]>r1[1]:
+            elif r2[0]<=r1[0] and r2[1]>=r1[1]:
                 # r1 is completely inside r2;
                 # keep r1 and advance dex1
                 joint_bounds.append(r1)
