@@ -1165,10 +1165,6 @@ class HalfSpace(object):
         for trixel_name in basic_trixels:
             active_trixels.append(basic_trixels[trixel_name])
 
-        n_full = 0
-        n_partial = 0
-        n_outside = 0
-
         output_prelim = []
         max_d_htmid = 0
 
@@ -1202,11 +1198,9 @@ class HalfSpace(object):
                 for child in children:
                     is_contained = self.contains_trixel(child)
                     if is_contained == 'partial':
-                        n_partial += 1
                         # need to investigate more fully
                         new_active_trixels.append(child)
                     elif is_contained == 'full':
-                        n_full += 1
                         # all of this trixels children, and their children are contained
                         min_htmid = child._htmid << 2*(level-i_level)
                         max_htmid = min_htmid
@@ -1225,8 +1219,7 @@ class HalfSpace(object):
                         #     print('is_contained %s' % is_contained)
                         #     print('level %d' % levelFromHtmid(tt._htmid))
                         #     raise
-                    else:
-                        n_outside += 1
+
                 active_trixels = new_active_trixels
             if len(active_trixels) == 0:
                 break
