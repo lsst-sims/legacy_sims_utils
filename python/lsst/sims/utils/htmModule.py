@@ -1228,7 +1228,6 @@ class HalfSpace(object):
         # children are inside this HalfSpace
         for trix in active_trixels:
             for child in trix.get_children():
-                assert levelFromHtmid(child._htmid) == level
                 if self.contains_trixel(child) != 'outside':
                     output_prelim.append((child._htmid, child._htmid))
 
