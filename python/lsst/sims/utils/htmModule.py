@@ -1031,6 +1031,9 @@ class HalfSpace(object):
         elif containment.any():
             return "partial"
 
+        if tx.contains_pt(self._v):
+            return "partial"
+
         # check if the trixel's bounding circle intersects
         # the halfspace
         if not self.intersects_bounding_circle(tx):
@@ -1049,9 +1052,6 @@ class HalfSpace(object):
                 break
 
         if intersection:
-            return "partial"
-
-        if tx.contains_pt(self._v):
             return "partial"
 
         return "outside"
