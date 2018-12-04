@@ -162,10 +162,9 @@ class Trixel(object):
         ESO Astrophysics Symposia
         https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
         """
-        return np.where(np.logical_and(np.dot(pts, self.cross01) >= 0.0,
-                        np.logical_and(np.dot(pts, self.cross12) >= 0.0,
-                                       np.dot(pts, self.cross20) >= 0.0)),
-                        True, False)
+        return ((np.dot(pts, self.cross01)>=0.0) &
+                (np.dot(pts, self.cross12)>=0.0) &
+                (np.dot(pts, self.cross20)>=0.0))
 
     def contains_pt(self, pt):
         """
