@@ -1025,14 +1025,11 @@ class HalfSpace(object):
         arXiv:cs/0701164
         """
 
-        n_corners_contained = 0
-        for corner in tx.corners:
-            if self.contains_pt(corner):
-                n_corners_contained += 1
+        containment = self.contains_many_pts(tx.corners)
 
-        if n_corners_contained == 3:
+        if containment.all():
             return "full"
-        elif n_corners_contained > 0:
+        elif containment.any():
             return "partial"
 
         # check if the trixel's bounding circle intersects
