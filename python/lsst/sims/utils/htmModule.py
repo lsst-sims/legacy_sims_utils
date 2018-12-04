@@ -1042,17 +1042,12 @@ class HalfSpace(object):
         # need to test that the bounding circle intersect the halfspace
         # boundary
 
-        intersection = False
         for edge in ((tx.corners[0], tx.corners[1]),
                      (tx.corners[1], tx.corners[2]),
                      (tx.corners[2], tx.corners[0])):
 
             if self.intersects_edge(edge[0], edge[1]):
-                intersection = True
-                break
-
-        if intersection:
-            return "partial"
+                return "partial"
 
         return "outside"
 
