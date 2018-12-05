@@ -977,7 +977,7 @@ class HalfSpace(object):
 
         dotproduct = np.dot(center, self._v)
         if np.abs(dotproduct) < 1.0:
-            theta = np.arccos(np.dot(center, self._v))
+            theta = np.arccos(dotproduct)
         elif (dotproduct < 1.000000001 and dotproduct>0.0):
             theta = 0.0
         elif (dotproduct > -1.000000001 and dotproduct<0.0):
