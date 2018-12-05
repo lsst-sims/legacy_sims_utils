@@ -1232,10 +1232,7 @@ class HalfSpace(object):
                     output_prelim.append((child._htmid, child._htmid))
 
         # sort output by htmid_min
-        min_dex_arr = []
-        for oo in output_prelim:
-            min_dex_arr.append(oo[0])
-        min_dex_arr = np.argsort(min_dex_arr)
+        min_dex_arr = np.argsort([oo[0] for oo in output_prelim])
         output = []
         for ii in min_dex_arr:
             output.append(output_prelim[ii])
