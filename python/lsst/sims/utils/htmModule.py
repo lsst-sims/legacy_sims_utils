@@ -898,7 +898,7 @@ class HalfSpace(object):
         """
         return self._phi
 
-    def contains_pt(self, pt):
+    def contains_pt(self, pt, tol=None):
         """
         pt is a cartesian point (not necessarily on
         the unit sphere).  The method returns True if
@@ -909,8 +909,12 @@ class HalfSpace(object):
 
         dot_product = np.dot(norm_pt, self._v)
 
-        if dot_product > self._d:
-            return True
+        if tol is None:
+            if dot_product > self._d:
+                return True
+        else:
+            if dot_product > (self._d-tol):
+                return True
 
         return False
 
