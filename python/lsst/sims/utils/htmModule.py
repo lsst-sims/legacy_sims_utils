@@ -941,11 +941,11 @@ class HalfSpace(object):
         arXiv:cs/0701164
         """
         costheta = np.dot(pt1, pt2)
-        u = np.sqrt((1-costheta)/(1+costheta))  # using trig identity for tan(theta/2)
+        usq = (1-costheta)/(1+costheta)  # u**2; using trig identity for tan(theta/2)
         gamma1 = np.dot(self._v, pt1)
         gamma2 = np.dot(self._v, pt2)
-        b = gamma1*(u*u-1.0) + gamma2*(u*u+1)
-        a = -u*u*(gamma1+self._d)
+        b = gamma1*(usq-1.0) + gamma2*(usq+1)
+        a = -usq*(gamma1+self._d)
         c = gamma1 - self._d
 
         det = b*b - 4*a*c
