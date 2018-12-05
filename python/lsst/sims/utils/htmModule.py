@@ -1334,4 +1334,4 @@ def intersectHalfSpaces(hs1, hs2):
     pt2 = uu*hs1.vector + vv*hs2.vector - ww*cross_product
     if np.abs(1.0-np.dot(pt1, pt2))<1.0e-20:
         return pt1
-    return [pt1, pt2]
+    return np.array([pt1, pt2])
