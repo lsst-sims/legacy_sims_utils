@@ -133,7 +133,7 @@ def _healbin(ra, dec, values, nside=128, reduceFunc=np.mean, dtype=float, fillVa
     left = np.searchsorted(hpids, pixids)
     right = np.searchsorted(hpids, pixids, side='right')
 
-    mapVals = np.zeros(hp.nside2npix(nside), dtype=dtype)+hp.UNSEEN
+    mapVals = np.zeros(hp.nside2npix(nside), dtype=dtype) + fillVal
 
     # Wow, I thought histogram would be faster than the loop, but this has been faster!
     for i, idx in enumerate(pixids):
@@ -174,7 +174,7 @@ def healbin(ra, dec, values, nside=128, reduceFunc=np.mean, dtype=float):
                     reduceFunc=reduceFunc, dtype=dtype)
 
 
-def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True):
+def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True, fillVal=0.):
     """Convert a Multi-Order Coverage Map to a single nside HEALPix array. Useful
     for converting maps output by LIGO alerts. Expect that future versions of
     healpy or astropy will be able to replace this functionality. Note that this is
@@ -194,6 +194,8 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True):
     density : bool (True)
         If True, multiplies data values by pixel area before applying reduceFunc, and divides
         the final array by the output pixel area. Should be True if working on a probability density MOC.
+    fillVal : float (0.)
+        Value to fill empty HEALPixels with. Good choices include 0 (default), hp.UNSEEN, and np.nan.
     """
 
     orders = np.floor(np.log2(uniq / 4) / 2).astype(int)
@@ -215,10 +217,10 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True):
         tobin_data = data
 
     result = _healbin(data_points['ra'], data_points['dec'], tobin_data, nside=nside,
-                      reduceFunc=reduceFunc, fillVal=0)
+                      reduceFunc=reduceFunc, fillVal=fillVal)
 
     if density:
-        good = np.where(result != hp.UNSEEN)
+        good = np.where(result != fillVal)
         result[good] = result[good] / hp.nside2pixarea(nside)
 
     return result
