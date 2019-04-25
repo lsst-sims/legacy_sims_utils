@@ -181,6 +181,8 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True, fillVal=0.
     a convienence function that will probably degrade portions of the MOC that are
     sampled at high resolution.
 
+    Details of HEALPix Mulit-Order Coverage map: http://ivoa.net/documents/MOC/20190404/PR-MOC-1.1-20190404.pdf
+
     Parameters
     ----------
     data : np.array
@@ -196,10 +198,16 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True, fillVal=0.
         the final array by the output pixel area. Should be True if working on a probability density MOC.
     fillVal : float (0.)
         Value to fill empty HEALPixels with. Good choices include 0 (default), hp.UNSEEN, and np.nan.
+
+    Returns
+    -------
+    np.array : HEALpy array of nside. Units should be the same as the input map as processed by reduceFunc.
     """
 
+    # NUNIQ packing, from page 12 of http://ivoa.net/documents/MOC/20190404/PR-MOC-1.1-20190404.pdf
     orders = np.floor(np.log2(uniq / 4) / 2).astype(int)
     npixs = (uniq - 4 * 4**orders).astype(int)
+
     nsides = 2**orders
     names = ['ra', 'dec', 'area']
     types = [float]*len(names)
