@@ -35,38 +35,38 @@ def m5_flat_sed(visitFilter, musky, FWHMeff, expTime, airmass, tauCloud=0):
 
     # Only define the dicts once on initial call
     if not hasattr(m5_flat_sed, 'Cm'):
-        m5_flat_sed.Cm = {'u': 22.74,
-                          'g': 24.38,
-                          'r': 24.43,
-                          'i': 24.30,
-                          'z': 24.15,
-                          'y': 23.70}
-        m5_flat_sed.dCm_infinity = {'u': 0.75,
-                                    'g': 0.19,
-                                    'r': 0.10,
-                                    'i': 0.07,
-                                    'z': 0.05,
-                                    'y': 0.04}
-        m5_flat_sed.kAtm = {'u': 0.50,
-                            'g': 0.21,
-                            'r': 0.13,
-                            'i': 0.10,
-                            'z': 0.07,
-                            'y': 0.18}
-        m5_flat_sed.msky = {'u': 22.95,
-                            'g': 22.24,
-                            'r': 21.20,
-                            'i': 20.47,
-                            'z': 19.60,
-                            'y': 18.63}
+        m5_flat_sed.Cm = {'u': 23.067,
+                          'g': 24.414,
+                          'r': 24.439,
+                          'i': 24.325,
+                          'z': 24.157,
+                          'y': 23.730}
+        m5_flat_sed.dCm_infinity = {'u': 0.631,
+                                    'g': 0.179,
+                                    'r': 0.097,
+                                    'i': 0.071,
+                                    'z': 0.048,
+                                    'y': 0.037}
+        m5_flat_sed.kAtm = {'u': 0.492,
+                            'g': 0.213,
+                            'r': 0.126,
+                            'i': 0.096,
+                            'z': 0.069,
+                            'y': 0.170}
+        m5_flat_sed.msky = {'u': 22.989,
+                            'g': 22.256,
+                            'r': 21.196,
+                            'i': 20.478,
+                            'z': 19.600,
+                            'y': 18.612}
     # Calculate adjustment if readnoise is significant for exposure time
     # (see overview paper, equation 7)
-    Tscale = expTime / 30.0 * np.power(10.0, -0.4*(musky - m5_flat_sed.msky[visitFilter]))
+    Tscale = expTime / 30.0 * np.power(10.0, -0.4 * (musky - m5_flat_sed.msky[visitFilter]))
     dCm = 0.
     dCm += m5_flat_sed.dCm_infinity[visitFilter]
-    dCm -= 1.25*np.log10(1 + (10**(0.8*m5_flat_sed.dCm_infinity[visitFilter]) - 1)/Tscale)
+    dCm -= 1.25 * np.log10(1 + (10**(0.8 * m5_flat_sed.dCm_infinity[visitFilter]) - 1)/Tscale)
     # Calculate fiducial m5
-    m5 = (m5_flat_sed.Cm[visitFilter] + dCm + 0.50*(musky-21.0) + 2.5*np.log10(0.7/FWHMeff) +
-          1.25*np.log10(expTime/30.0) - m5_flat_sed.kAtm[visitFilter]*(airmass-1.0) - 1.1*tauCloud)
+    m5 = (m5_flat_sed.Cm[visitFilter] + dCm + 0.50 * (musky - 21.0) + 2.5 * np.log10(0.7 / FWHMeff) +
+          1.25 * np.log10(expTime / 30.0) - m5_flat_sed.kAtm[visitFilter] * (airmass - 1.0) - 1.1 * tauCloud)
 
     return m5
