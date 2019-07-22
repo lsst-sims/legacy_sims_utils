@@ -1113,6 +1113,10 @@ class HalfSpace(object):
         n_b1 = len(b1_keep)
         n_b2 = len(b2_keep)
         joint_bounds = []
+
+        if n_b1==0 or n_b2==0:
+            return joint_bounds
+
         while True:
             r1 = b1_keep[dex1]
             r2 = b2_keep[dex2]
