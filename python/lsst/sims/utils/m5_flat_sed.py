@@ -3,9 +3,43 @@ import numpy as np
 __all__ = ['m5_flat_sed', 'm5_scale']
 
 
-def m5_scale(expTime, nexp, musky, FWHMeff, airmass, darkSkyMag, Cm, dCm_infinity, kAtm,
+def m5_scale(expTime, nexp, airmass, FWHMeff, musky, darkSkyMag, Cm, dCm_infinity, kAtm,
              tauCloud=0, baseExpTime=15):
     """ Return m5 (scaled) value for all filters.
+
+    Parameters
+    ----------
+    expTime : float
+        Exposure time (in seconds) for each exposure
+    nexp : int
+        Number of exposures
+    airmass : float
+        Airmass of the observation
+    FWHMeff : np.ndarray or pd.DataFrame
+        FWHM (in arcseconds) per filter
+    musky : np.ndarray or pd.DataFrame
+        Sky background (in magnitudes/sq arcsecond) per filter of the observation
+    darkSkyMag : np.ndarray or pd.DataFrame
+        Dark Sky, zenith magnitude/sq arcsecond - to scale musky. per filter
+    Cm : np.ndarray or pd.DataFrame
+        Cm value for the throughputs per filter
+    dCm_infinity : np.ndarray or pd.DataFrame
+        dCm_infinity values for the throughputs, per filter
+    kAtm : np.ndarray or pd.DataFrame
+        Atmospheric extinction values, per filter
+    tauCloud : float, opt
+        Extinction due to clouds
+    baseExpTime : float, opt
+        The exposure time used to calculate Cm / dCm_infinity. Used to scale expTime.
+        This is the individual exposure exposure time.
+
+    Returns
+    -------
+    np.ndarray or pd.DataFrame
+        m5 values scaled for the visit conditions
+
+    Note: The columns required as input for m5_scale can be calculated using
+    the makeM5 function in lsst.syseng.throughputs.
     """
     # Calculate adjustment if readnoise is significant for exposure time
     # (see overview paper, equation 7)
