@@ -90,26 +90,23 @@ def m5_flat_sed(visitFilter, musky, FWHMeff, expTime, airmass, nexp=1, tauCloud=
 
     # Only define the dicts once on initial call
     if not hasattr(m5_flat_sed, 'Cm'):
-        # Using Cm / dCm_infinity values calculated for a 1x15s visit.
-        # This results in an error of about 0.01 mag in u band for 2x15s visits (0.007 g, <0.005 other bands)
-        # but only at most 0.004 mag errors for 1x30s visits.
-        # In contrast, using the values from 2x15s visits results in negligible errors for 2x15s visits but
-        # 0.01 mag errors in u band for 1x30s visits (<0.003 in other bands).
-        # Similarly, using the values from 1x30s visits results in 0 errors for 1x30s visits but
-        # 0.015 mag errors in u band for 2x15s visits (<0.005 mag errors in other bands).
-        baseExpTime = 15
-        m5_flat_sed.Cm = {'u': 23.056,
-                          'g': 24.407,
-                          'r': 24.433,
-                          'i': 24.320,
-                          'z': 24.153,
-                          'y': 23.726}
-        m5_flat_sed.dCm_infinity = {'u': 0.622,
-                                    'g': 0.178,
-                                    'r': 0.097,
-                                    'i': 0.071,
-                                    'z': 0.048,
-                                    'y': 0.037}
+        # Using Cm / dCm_infinity values calculated for a 1x30s visit.
+        # This results in an error of about 0.01 mag in u band for 2x15s visits (< in other bands)
+        # See https://github.com/lsst-pst/survey_strategy/blob/master/fbs_1.3/m5FlatSed%20update.ipynb
+        # for a more in-depth evaluation.
+        baseExpTime = 30
+        m5_flat_sed.Cm = {'u': 23.283,
+                          'g': 24.493,
+                          'r': 24.483,
+                          'i': 24.358,
+                          'z': 24.180,
+                          'y': 23.747}
+        m5_flat_sed.dCm_infinity = {'u': 0.414,
+                                    'g': 0.100,
+                                    'r': 0.052,
+                                    'i': 0.038,
+                                    'z': 0.026,
+                                    'y': 0.019}
         m5_flat_sed.kAtm = {'u': 0.492,
                             'g': 0.213,
                             'r': 0.126,
