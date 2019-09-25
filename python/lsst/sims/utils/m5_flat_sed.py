@@ -94,7 +94,7 @@ def m5_flat_sed(visitFilter, musky, FWHMeff, expTime, airmass, nexp=1, tauCloud=
         # This results in an error of about 0.01 mag in u band for 2x15s visits (< in other bands)
         # See https://github.com/lsst-pst/survey_strategy/blob/master/fbs_1.3/m5FlatSed%20update.ipynb
         # for a more in-depth evaluation.
-        baseExpTime = 30
+        m5_flat_sed.baseExpTime = 30.
         m5_flat_sed.Cm = {'u': 23.283,
                           'g': 24.493,
                           'r': 24.483,
