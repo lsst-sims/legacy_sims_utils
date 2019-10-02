@@ -12,18 +12,27 @@ from lsst.sims.utils.CoordinateTransformations import _xyz_from_ra_dec
 __all__ = ['_buildTree']
 
 
-def _buildTree(ra, dec, leafsize=100):
+def _buildTree(ra, dec, leafsize=100, scale=None):
     """
     Build KD tree on simDataRA/Dec and set radius (via setRad) for matching.
 
     Parameters
     ----------
-    ra, dec = RA and Dec values (in radians).
-    leafsize = the number of Ra/Dec pointings in each leaf node.
+    ra, dec : float (or arrays)
+        RA and Dec values (in radians).
+    leafsize : int (100)
+        The number of Ra/Dec pointings in each leaf node.
+    scale : float (None)
+        If set, the values are scaled up, rounded, and converted to integers. Useful for
+        forcing a set precision and preventing machine precision differences
     """
     if np.any(np.abs(ra) > np.pi * 2.0) or np.any(np.abs(dec) > np.pi * 2.0):
         raise ValueError('Expecting RA and Dec values to be in radians.')
     x, y, z = _xyz_from_ra_dec(ra, dec)
+    if scale is not None:
+        x = np.round(x*scale).astype(int)
+        y = np.round(y*scale).astype(int)
+        z = np.round(z*scale).astype(int)
     data = list(zip(x, y, z))
     if np.size(data) > 0:
         try:
