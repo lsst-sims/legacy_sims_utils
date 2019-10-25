@@ -1310,7 +1310,10 @@ def intersectHalfSpaces(hs1, hs2):
 
     Returns
     -------
-    A list of the cartesian points where the Half Spaces intersect
+    A list of the cartesian points where the Half Spaces intersect.
+
+    Note: if the Half Spaces are identical, then this list will be
+    empty.
 
     Based on section 3.5 of
     Szalay A. et al. (2007)
