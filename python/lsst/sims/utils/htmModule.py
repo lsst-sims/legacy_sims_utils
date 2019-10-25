@@ -19,7 +19,8 @@ from lsst.sims.utils import cartesianFromSpherical, sphericalFromCartesian
 
 __all__ = ["Trixel", "HalfSpace", "findHtmid", "trixelFromHtmid",
            "basic_trixels", "halfSpaceFromRaDec", "levelFromHtmid",
-           "getAllTrixels"]
+           "getAllTrixels", "halfSpaceFromPoints",
+           "intersectHalfSpaces"]
 
 
 class Trixel(object):
@@ -161,10 +162,9 @@ class Trixel(object):
         ESO Astrophysics Symposia
         https://www.researchgate.net/publication/226072008_The_Hierarchical_Triangular_Mesh
         """
-        return np.where(np.logical_and(np.dot(pts, self.cross01) >= 0.0,
-                        np.logical_and(np.dot(pts, self.cross12) >= 0.0,
-                                       np.dot(pts, self.cross20) >= 0.0)),
-                        True, False)
+        return ((np.dot(pts, self.cross01)>=0.0) &
+                (np.dot(pts, self.cross12)>=0.0) &
+                (np.dot(pts, self.cross20)>=0.0))
 
     def contains_pt(self, pt):
         """
@@ -845,7 +845,7 @@ class HalfSpace(object):
         the halfspace on the unit sphere
 
         length is the distance from the center of the unit
-        sphere to theplane defining the half space along
+        sphere to the plane defining the half space along the
         vector.  This length can be negative, in which case,
         the halfspace is defined as the larger of the two
         regions on the unit sphere divided by the circle
@@ -856,8 +856,10 @@ class HalfSpace(object):
         self._d = length
         if np.abs(self._d) < 1.0:
             self._phi = np.arccos(self._d)  # half angular extent of the half space
+            if self._phi > np.pi:
+                raise RuntimeError("phi %e d %e" % (self._phi, self._d))
         else:
-            if self._d > 0.0:
+            if self._d < 0.0:
                 self._phi = np.pi
             else:
                 self._phi = 0.0
@@ -869,6 +871,9 @@ class HalfSpace(object):
         if np.abs(np.dot(self.vector, other.vector)-1.0) > tol:
             return False
         return True
+
+    def __ne__(self, other):
+        return not (self == other)
 
     @property
     def vector(self):
@@ -893,7 +898,7 @@ class HalfSpace(object):
         """
         return self._phi
 
-    def contains_pt(self, pt):
+    def contains_pt(self, pt, tol=None):
         """
         pt is a cartesian point (not necessarily on
         the unit sphere).  The method returns True if
@@ -904,10 +909,29 @@ class HalfSpace(object):
 
         dot_product = np.dot(norm_pt, self._v)
 
-        if dot_product > self._d:
-            return True
+        if tol is None:
+            if dot_product > self._d:
+                return True
+        else:
+            if dot_product > (self._d-tol):
+                return True
 
         return False
+
+    def contains_many_pts(self, pts):
+        """
+        Parameters
+        ----------
+        pts is a numpy array in which each row is a point on the
+        unit sphere (note: must be normalized)
+
+        Returns
+        -------
+        numpy array of booleans indicating which of pts are contained
+        by this HalfSpace
+        """
+        dot_product = np.dot(pts, self._v)
+        return (dot_product>self._d)
 
     def intersects_edge(self, pt1, pt2):
         """
@@ -921,11 +945,11 @@ class HalfSpace(object):
         arXiv:cs/0701164
         """
         costheta = np.dot(pt1, pt2)
-        u = np.sqrt((1-costheta)/(1+costheta))  # using trig identity for tan(theta/2)
+        usq = (1-costheta)/(1+costheta)  # u**2; using trig identity for tan(theta/2)
         gamma1 = np.dot(self._v, pt1)
         gamma2 = np.dot(self._v, pt2)
-        b = gamma1*(u*u-1.0) + gamma2*(u*u+1)
-        a = -u*u*(gamma1+self._d)
+        b = gamma1*(usq-1.0) + gamma2*(usq+1)
+        a = -usq*(gamma1+self._d)
         c = gamma1 - self._d
 
         det = b*b - 4*a*c
@@ -944,6 +968,32 @@ class HalfSpace(object):
 
         return False
 
+    def intersects_circle(self, center, radius_rad):
+        """
+        Does this Half Space intersect a circle on the unit sphere
+
+        center is the unit vector pointing to the center of the circle
+
+        radius_rad is the radius of the circle in radians
+
+        Returns a boolean
+        """
+
+        dotproduct = np.dot(center, self._v)
+        if np.abs(dotproduct) < 1.0:
+            theta = np.arccos(dotproduct)
+        elif (dotproduct < 1.000000001 and dotproduct>0.0):
+            theta = 0.0
+        elif (dotproduct > -1.000000001 and dotproduct<0.0):
+            theta = np.pi
+        else:
+            raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
+
+        if theta > self._phi + radius_rad:
+            return False
+
+        return True
+
     def intersects_bounding_circle(self, tx):
         """
         tx is a Trixel.  Return True if this halfspace intersects
@@ -955,21 +1005,8 @@ class HalfSpace(object):
         "Indexing the Sphere with the Hierarchical Triangular Mesh"
         arXiv:cs/0701164
         """
-
-        dotproduct = np.dot(tx.bounding_circle[0], self._v)
-        if np.abs(dotproduct) < 1.0:
-            theta = np.arccos(np.dot(tx.bounding_circle[0], self._v))
-        elif dotproduct < 1.000000001:
-            theta = 0.0
-        elif dotproduct > -1.000000001:
-            theta = np.pi
-        else:
-            raise RuntimeError("Dot product between unit vectors is %e" % dotproduct)
-
-        if theta > self._phi + tx.bounding_circle[2]:
-            return False
-
-        return True
+        return self.intersects_circle(tx.bounding_circle[0],
+                                      tx.bounding_circle[1])
 
     def contains_trixel(self, tx):
         """
@@ -991,14 +1028,14 @@ class HalfSpace(object):
         arXiv:cs/0701164
         """
 
-        n_corners_contained = 0
-        for corner in tx.corners:
-            if self.contains_pt(corner):
-                n_corners_contained += 1
+        containment = self.contains_many_pts(tx.corners)
 
-        if n_corners_contained == 3:
+        if containment.all():
             return "full"
-        elif n_corners_contained > 0:
+        elif containment.any():
+            return "partial"
+
+        if tx.contains_pt(self._v):
             return "partial"
 
         # check if the trixel's bounding circle intersects
@@ -1009,22 +1046,112 @@ class HalfSpace(object):
         # need to test that the bounding circle intersect the halfspace
         # boundary
 
-        intersection = False
         for edge in ((tx.corners[0], tx.corners[1]),
                      (tx.corners[1], tx.corners[2]),
                      (tx.corners[2], tx.corners[0])):
 
             if self.intersects_edge(edge[0], edge[1]):
-                intersection = True
-                break
-
-        if intersection:
-            return "partial"
-
-        if tx.contains_pt(self._v):
-            return "partial"
+                return "partial"
 
         return "outside"
+
+    @staticmethod
+    def merge_trixel_bounds(bounds):
+        """
+        Take a list of trixel bounds as returned by HalfSpace.findAllTrixels
+        and merge any tuples that should be merged
+
+        Parameters
+        ----------
+        bounds is a list of trixel bounds as returned by HalfSpace.findAllTrixels
+
+        Returns
+        -------
+        A new, equivalent list of trixel bounds
+        """
+        list_of_mins = np.array([r[0] for r in bounds])
+        sorted_dex = np.argsort(list_of_mins)
+        bounds_sorted = np.array(bounds)[sorted_dex]
+        final_output = []
+        current_list = []
+        current_max = -1
+        for row in bounds_sorted:
+            if len(current_list) == 0 or row[0] <= current_max+1:
+                current_list.append(row[0])
+                current_list.append(row[1])
+                if row[1]>current_max:
+                    current_max = row[1]
+            else:
+                final_output.append((min(current_list), max(current_list)))
+                current_list = [row[0], row[1]]
+                current_max = row[1]
+
+        if len(current_list) >0:
+            final_output.append((min(current_list), max(current_list)))
+        return final_output
+
+    @staticmethod
+    def join_trixel_bound_sets(b1, b2):
+        """
+        Take two sets of trixel bounds as returned by HalfSpace.findAllTrixels
+        and return a set of trixel bounds that represents the intersection of
+        the original sets of bounds
+        """
+        b1_sorted = HalfSpace.merge_trixel_bounds(b1)
+        b2_sorted = HalfSpace.merge_trixel_bounds(b2)
+
+        # maximum/minimum trixel bounds outside of which trixel ranges
+        # will be considered invalid
+        global_t_min = max(b1_sorted[0][0], b2_sorted[0][0])
+        global_t_max = min(b1_sorted[-1][1], b2_sorted[-1][1])
+
+        b1_keep = [r for r in b1_sorted if r[0]<=global_t_max and r[1]>=global_t_min]
+        b2_keep = [r for r in b2_sorted if r[0]<=global_t_max and r[1]>=global_t_min]
+
+        dex1 = 0
+        dex2 = 0
+        n_b1 = len(b1_keep)
+        n_b2 = len(b2_keep)
+        joint_bounds = []
+
+        if n_b1==0 or n_b2==0:
+            return joint_bounds
+
+        while True:
+            r1 = b1_keep[dex1]
+            r2 = b2_keep[dex2]
+            if r1[0]<=r2[0] and r1[1]>=r2[1]:
+                # r2 is completely inside r1;
+                # keep r2 and advance dex2
+                joint_bounds.append(r2)
+                dex2 += 1
+            elif r2[0]<=r1[0] and r2[1]>=r1[1]:
+                # r1 is completely inside r2;
+                # keep r1 and advance dex1
+                joint_bounds.append(r1)
+                dex1 += 1
+            else:
+                # The two bounds are either disjoint, or they overlap;
+                # find the intersection
+                local_min = max(r1[0], r2[0])
+                local_max = min(r1[1], r2[1])
+                if local_min<=local_max:
+                    # if we have a valid range, keep it
+                    joint_bounds.append((local_min, local_max))
+
+                # advance the bound that is lowest
+                if r1[1] < r2[1]:
+                    dex1 += 1
+                else:
+                    dex2 += 1
+
+            # if we have finished scanning one or another of the
+            # bounds, leave the loop
+            if dex1 >= n_b1 or dex2 >= n_b2:
+                break
+
+        return HalfSpace.merge_trixel_bounds(joint_bounds)
+
 
     def findAllTrixels(self, level):
         """
@@ -1045,10 +1172,6 @@ class HalfSpace(object):
         active_trixels = []
         for trixel_name in basic_trixels:
             active_trixels.append(basic_trixels[trixel_name])
-
-        n_full = 0
-        n_partial = 0
-        n_outside = 0
 
         output_prelim = []
         max_d_htmid = 0
@@ -1083,11 +1206,9 @@ class HalfSpace(object):
                 for child in children:
                     is_contained = self.contains_trixel(child)
                     if is_contained == 'partial':
-                        n_partial += 1
                         # need to investigate more fully
                         new_active_trixels.append(child)
                     elif is_contained == 'full':
-                        n_full += 1
                         # all of this trixels children, and their children are contained
                         min_htmid = child._htmid << 2*(level-i_level)
                         max_htmid = min_htmid
@@ -1106,8 +1227,7 @@ class HalfSpace(object):
                         #     print('is_contained %s' % is_contained)
                         #     print('level %d' % levelFromHtmid(tt._htmid))
                         #     raise
-                    else:
-                        n_outside += 1
+
                 active_trixels = new_active_trixels
             if len(active_trixels) == 0:
                 break
@@ -1116,20 +1236,16 @@ class HalfSpace(object):
         # children are inside this HalfSpace
         for trix in active_trixels:
             for child in trix.get_children():
-                assert levelFromHtmid(child._htmid) == level
                 if self.contains_trixel(child) != 'outside':
                     output_prelim.append((child._htmid, child._htmid))
 
         # sort output by htmid_min
-        min_dex_arr = []
-        for oo in output_prelim:
-            min_dex_arr.append(oo[0])
-        min_dex_arr = np.argsort(min_dex_arr)
+        min_dex_arr = np.argsort([oo[0] for oo in output_prelim])
         output = []
         for ii in min_dex_arr:
             output.append(output_prelim[ii])
 
-        return output
+        return self.merge_trixel_bounds(output)
 
 
 def halfSpaceFromRaDec(ra, dec, radius):
@@ -1152,3 +1268,81 @@ def halfSpaceFromRaDec(ra, dec, radius):
     dd = np.cos(np.radians(radius))
     xyz = cartesianFromSpherical(np.radians(ra), np.radians(dec))
     return HalfSpace(xyz, dd)
+
+
+def halfSpaceFromPoints(pt1, pt2, pt3):
+    """
+    Return a Half Space defined by two points on a Great Circle
+    and a third point contained in the Half Space.
+
+    Parameters
+    ----------
+    pt1, pt2 -- two tuples containing (RA, Dec) in degrees of
+    the points on the Great Circle defining the Half Space
+
+    pt3 -- a tuple containing (RA, Dec) in degrees of a point
+    contained in the Half Space
+
+    Returns
+    --------
+    A Half Space
+    """
+
+    vv1 = cartesianFromSpherical(np.radians(pt1[0]), np.radians(pt1[1]))
+    vv2 = cartesianFromSpherical(np.radians(pt2[0]), np.radians(pt2[1]))
+    axis = np.array([vv1[1]*vv2[2]-vv1[2]*vv2[1],
+                     vv1[2]*vv2[0]-vv1[0]*vv2[2],
+                     vv1[0]*vv2[1]-vv1[1]*vv2[0]])
+
+    axis /= np.sqrt(np.sum(axis**2))
+
+    vv3 = cartesianFromSpherical(np.radians(pt3[0]), np.radians(pt3[1]))
+    if np.dot(axis, vv3)<0.0:
+        axis *= -1.0
+
+    return HalfSpace(axis, 0.0)
+
+def intersectHalfSpaces(hs1, hs2):
+    """
+    Parameters
+    ----------
+    hs1, hs2 are Half Spaces
+
+    Returns
+    -------
+    A list of the cartesian points where the Half Spaces intersect.
+
+    Note: if the Half Spaces are identical, then this list will be
+    empty.
+
+    Based on section 3.5 of
+    Szalay A. et al. (2007)
+    "Indexing the Sphere with the Hierarchical Triangular Mesh"
+    arXiv:cs/0701164
+    """
+    gamma = np.dot(hs1.vector, hs2.vector)
+    if np.abs(1.0-np.abs(gamma))<1.0e-20:
+        # Half Spaces are based on parallel planes that don't intersect
+        return []
+
+    denom = 1.0-gamma**2
+    if denom<0.0:
+        return []
+
+    num = hs1.dd**2+hs2.dd**2-2.0*gamma*hs1.dd*hs2.dd
+    if denom < num:
+        return []
+
+    uu = (hs1.dd-gamma*hs2.dd)/denom
+    vv = (hs2.dd-gamma*hs1.dd)/denom
+
+    ww = np.sqrt((1.0-num/denom)/denom)
+    cross_product = np.array([hs1.vector[1]*hs2.vector[2]-hs1.vector[2]*hs2.vector[1],
+                              hs1.vector[2]*hs2.vector[0]-hs1.vector[0]*hs2.vector[2],
+                              hs1.vector[0]*hs2.vector[1]-hs1.vector[1]*hs2.vector[0]])
+
+    pt1 = uu*hs1.vector + vv*hs2.vector + ww*cross_product
+    pt2 = uu*hs1.vector + vv*hs2.vector - ww*cross_product
+    if np.abs(1.0-np.dot(pt1, pt2))<1.0e-20:
+        return pt1
+    return np.array([pt1, pt2])

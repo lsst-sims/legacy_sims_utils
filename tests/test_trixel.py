@@ -4,6 +4,8 @@ from lsst.utils import getPackageDir
 from lsst.sims.utils import findHtmid, trixelFromHtmid
 from lsst.sims.utils import HalfSpace, basic_trixels
 from lsst.sims.utils import halfSpaceFromRaDec, levelFromHtmid
+from lsst.sims.utils import halfSpaceFromPoints
+from lsst.sims.utils import intersectHalfSpaces
 from lsst.sims.utils import getAllTrixels
 from lsst.sims.utils import arcsecFromRadians
 from lsst.sims.utils.htmModule import _findHtmid_fast
@@ -401,6 +403,121 @@ class HalfSpaceTest(unittest.TestCase):
                 continue
             trix = trixel_dict[htmid]
             self.assertFalse(trixel_intersects_half_space(trix, hspace))
+
+    def test_halfSpaceFromPoints(self):
+        rng = np.random.RandomState(88)
+        for ii in range(10):
+            pt1 = (rng.random_sample()*360.0, rng.random_sample()*180.0-90.0)
+            pt2 = (rng.random_sample()*360.0, rng.random_sample()*180.0-90.0)
+            pt3 = (rng.random_sample()*360.0, rng.random_sample()*180.0-90.0)
+            hs = halfSpaceFromPoints(pt1, pt2, pt3)
+
+            # check that the HalfSpace contains pt3
+            vv3 = cartesianFromSpherical(np.radians(pt3[0]), np.radians(pt3[1]))
+            self.assertTrue(hs.contains_pt(vv3))
+
+            # check that the HalfSpace encompasses 1/2 of the unit sphere
+            self.assertAlmostEqual(hs.phi, 0.5*np.pi, 10)
+            self.assertAlmostEqual(hs.dd, 0.0, 10)
+
+            # check that pt1 and pt2 are 90 degrees away from the center
+            # of the HalfSpace
+            vv1 = cartesianFromSpherical(np.radians(pt1[0]), np.radians(pt1[1]))
+            vv2 = cartesianFromSpherical(np.radians(pt2[0]), np.radians(pt2[1]))
+            self.assertAlmostEqual(np.dot(vv1,hs.vector), 0.0, 10)
+            self.assertAlmostEqual(np.dot(vv2,hs.vector), 0.0, 10)
+
+    def test_HalfSpaceIntersection(self):
+
+        # Test that the two roots of an intersection are the
+        # correct angular distance from the centers of the
+        # half spaces
+        ra1 = 22.0
+        dec1 = 45.0
+        rad1 = 10.0
+        ra2 = 23.5
+        dec2 = 37.9
+        rad2 = 9.2
+        hs1 = halfSpaceFromRaDec(ra1, dec1, rad1)
+        hs2 = halfSpaceFromRaDec(ra2, dec2, rad2)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 2)
+        self.assertAlmostEqual(np.sqrt(np.sum(roots[0]**2)), 1.0, 10)
+        self.assertAlmostEqual(np.sqrt(np.sum(roots[1]**2)), 1.0, 10)
+        ra_r1, dec_r1 = np.degrees(sphericalFromCartesian(roots[0]))
+        ra_r2, dec_r2 = np.degrees(sphericalFromCartesian(roots[1]))
+        dd = angularSeparation(ra1, dec1, ra_r1, dec_r1)
+        self.assertAlmostEqual(dd, rad1, 10)
+        dd = angularSeparation(ra1, dec1, ra_r2, dec_r2)
+        self.assertAlmostEqual(dd, rad1, 10)
+        dd = angularSeparation(ra2, dec2, ra_r1, dec_r1)
+        self.assertAlmostEqual(dd, rad2, 10)
+        dd = angularSeparation(ra2, dec2, ra_r2, dec_r2)
+        self.assertAlmostEqual(dd, rad2, 10)
+
+        # test that two non-intersecting HalfSpaces return no roots
+        hs1 = halfSpaceFromRaDec(0.0, 90.0, 1.0)
+        hs2 = halfSpaceFromRaDec(20.0, -75.0, 5.0)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 0)
+
+        # test that two half spaces that are inside each other
+        # return no roots
+        hs1 = halfSpaceFromRaDec(77.0, 10.0, 20.0)
+        hs2 = halfSpaceFromRaDec(75.0, 8.0, 0.2)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 0)
+
+        # test that two half spaces with identical centers
+        # return no roots
+        hs1 = halfSpaceFromRaDec(11.0, -23.0, 1.0)
+        hs2 = halfSpaceFromRaDec(11.0, -23.0, 0.2)
+        roots = intersectHalfSpaces(hs1, hs2)
+        self.assertEqual(len(roots), 0)
+
+        roots = intersectHalfSpaces(hs1, hs1)
+        self.assertEqual(len(roots), 0)
+
+    def test_merge_trixel_bounds(self):
+        """
+        Test that the merge_trixel_bounds method works
+        """
+        input_bound = [(1,7), (2,4), (21,35), (8,11), (36, 42), (43, 43)]
+        result = HalfSpace.merge_trixel_bounds(input_bound)
+        shld_be = [(1, 11), (21, 43)]
+        self.assertEqual(result, shld_be)
+
+    def test_join_trixel_bound_sets(self):
+        """
+        Test that HalfSpace.join_trixel_bound_sets works
+        """
+        b1 = [(32,47), (6,8), (11,19), (12,14), (66,73)]
+        b2 = [(35,41), (7,15), (41, 44)]
+        result = HalfSpace.join_trixel_bound_sets(b1, b2)
+        shld_be = [(7,8), (11, 15), (35,44)]
+        self.assertEqual(result, shld_be)
+
+    def test_contains_many_pts(self):
+        """
+        Test that HalfSpace.contains_many_pts works
+        """
+        rng = np.random.RandomState(5142)
+        n_pts = 100
+        vv_list = np.zeros((n_pts,3), dtype=float)
+        for ii in range(n_pts):
+            vv = rng.random_sample(3)-0.5
+            vv /= np.sqrt(np.sum(vv**2))
+            vv_list[ii] = vv
+
+        vv = rng.random_sample(3)-0.5
+        vv /= np.sqrt(np.sum(vv**2))
+        hs = HalfSpace(vv, 0.3)
+        results = hs.contains_many_pts(vv_list)
+        is_true = np.where(results)[0]
+        self.assertGreater(len(is_true), n_pts//4)
+        self.assertLess(len(is_true), 3*n_pts//4)
+        for i_vv, vv in enumerate(vv_list):
+            self.assertEqual(hs.contains_pt(vv), results[i_vv])
 
 
 class TrixelFinderTest(unittest.TestCase):
