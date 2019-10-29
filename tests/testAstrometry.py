@@ -38,6 +38,9 @@ from lsst.sims.utils import _appGeoFromObserved, _icrsFromAppGeo
 from lsst.sims.utils import refractionCoefficients, applyRefraction
 from lsst.sims.utils import observedFromICRS, applyProperMotion, sphericalFromCartesian
 
+# Tell astropy not to download the IERS tables
+from astropy.utils import iers
+iers.conf.auto_download=False
 
 def setup_module(module):
     lsst.utils.tests.init()
