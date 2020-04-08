@@ -258,7 +258,6 @@ def hp_grow_sort(in_map, ignore_nan=True):
     if ignore_nan:
         not_nan_pix = ~np.isnan(in_map)
         npix = np.size(in_map[not_nan_pix])
-        pix_indx = pix_indx[not_nan_pix]
 
     # Make a boolean area to keep track of which pixels still need to be sorted
     neighbors = hp.get_all_neighbours(nside, pix_indx).T
@@ -268,7 +267,7 @@ def hp_grow_sort(in_map, ignore_nan=True):
     valid_neighbors_mask[np.where(neighbors == -1)] = False
 
     ordered_hp = np.zeros(npix, dtype=int)
-    current_max = np.where(in_map == np.max(in_map))[0].min()
+    current_max = np.where(in_map == np.nanmax(in_map))[0].min()
 
     ordered_hp[0] = current_max
 
@@ -279,11 +278,14 @@ def hp_grow_sort(in_map, ignore_nan=True):
 
     for i in np.arange(1, npix):
         current_neighbors = neighbors[ordered_hp[0:i]][valid_neighbors_mask[ordered_hp[0:i]]]
-        if np.size(current_neighbors) == 0:
+        indx = np.where(in_map[current_neighbors] == np.nanmax(in_map[current_neighbors]))[0]
+        if np.size(indx) == 0:
             # We can't connect to any more pixels
             warnings.warn('Can not connect to any more pixels.')
             return ordered_hp
-        current_max = current_neighbors[np.where(in_map[current_neighbors] == np.max(in_map[current_neighbors]))[0].min()]
+        else:
+            indx = np.min(indx)
+        current_max = current_neighbors[indx]
         ordered_hp[i] = current_max
         # current_max is no longer a valid neighbor to consider
         # valid_neighbors_mask[np.where(neighbors == current_max)] = False
