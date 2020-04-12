@@ -4,7 +4,7 @@ import healpy as hp
 import warnings
 
 __all__ = ['hpid2RaDec', 'raDec2Hpid', 'healbin', '_hpid2RaDec', '_raDec2Hpid',
-           '_healbin', 'moc2array', 'hp_grow_sort']
+           '_healbin', 'moc2array', 'hp_grow_argsort']
 
 
 def _hpid2RaDec(nside, hpids, **kwargs):
@@ -236,7 +236,7 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True, fillVal=0.
     return result
 
 
-def hp_grow_sort(in_map, ignore_nan=True):
+def hp_grow_argsort(in_map, ignore_nan=True):
     """Find the maximum of a healpix map, then orders healpixels by selecting the maximum bordering the selected area.
 
     Parameters
@@ -271,6 +271,9 @@ def hp_grow_sort(in_map, ignore_nan=True):
 
     ordered_hp[0] = current_max
 
+    # Remove max from valid_neighbors. Can be clever with indexing
+    # so we don't have to do a brute force search of the entire
+    # neghbors array to mask it.
     # valid_neighbors_mask[np.where(neighbors == current_max)] = False
     current_neighbors = neighbors[current_max][valid_neighbors_mask[current_max]]
     sub_indx = np.where(neighbors[current_neighbors] == current_max)
@@ -288,8 +291,6 @@ def hp_grow_sort(in_map, ignore_nan=True):
         current_max = current_neighbors[indx]
         ordered_hp[i] = current_max
         # current_max is no longer a valid neighbor to consider
-        # valid_neighbors_mask[np.where(neighbors == current_max)] = False
-
         neighbors_of_current = neighbors[current_max]
         sub_indx = np.where(neighbors[neighbors_of_current] == current_max)
         valid_neighbors_mask[(neighbors_of_current[sub_indx[0]], sub_indx[1])] = False
