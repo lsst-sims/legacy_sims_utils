@@ -285,7 +285,7 @@ def hp_grow_argsort(in_map, ignore_nan=True):
         if np.size(indx) == 0:
             # We can't connect to any more pixels
             warnings.warn('Can not connect to any more pixels.')
-            return ordered_hp
+            return ordered_hp[0:i]
         else:
             indx = np.min(indx)
         current_max = current_neighbors[indx]
