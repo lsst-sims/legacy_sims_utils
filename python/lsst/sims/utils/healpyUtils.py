@@ -1,8 +1,10 @@
 from __future__ import division
 import numpy as np
 import healpy as hp
+import warnings
 
-__all__ = ['hpid2RaDec', 'raDec2Hpid', 'healbin', '_hpid2RaDec', '_raDec2Hpid', '_healbin', 'moc2array']
+__all__ = ['hpid2RaDec', 'raDec2Hpid', 'healbin', '_hpid2RaDec', '_raDec2Hpid',
+           '_healbin', 'moc2array', 'hp_grow_argsort']
 
 
 def _hpid2RaDec(nside, hpids, **kwargs):
@@ -232,3 +234,65 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True, fillVal=0.
         result[good] = result[good] / hp.nside2pixarea(nside)
 
     return result
+
+
+def hp_grow_argsort(in_map, ignore_nan=True):
+    """Find the maximum of a healpix map, then orders healpixels by selecting the maximum bordering the selected area.
+
+    Parameters
+    ----------
+    in_map : np.array
+        A valid HEALpix array
+    ignore_nan : bool (True)
+        If true, ignores values that are NaN
+
+    Returns
+    -------
+    ordered_hp : int array
+        The indices that put in_map in the correct order
+    """
+    nside = hp.npix2nside(np.size(in_map))
+    npix = np.size(in_map)
+    pix_indx = np.arange(npix)
+
+    if ignore_nan:
+        not_nan_pix = ~np.isnan(in_map)
+        npix = np.size(in_map[not_nan_pix])
+
+    # Make a boolean area to keep track of which pixels still need to be sorted
+    neighbors = hp.get_all_neighbours(nside, pix_indx).T
+    valid_neighbors_mask = np.ones(neighbors.shape, dtype=bool)
+
+    # Sometimes there can be no neighbors in some directions
+    valid_neighbors_mask[np.where(neighbors == -1)] = False
+
+    ordered_hp = np.zeros(npix, dtype=int)
+    current_max = np.where(in_map == np.nanmax(in_map))[0].min()
+
+    ordered_hp[0] = current_max
+
+    # Remove max from valid_neighbors. Can be clever with indexing
+    # so we don't have to do a brute force search of the entire
+    # neghbors array to mask it.
+    # valid_neighbors_mask[np.where(neighbors == current_max)] = False
+    current_neighbors = neighbors[current_max][valid_neighbors_mask[current_max]]
+    sub_indx = np.where(neighbors[current_neighbors] == current_max)
+    valid_neighbors_mask[(current_neighbors[sub_indx[0]], sub_indx[1])] = False
+
+    for i in np.arange(1, npix):
+        current_neighbors = neighbors[ordered_hp[0:i]][valid_neighbors_mask[ordered_hp[0:i]]]
+        indx = np.where(in_map[current_neighbors] == np.nanmax(in_map[current_neighbors]))[0]
+        if np.size(indx) == 0:
+            # We can't connect to any more pixels
+            warnings.warn('Can not connect to any more pixels.')
+            return ordered_hp[0:i]
+        else:
+            indx = np.min(indx)
+        current_max = current_neighbors[indx]
+        ordered_hp[i] = current_max
+        # current_max is no longer a valid neighbor to consider
+        neighbors_of_current = neighbors[current_max]
+        sub_indx = np.where(neighbors[neighbors_of_current] == current_max)
+        valid_neighbors_mask[(neighbors_of_current[sub_indx[0]], sub_indx[1])] = False
+
+    return ordered_hp
