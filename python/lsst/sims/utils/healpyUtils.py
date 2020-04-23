@@ -259,8 +259,22 @@ def hp_grow_argsort(in_map, ignore_nan=True):
         not_nan_pix = ~np.isnan(in_map)
         npix = np.size(in_map[not_nan_pix])
 
-    # Make a boolean area to keep track of which pixels still need to be sorted
-    neighbors = hp.get_all_neighbours(nside, pix_indx).T
+    # Check if we have already run with this nside
+    if hasattr(hp_grow_argsort, 'nside'):
+        nside_match = nside == hp_grow_argsort.nside
+    else:
+        nside_match = False
+
+    # If we already have neighbors chached, just use it
+    if nside_match:
+        neighbors = hp_grow_argsort.neighbors_cache
+    else:
+        # Running a new nside, or for the first time, compute neighbors and set attributes
+        # Make a boolean area to keep track of which pixels still need to be sorted
+        neighbors = hp.get_all_neighbours(nside, pix_indx).T
+        hp_grow_argsort.neighbors_cache = neighbors
+        hp_grow_argsort.nside = nside
+
     valid_neighbors_mask = np.ones(neighbors.shape, dtype=bool)
 
     # Sometimes there can be no neighbors in some directions
