@@ -51,6 +51,8 @@ def uniformSphere(npoints, seed=42):
 
     ra = 2.*np.pi * u
     dec = np.arccos(2.*v - 1.)
+    # astro convention of -90 to 90
+    dec -= np.pi/2.
     return np.degrees(ra), np.degrees(dec)
 
 
