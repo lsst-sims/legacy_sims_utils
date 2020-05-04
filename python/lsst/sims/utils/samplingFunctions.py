@@ -2,7 +2,7 @@ from __future__ import division
 import numpy as np
 import warnings
 
-__all__ = ['spatiallySample_obsmetadata', 'samplePatchOnSphere']
+__all__ = ['spatiallySample_obsmetadata', 'samplePatchOnSphere', 'uniformSphere']
 
 
 def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
@@ -39,6 +39,21 @@ def spatiallySample_obsmetadata(obsmetadata, size=1, seed=1):
                                             size=size,
                                             seed=seed)
     return ravals, thetavals
+
+
+def uniformSphere(npoints, seed=42):
+    """
+    Just make RA, dec points on a sphere
+    """
+    np.random.seed(seed)
+    u = np.random.uniform(size=npoints)
+    v = np.random.uniform(size=npoints)
+
+    ra = 2.*np.pi * u
+    dec = np.arccos(2.*v - 1.)
+    # astro convention of -90 to 90
+    dec -= np.pi/2.
+    return np.degrees(ra), np.degrees(dec)
 
 
 def samplePatchOnSphere(phi, theta, delta, size, seed=1):
