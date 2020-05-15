@@ -7,14 +7,14 @@ __all__ = ['hpid2RaDec', 'raDec2Hpid', 'healbin', '_hpid2RaDec', '_raDec2Hpid',
            '_healbin', 'moc2array', 'hp_grow_argsort']
 
 
-def _hpid2RaDec(nside, hpids, **kwargs):
+def _hpid2RaDec(nside, hpids, nest=False):
     """
-    Correct for healpy being silly and running dec from 0-180.
+    Convert healpix id's into RA/Dec values in radians.
 
     Parameters
     ----------
     nside : int
-        Must be a value of 2^N.
+        Must be a value of 2^N (if using nest=False).
     hpids : np.array
         Array (or single value) of healpixel IDs.
 
@@ -26,21 +26,21 @@ def _hpid2RaDec(nside, hpids, **kwargs):
         Dec positions of the input healpixel IDs. In radians.
     """
 
-    lat, lon = hp.pix2ang(nside, hpids, **kwargs)
+    lat, lon = hp.pix2ang(nside, hpids, nest=nest, lonlat=False)
     decRet = np.pi / 2.0 - lat
     raRet = lon
 
     return raRet, decRet
 
 
-def hpid2RaDec(nside, hpids, **kwargs):
+def hpid2RaDec(nside, hpids, nest=False):
     """
-    Correct for healpy being silly and running dec from 0-180.
+    Convert healpix id into RA/Dec values, in degrees.
 
     Parameters
     ----------
     nside : int
-        Must be a value of 2^N.
+        Must be a value of 2^N (if nest=False)
     hpids : np.array
         Array (or single value) of healpixel IDs.
 
@@ -51,11 +51,11 @@ def hpid2RaDec(nside, hpids, **kwargs):
     decRet : float (or np.array)
         Dec positions of the input healpixel IDs. In degrees.
     """
-    ra, dec = _hpid2RaDec(nside, hpids, **kwargs)
-    return np.degrees(ra), np.degrees(dec)
+    ra, dec = hp.pix2ang(nside, hpids, nest=nest, lonlat=True)
+    return ra, dec
 
 
-def _raDec2Hpid(nside, ra, dec, **kwargs):
+def _raDec2Hpid(nside, ra, dec, nest=False):
     """
     Assign ra,dec points to the correct healpixel.
 
@@ -74,11 +74,11 @@ def _raDec2Hpid(nside, ra, dec, **kwargs):
         Healpixel IDs for the input positions.
     """
     lat = np.pi / 2.0 - dec
-    hpids = hp.ang2pix(nside, lat, ra, **kwargs)
+    hpids = hp.ang2pix(nside, lat, ra, nest=nest, lonlat=False)
     return hpids
 
 
-def raDec2Hpid(nside, ra, dec, **kwargs):
+def raDec2Hpid(nside, ra, dec, nest=False):
     """
     Assign ra,dec points to the correct healpixel.
 
@@ -96,7 +96,7 @@ def raDec2Hpid(nside, ra, dec, **kwargs):
     hpids : np.array
         Healpixel IDs for the input positions.
     """
-    return _raDec2Hpid(nside, np.radians(ra), np.radians(dec), **kwargs)
+    return hp.ang2pix(nside, ra, dec, nest=nest, lonlat=True)
 
 
 def _healbin(ra, dec, values, nside=128, reduceFunc=np.mean, dtype=float, fillVal=hp.UNSEEN):
@@ -183,7 +183,8 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True, fillVal=0.
     a convienence function that will probably degrade portions of the MOC that are
     sampled at high resolution.
 
-    Details of HEALPix Mulit-Order Coverage map: http://ivoa.net/documents/MOC/20190404/PR-MOC-1.1-20190404.pdf
+    Details of HEALPix Mulit-Order Coverage map:
+    http://ivoa.net/documents/MOC/20190404/PR-MOC-1.1-20190404.pdf
 
     Parameters
     ----------
@@ -236,8 +237,9 @@ def moc2array(data, uniq, nside=128, reduceFunc=np.sum, density=True, fillVal=0.
     return result
 
 
-def hp_grow_argsort(in_map, ignore_nan=True):
-    """Find the maximum of a healpix map, then orders healpixels by selecting the maximum bordering the selected area.
+def hp_grow_argsort(in_map, ignore_nan=True, nest=False):
+    """Find the maximum of a healpix map, then orders healpixels by selecting the
+    maximum bordering the selected area.
 
     Parameters
     ----------
@@ -271,7 +273,7 @@ def hp_grow_argsort(in_map, ignore_nan=True):
     else:
         # Running a new nside, or for the first time, compute neighbors and set attributes
         # Make a boolean area to keep track of which pixels still need to be sorted
-        neighbors = hp.get_all_neighbours(nside, pix_indx).T
+        neighbors = hp.get_all_neighbours(nside, pix_indx, nest=nest).T
         hp_grow_argsort.neighbors_cache = neighbors
         hp_grow_argsort.nside = nside
 
