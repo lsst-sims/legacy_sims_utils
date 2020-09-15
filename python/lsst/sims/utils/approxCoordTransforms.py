@@ -1,7 +1,45 @@
 import numpy as np
 from lsst.sims.utils import calcLmstLast
 
-__all__ = ['_approx_altAz2RaDec', '_approx_RaDec2AltAz', 'approx_altAz2RaDec', 'approx_RaDec2AltAz']
+__all__ = ['_approx_altAz2RaDec', '_approx_RaDec2AltAz', 'approx_altAz2RaDec',
+           'approx_RaDec2AltAz', '_approx_altaz2pa', 'approx_altaz2pa']
+
+
+def _approx_altaz2pa(alt_rad, az_rad, latitude_rad):
+    """
+    A fast calculation of parallactic angle
+    Parameters
+    ----------
+    alt_rad : float
+        Altitude (radians)
+    az_rad : float
+        Azimuth (radians)
+    latitude_rad : float
+        The latitude of the observatory (radians)
+    """
+
+    y = np.sin(-az_rad)*np.cos(latitude_rad)
+    x = np.cos(alt_rad)*np.sin(latitude_rad) - np.sin(alt_rad)*np.cos(latitude_rad)*np.cos(-az_rad)
+    pa = np.arctan2(y, x)
+    # Make it run from 0-360 deg instead of of -180 to 180
+    pa = pa % (2.*np.pi)
+    return pa
+
+
+def approx_altaz2pa(alt_deg, az_deg, latitude_deg):
+    """
+    A fast calculation of parallactic angle
+    Parameters
+    ----------
+    alt_rad : float
+        Altitude (degrees)
+    az_rad : float
+        Azimuth (degrees)
+    latitude_rad : float
+        The latitude of the observatory (degrees)
+    """
+    pa = _approx_altaz2pa(np.radians(alt_deg), np.radians(az_deg), np.radians(latitude_deg))
+    return np.degrees(pa)
 
 
 def approx_altAz2RaDec(alt, az, lat, lon, mjd, lmst=None):
@@ -110,7 +148,7 @@ def approx_RaDec2AltAz(ra, dec, lat, lon, mjd, lmst=None):
     return np.degrees(alt), np.degrees(az)
 
 
-def _approx_RaDec2AltAz(ra, dec, lat, lon, mjd, lmst=None):
+def _approx_RaDec2AltAz(ra, dec, lat, lon, mjd, lmst=None, return_pa=False):
     """
     Convert Ra,Dec to Altitude and Azimuth.
 
@@ -152,6 +190,13 @@ def _approx_RaDec2AltAz(ra, dec, lat, lon, mjd, lmst=None):
     cosaz = (sindec-np.sin(alt)*sinlat)/(np.cos(alt)*coslat)
     cosaz = np.clip(cosaz, -1, 1)
     az = np.arccos(cosaz)
-    signflip = np.where(np.sin(ha) > 0)
-    az[signflip] = 2.*np.pi-az[signflip]
+    if np.size(ha) < 2:
+        if np.sin(ha) > 0:
+            az = 2.*np.pi-az
+    else:
+        signflip = np.where(np.sin(ha) > 0)
+        az[signflip] = 2.*np.pi-az[signflip]
+    if return_pa:
+        pa = _approx_altaz2pa(alt, az, lat)
+        return alt, az, pa
     return alt, az
