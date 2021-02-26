@@ -1,4 +1,5 @@
 import numpy as np
+from .sysEngVals import SysEngVals
 
 __all__ = ['m5_flat_sed', 'm5_scale']
 
@@ -94,31 +95,13 @@ def m5_flat_sed(visitFilter, musky, FWHMeff, expTime, airmass, nexp=1, tauCloud=
         # This results in an error of about 0.01 mag in u band for 2x15s visits (< in other bands)
         # See https://github.com/lsst-pst/survey_strategy/blob/master/fbs_1.3/m5FlatSed%20update.ipynb
         # for a more in-depth evaluation.
-        m5_flat_sed.baseExpTime = 30.
-        m5_flat_sed.Cm = {'u': 23.283,
-                          'g': 24.493,
-                          'r': 24.483,
-                          'i': 24.358,
-                          'z': 24.180,
-                          'y': 23.747}
-        m5_flat_sed.dCm_infinity = {'u': 0.414,
-                                    'g': 0.100,
-                                    'r': 0.052,
-                                    'i': 0.038,
-                                    'z': 0.026,
-                                    'y': 0.019}
-        m5_flat_sed.kAtm = {'u': 0.492,
-                            'g': 0.213,
-                            'r': 0.126,
-                            'i': 0.096,
-                            'z': 0.069,
-                            'y': 0.170}
-        m5_flat_sed.msky = {'u': 22.989,
-                            'g': 22.256,
-                            'r': 21.196,
-                            'i': 20.478,
-                            'z': 19.600,
-                            'y': 18.612}
+        sev = SysEngVals()
+
+        m5_flat_sed.baseExpTime = sev.exptime
+        m5_flat_sed.Cm = sev.Cm
+        m5_flat_sed.dCm_infinity = sev.dCm_infinity
+        m5_flat_sed.kAtm = sev.kAtm
+        m5_flat_sed.msky = sev.skyMag
     # Calculate adjustment if readnoise is significant for exposure time
     # (see overview paper, equation 7)
     Tscale = expTime / m5_flat_sed.baseExpTime * np.power(10.0, -0.4 * (musky - m5_flat_sed.msky[visitFilter]))
